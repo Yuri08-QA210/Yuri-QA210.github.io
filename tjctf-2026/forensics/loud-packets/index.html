@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yuri08 - TJCTF 2026: Loud Packets</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <style>
+    :root {
+      --main: #a855f7; --main2: #10b981; --main-light: #c084fc;
+      --bg: #0f0f1a; --bg2: #181a2a; --glass: rgba(30, 25, 60, 0.9);
+      --text: #e0e7ef; --shadow: 0 8px 32px 0 #a855f733;
+      --glow: 0 0 20px 2px #a855f744; --highlight: #38bdf8;
+    }
+    html, body {
+      min-height: 100%; margin: 0; font-family: 'JetBrains Mono', monospace;
+      background: radial-gradient(circle at 50% 0%, #221a2a 0%, #0f0f1a 100%);
+      color: var(--text); overflow: hidden; perspective: 1000px;
+    }
+    #particles-js {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+    }
+    .content-wrapper {
+      position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column;
+      padding: 20px; box-sizing: border-box; gap: 15px;
+    }
+    
+    .header {
+      display: flex; align-items: center; gap: 20px; padding: 15px;
+      background: var(--glass); border-radius: 1rem; border: 1px solid #a855f744;
+      box-shadow: var(--shadow); backdrop-filter: blur(10px); flex-shrink: 0;
+    }
+    .avatar {
+      width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--main);
+      object-fit: cover; box-shadow: 0 0 15px var(--main);
+    }
+    .header-info h1 {
+      font-size: 1.8rem; margin: 0; color: var(--main);
+      text-shadow: 0 0 10px #a855f788; animation: neonPurple 2s infinite alternate;
+    }
+    .header-info p { margin: 5px 0 0 0; color: var(--main-light); font-size: 0.9rem; }
+    @keyframes neonPurple { to { text-shadow: 0 0 15px var(--main), 0 0 30px var(--main); } }
+    
+    .lang-toggle {
+      margin-left: auto; background: var(--main); color: white; border: none;
+      padding: 8px 15px; border-radius: 0.5rem; cursor: pointer; font-family: inherit;
+      font-weight: bold; transition: 0.3s; box-shadow: 0 0 10px #a855f755;
+    }
+    .lang-toggle:hover { background: #9333ea; transform: scale(1.05); }
+
+    .terminal-pro {
+      background: linear-gradient(135deg, #1a121f 80%, #a855f711 100%);
+      border-radius: 1rem; border: 1px solid #3f213355; box-shadow: var(--shadow), var(--glow);
+      display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; position: relative;
+    }
+    .terminal-pro::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+      pointer-events: none; z-index: 2; opacity: 0.2;
+    }
+    .terminal-bar {
+      background: #1e1e2e; height: 2.5rem; display: flex; align-items: center;
+      padding: 0 1rem; border-bottom: 1px solid #312e8155; flex-shrink: 0; z-index: 3;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }
+    .red { background: #ef4444; } .yellow { background: #facc15; } .green { background: #22c55e; }
+    .terminal-title { color: var(--main-light); margin-left: 1rem; font-weight: bold; letter-spacing: 1px; }
+    
+    .terminal-body {
+      padding: 1.5rem; flex-grow: 1; overflow-y: auto; font-size: 0.95rem;
+      line-height: 1.6; position: relative; z-index: 1; scroll-behavior: smooth;
+    }
+    #terminal-output { white-space: pre-wrap; word-break: break-word; }
+    #terminal-input-line {
+      display: flex; align-items: center; gap: 0.5em; margin-top: 1em; z-index: 3;
+    }
+    #terminal-input {
+      background: transparent; border: none; color: #a7f3d0; outline: none;
+      font-family: inherit; font-size: 1em; width: 100%; caret-color: var(--main);
+    }
+    
+    .cmd { color: #7c3aed; } .arg { color: #a78bfa; } .info { color: #38bdf8; font-weight: bold; }
+    .error { color: #ef4444; } .success { color: #10b981; } .warning { color: #facc15; }
+    .code-block {
+      background: #0d0d1a; border-left: 3px solid var(--main); padding: 10px 15px;
+      margin: 10px 0; border-radius: 0 5px 5px 0; font-size: 0.9rem; color: #d1d5db;
+    }
+    
+    .terminal-body::-webkit-scrollbar { width: 8px; }
+    .terminal-body::-webkit-scrollbar-track { background: #0f0f1a; }
+    .terminal-body::-webkit-scrollbar-thumb { background: #a855f7; border-radius: 4px; }
+
+    #welcome-screen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #0f0f1a; z-index: 10000; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center; transition: opacity 0.8s;
+    }
+    #welcome-screen.hidden { opacity: 0; pointer-events: none; }
+    #start-button {
+      background: var(--main); color: white; border: none; border-radius: 0.7rem;
+      padding: 1rem 2rem; font-size: 1.2rem; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: all 0.3s; box-shadow: 0 0 20px #a855f788;
+    }
+    #start-button:hover { background: #9333ea; transform: translateY(-3px); }
+    
+    #mute-button {
+      position: fixed; top: 20px; right: 20px; z-index: 10001;
+      background: #1e1e2e; color: var(--main-light); border: 1px solid #a855f755;
+      border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer;
+      display: flex; justify-content: center; align-items: center; transition: all 0.3s;
+    }
+    #mute-button:hover { background: var(--main); color: white; }
+
+    @media (max-width: 768px) {
+      .header { flex-wrap: wrap; justify-content: center; text-align: center; }
+      .lang-toggle { margin-left: 0; margin-top: 10px; width: 100%; }
+      .avatar { width: 60px; height: 60px; }
+      .header-info h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="welcome-screen">
+    <h1 style="color: var(--main); text-shadow: 0 0 20px var(--main); margin-bottom: 20px;">Yuri08 CTF Terminal</h1>
+    <p style="color: #d8b4fe; margin-bottom: 30px;">TJCTF 2026 - Forensics / Loud Packets</p>
+    <button id="start-button">Khởi tạo Terminal</button>
+  </div>
+
+  <button id="mute-button" aria-label="Toggle Sound"><i class="bi bi-volume-up-fill"></i></button>
+  <div id="particles-js"></div>
+
+  <div class="content-wrapper">
+    <header class="header">
+      <img src="https://files.catbox.moe/755fgv.png" alt="Avatar" class="avatar" />
+      <div class="header-info">
+        <h1>Yuri08</h1>
+        <p>Image Forensicator & Pixel Engineer</p>
+      </div>
+      <button class="lang-toggle" id="lang-btn" onclick="toggleLang()">Switch to English</button>
+    </header>
+
+    <section class="terminal-pro">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">root@tjctf:~/loud-packets#</span>
+      </div>
+      <div class="terminal-body" id="terminal-body">
+        <pre id="terminal-output"></pre>
+        <div id="terminal-input-line">
+          <span class="cmd">root@tjctf</span>:<span class="arg">~/forensics</span>$           <input type="text" id="terminal-input" autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script>
+    let isMuted = false;
+    let currentLang = 'vi';
+    let userInteracted = false;
+    const output = document.getElementById('terminal-output');
+    const input = document.getElementById('terminal-input');
+    const tBody = document.getElementById('terminal-body');
+
+    particlesJS.load('particles-js', 'https://cdn.jsdelivr.net/gh/VincentGarreau/particles.js/particles.json');
+
+    function playAudio(src, vol=0.2) {
+      if (!userInteracted || isMuted || !src) return;
+      try { const a = new Audio(src); a.volume = vol; a.play(); } catch(e) {}
+    }
+
+    document.getElementById('mute-button').addEventListener('click', function() {
+      isMuted = !isMuted;
+      this.querySelector('i').className = isMuted ? 'bi bi-volume-mute-fill' : 'bi bi-volume-up-fill';
+    });
+
+    function print(html) {
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      output.appendChild(div);
+      tBody.scrollTop = tBody.scrollHeight;
+    }
+
+    // --- TRANSLATIONS & DETAILED WRITEUP DATA ---
+    const L = {
+      vi: {
+        help: `<span class="info">[ Hướng Dẫn Đọc Writeup ]</span>
+<span class="cmd">intro</span>       : Tổng quan & Cái bẫy Red Herring
+<span class="cmd">redherring</span>  : Sự thật về "PCAP" và Thư mục Sprite
+<span class="cmd">visual</span>      : Phân tích Trực quan chall.png & Dumbbell Blobs
+<span class="cmd">bitmap</span>      : Cơ chế Bitmap Font Rendering & Sprite Tiling
+<span class="cmd">downsampling</span>: Kỹ thuật Downsampling & Thresholding
+<span class="cmd">code</span>        : Source Code Khai thác (Python Forensics)
+<span class="cmd">clear</span>       : Xóa màn hình Terminal`,
+        intro: `<span class="info">[ TỔNG QUAN: LOUD PACKETS ]</span>
+<span class="cmd">Category:</span> Forensics / Image Processing / Steganography
+<span class="cmd">Flag:</span> <span class="success">tjctf{v3ry_l0ud_pc4p_f1le}</span>
+
+<span class="warning">Mô tả:</span> Tên challenge là "loud-packets", gợi ngay đến việc phân tích Network Forensics hay PCAP. Nhưng đó là một cái bẫy hoàn hảo.
+
+<span class="cmd">Mục tiêu:</span> Bỏ qua tư duy mạng, nhận diện bức tranh chall.png thực chất là một bảng mã Bitmap Font được vẽ bằng các sprite anime, và trích xuất text ẩn bằng kỹ thuật Downsampling cấp pixel.`,
+        redherring: `<span class="info">[ SỰ THẬT VỀ "PCAP" VÀ THƯ MỤC SPRITE ]</span>
+Bài cho một thư mục chứa 39 folder. Tên của từng folder tương ứng với từng ký tự trong bộ ký tự của flag TJCTF (a-z, 0-9, _, {, }).
+Bên trong mỗi folder là các hình ảnh sprite anime giống hệt nhau.
+
+<span class="warning">Tư duy Forensicator:</span> Tại sao lại có 39 biến thể của CÙNG MỘT bức ảnh? Nếu chỉ là giấu tin thông thường, chỉ cần 1 bức ảnh gốc. Sự trùng lặp này là khóa: Mỗi ký tự được "đóng dấu" (stamp) bằng một phiên bản sprite cụ thể. Đây là một mã hóa thay thế (substitution cipher) dựa trên hình ảnh!`,
+        visual: `<span class="info">[ PHÂN TÍCH TRỰC QUAN CHALL.PNG ]</span>
+File chall.png có kích thước lớn: <span class="cmd">3664×784 pixels</span>, thang độ xám (grayscale).
+Khi phóng to, bức ảnh chứa đầy những đốm trắng hình quả tạ (dumbbell-shaped blobs).
+
+<span class="arg">Quan sát trọng yếu:</span> Các đốm này không phải nhiễu ngẫu nhiên. Chúng là các phiên bản thu nhỏ (downscaled) của sprite anime trong thư mục. Bức ảnh không chứa dữ liệu mạng, nó chứa <span class="success">dữ liệu hình ảnh được xếp	tile</span>!`,
+        bitmap: `<span class="info">[ CƠ CHẾ BITMAP FONT RENDERING ]</span>
+Bức ảnh hoạt động giống hệt cách máy tính hiển thị văn bản: Bitmap Font.
+- Mỗi "ký tự" trong flag được vẽ bằng một ô (tile) hình vuông kích thước <span class="cmd">80x80 pixels</span>.
+- Nếu tile đó tương ứng với 1 sprite có mặt người, nó hiện ra "đốm trắng" (điểm sáng).
+- Nếu tile đó là nền (background), nó tối hơn (điểm tối).
+
+Chiều rộng 3664 / 80 = 45.8 -> Tương đương 45 ký tự mỗi dòng. 
+Flag được ẩn dưới dạng một bức tranh các đốm sáng/tối, tạo thành một dạng ASCII Art khổng lồ.`,
+        downsampling: `<span class="info">[ KỸ THUẬT DOWNSAMPLING & THRESHOLDING ]</span>
+Để đọc được flag, ta cần nén 1 tile 80x80 pixel xuống chỉ còn 1 pixel duy nhất, đại diện cho toàn bộ tile đó.
+
+1. <span class="cmd">Nearest-Neighbour Downsampling:</span> Thu nhỏ ảnh với factor chính xác là 80. Mỗi khối 80x80 bị co lại thành 1 pixel.
+   <span class="arg">new_width = 3664 // 80 = 45</span>
+   <span class="arg">new_height = 784 // 80 = 9</span>
+
+2. <span class="cmd">Thresholding:</span> Bức ảnh đã co chỉ còn 45x9 pixel. Ta áp dụng ngưỡng (threshold) = 128:
+   - Pixel > 128 (Sáng) -> In ra <span class="success">#</span>
+   - Pixel <= 128 (Tối) -> In ra khoảng trắng <span class="arg"> </span>
+
+Kết quả là một ASCII Art hoàn hảo ghép thành flag: <span class="success">tjctf{v3ry_l0ud_pc4p_f1le}</span>`,
+        code: `<span class="info">[ EXPLOIT SOURCE CODE ]</span>
+<div class="code-block">#!/usr/bin/env python3
+from PIL import Image
+
+def extract_bitmap_flag(image_path, tile_size=80, threshold=128):
+    """
+    Trích xuất flag ẩn dưới dạng Bitmap Font ASCII Art.
+    Sử dụng Downsampling và Thresholding cấp pixel.
+    """
+    try:
+        im = Image.open(image_path)
+    except Exception as e:
+        print(f"[-] Failed to open image: {e}")
+        return
+
+    # Tính toán kích thước mới (số ký tự trên 1 dòng, và số dòng)
+    cols = im.width // tile_size
+    rows = im.height // tile_size
+    
+    print(f"[*] Original Size: {im.width}x{im.height}")
+    print(f"[*] Tile Size: {tile_size}x{tile_size}")
+    print(f"[*] Downsampled Matrix: {cols}x{rows}")
+    
+    # Nearest-Neighbour Downsampling: Mỗi tile 80x80 co lại thành 1 pixel
+    # PIL.Image.NEAREST lấy giá trị pixel gần nhất, đủ tốt cho định danh block
+    small = im.resize((cols, rows), Image.NEAREST)
+    
+    # Đọc ma trận pixel và Thresholding
+    flag_art = []
+    for y in range(rows):
+        row_str = ""
+        for x in range(cols):
+            pixel_val = small.getpixel((x, y))
+            # So sánh với ngưỡng để xác định sáng/tối (Foreground/Background)
+            if pixel_val > threshold:
+                row_str += "#"
+            else:
+                row_str += " "
+        flag_art.append(row_str)
+        print(row_str) # In ASCII art ra console
+        
+    return "\\n".join(flag_art)
+
+if __name__ == "__main__":
+    print("[+] Extracting Hidden Bitmap Text...")
+    extract_bitmap_flag("chall.png", tile_size=80, threshold=128)</div>`
+      },
+      en: {
+        help: `<span class="info">[ WRITEUP NAVIGATION ]</span>
+<span class="cmd">intro</span>       : Challenge Overview & The Red Herring
+<span class="cmd">redherring</span>  : The "PCAP" Truth & Sprite Directory
+<span class="cmd">visual</span>      : chall.png Visual Analysis & Dumbbell Blobs
+<span class="cmd">bitmap</span>      : Bitmap Font Rendering Mechanism & Sprite Tiling
+<span class="cmd">downsampling</span>: Downsampling & Thresholding Technique
+<span class="cmd">code</span>        : Exploit Source Code (Python Forensics)
+<span class="cmd">clear</span>       : Clear Terminal Screen`,
+        intro: `<span class="info">[ OVERVIEW: LOUD PACKETS ]</span>
+<span class="cmd">Category:</span> Forensics / Image Processing / Steganography
+<span class="cmd">Flag:</span> <span class="success">tjctf{v3ry_l0ud_pc4p_f1le}</span>
+
+<span class="warning">Description:</span> The challenge name "loud-packets" immediately suggests Network Forensics or PCAP analysis. But that is a perfect trap.
+
+<span class="cmd">Objective:</span> Discard the network mindset, recognize that chall.png is actually a Bitmap Font table drawn with anime sprites, and extract the hidden text using pixel-level Downsampling.`,
+        redherring: `<span class="info">[ THE "PCAP" TRUTH & SPRITE DIRECTORY ]</span>
+The challenge provides a directory containing 39 folders. Each folder's name corresponds to a character in the TJCTF flag charset (a-z, 0-9, _, {, }).
+Inside each folder are identical anime sprite images.
+
+<span class="warning">Forensicator Mindset:</span> Why 39 variants of the SAME image? If it were normal steganography, only one source image is needed. This repetition is the key: Each character is "stamped" using a specific sprite version. It's an image-based substitution cipher!`,
+        visual: `<span class="info">[ CHALL.PNG VISUAL ANALYSIS ]</span>
+The chall.png file is large: <span class="cmd">3664×784 pixels</span>, grayscale.
+When zoomed in, the image is covered in white dumbbell-shaped blobs.
+
+<span class="arg">Crucial Observation:</span> These blobs are not random noise. They are downscaled versions of the anime sprites from the directory. The image doesn't contain network data; it contains <span class="success">tiled image data</span>!`,
+        bitmap: `<span class="info">[ BITMAP FONT RENDERING MECHANISM ]</span>
+The image works exactly like how computers render text: Bitmap Fonts.
+- Each "character" in the flag is drawn using an 80x80 pixel tile.
+- If the tile corresponds to a sprite with a face, it shows a "white blob" (bright spot).
+- If the tile is background, it's darker.
+
+Width 3664 / 80 = 45.8 -> Equivalent to 45 characters per line.
+The flag is hidden as a picture of bright/dark spots, forming a giant ASCII Art.`,
+        downsampling: `<span class="info">[ DOWNSAMPLING & THRESHOLDING TECHNIQUE ]</span>
+To read the flag, we must compress an 80x80 tile down to a single pixel representing the entire tile.
+
+1. <span class="cmd">Nearest-Neighbour Downsampling:</span> Shrink the image with an exact factor of 80. Each 80x80 block collapses into 1 pixel.
+   <span class="arg">new_width = 3664 // 80 = 45</span>
+   <span class="arg">new_height = 784 // 80 = 9</span>
+
+2. <span class="cmd">Thresholding:</span> The shrunken image is only 45x9 pixels. We apply a threshold = 128:
+   - Pixel > 128 (Bright) -> Print <span class="success">#</span>
+   - Pixel <= 128 (Dark) -> Print space <span class="arg"> </span>
+
+The result is a perfect ASCII Art forming the flag: <span class="success">tjctf{v3ry_l0ud_pc4p_f1le}</span>`,
+        code: `<span class="info">[ EXPLOIT SOURCE CODE ]</span>
+<div class="code-block">#!/usr/bin/env python3
+from PIL import Image
+
+def extract_bitmap_flag(image_path, tile_size=80, threshold=128):
+    """
+    Extracts flag hidden as Bitmap Font ASCII Art.
+    Uses pixel-level Downsampling and Thresholding.
+    """
+    try:
+        im = Image.open(image_path)
+    except Exception as e:
+        print(f"[-] Failed to open image: {e}")
+        return
+
+    # Calculate new dimensions (characters per line, and number of lines)
+    cols = im.width // tile_size
+    rows = im.height // tile_size
+    
+    print(f"[*] Original Size: {im.width}x{im.height}")
+    print(f"[*] Tile Size: {tile_size}x{tile_size}")
+    print(f"[*] Downsampled Matrix: {cols}x{rows}")
+    
+    # Nearest-Neighbour Downsampling: Each 80x80 tile shrinks to 1 pixel
+    # PIL.Image.NEAREST takes the nearest pixel value, good enough for block identification
+    small = im.resize((cols, rows), Image.NEAREST)
+    
+    # Read pixel matrix and apply Thresholding
+    flag_art = []
+    for y in range(rows):
+        row_str = ""
+        for x in range(cols):
+            pixel_val = small.getpixel((x, y))
+            # Compare with threshold to determine bright/dark (Foreground/Background)
+            if pixel_val > threshold:
+                row_str += "#"
+            else:
+                row_str += " "
+        flag_art.append(row_str)
+        print(row_str) # Print ASCII art to console
+        
+    return "\\n".join(flag_art)
+
+if __name__ == "__main__":
+    print("[+] Extracting Hidden Bitmap Text...")
+    extract_bitmap_flag("chall.png", tile_size=80, threshold=128)</div>`
+      }
+    };
+
+    function toggleLang() {
+      currentLang = currentLang === 'vi' ? 'en' : 'vi';
+      const btn = document.getElementById('lang-btn');
+      btn.textContent = currentLang === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt';
+      handleCommand('clear');
+      handleCommand('help');
+      playAudio('https://www.soundjay.com/buttons/button-1.mp3', 0.3);
+    }
+
+    const cmds = {
+      help: () => L[currentLang].help,
+      intro: () => L[currentLang].intro,
+      redherring: () => L[currentLang].redherring,
+      visual: () => L[currentLang].visual,
+      bitmap: () => L[currentLang].bitmap,
+      downsampling: () => L[currentLang].downsampling,
+      code: () => L[currentLang].code,
+      clear: () => { output.innerHTML = ''; return ''; },
+      banner: () => `<span class="info">
+ _                            ____            _   _           
+| |    __ _ _   _ _ __ ___   |  _ \\ _____   _(_) | | ___ _ __ 
+| |   / _\` | | | | '_ \` _ \\  | |_) / _ \\ \\ / / | | |/ _ \\ '__|
+| |__| (_| | |_| | | | | | | |  _ <  __/\\ V /| | | |  __/ |   
+|_____\\__,_|\\__,_|_| |_| |_| |_| \\_\\___| \\_/ |_|_|_|\\___|_|   
+                                                                </span>`
+    };
+
+    function handleCommand(cmd) {
+      const c = cmd.trim().toLowerCase();
+      if(!c) return;
+      print(`<span class="cmd">root@tjctf</span>:<span class="arg">~/forensics</span>$ ${cmd}`);
+      playAudio('https://www.soundjay.com/buttons/button-5.mp3', 0.15);
+      
+      if (cmds[c]) {
+        const res = cmds[c]();
+        if (res) print(res);
+      } else {
+        print(`<span class="error">Command not found: ${c}. Type 'help' for navigation.</span>`);
+      }
+      input.value = '';
+    }
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); handleCommand(input.value); }
+      else playAudio('https://www.soundjay.com/buttons/button-8.mp3', 0.02);
+    });
+
+    tBody.addEventListener('click', () => input.focus());
+
+    document.getElementById('start-button').addEventListener('click', () => {
+      userInteracted = true;
+      const ws = document.getElementById('welcome-screen');
+      ws.classList.add('hidden');
+      setTimeout(() => { handleCommand('banner'); handleCommand('help'); input.focus(); }, 800);
+      playAudio('https://www.soundjay.com/buttons/button-10.mp3', 0.4);
+    });
+  </script>
+</body>
+</html>
