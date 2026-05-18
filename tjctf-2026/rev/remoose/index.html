@@ -1,485 +1,538 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yuri08 - TJCTF 2026: Remoose</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-  <style>
-    :root {
-      --main: #22d3ee; --main2: #10b981; --main-light: #67e8f9;
-      --bg: #0f0f1a; --bg2: #181a2a; --glass: rgba(30, 25, 60, 0.9);
-      --text: #e0e7ef; --shadow: 0 8px 32px 0 #22d3ee33;
-      --glow: 0 0 20px 2px #22d3ee44; --highlight: #38bdf8;
-    }
-    html, body {
-      min-height: 100%; margin: 0; font-family: 'JetBrains Mono', monospace;
-      background: radial-gradient(circle at 50% 0%, #1a1f2a 0%, #0f0f1a 100%);
-      color: var(--text); overflow: hidden; perspective: 1000px;
-    }
-    #particles-js {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
-    }
-    .content-wrapper {
-      position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column;
-      padding: 20px; box-sizing: border-box; gap: 15px;
-    }
-    
-    .header {
-      display: flex; align-items: center; gap: 20px; padding: 15px;
-      background: var(--glass); border-radius: 1rem; border: 1px solid #22d3ee44;
-      box-shadow: var(--shadow); backdrop-filter: blur(10px); flex-shrink: 0;
-    }
-    .avatar {
-      width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--main);
-      object-fit: cover; box-shadow: 0 0 15px var(--main);
-    }
-    .header-info h1 {
-      font-size: 1.8rem; margin: 0; color: var(--main);
-      text-shadow: 0 0 10px #22d3ee88; animation: neonCyan 2s infinite alternate;
-    }
-    .header-info p { margin: 5px 0 0 0; color: var(--main-light); font-size: 0.9rem; }
-    @keyframes neonCyan { to { text-shadow: 0 0 15px var(--main), 0 0 30px var(--main); } }
-    
-    .lang-toggle {
-      margin-left: auto; background: var(--main); color: #000; border: none;
-      padding: 8px 15px; border-radius: 0.5rem; cursor: pointer; font-family: inherit;
-      font-weight: bold; transition: 0.3s; box-shadow: 0 0 10px #22d3ee55;
-    }
-    .lang-toggle:hover { background: #06b6d4; transform: scale(1.05); }
-
-    .terminal-pro {
-      background: linear-gradient(135deg, #121a1f 80%, #22d3ee11 100%);
-      border-radius: 1rem; border: 1px solid #213f4f55; box-shadow: var(--shadow), var(--glow);
-      display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; position: relative;
-    }
-    .terminal-pro::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
-      pointer-events: none; z-index: 2; opacity: 0.2;
-    }
-    .terminal-bar {
-      background: #1e1e2e; height: 2.5rem; display: flex; align-items: center;
-      padding: 0 1rem; border-bottom: 1px solid #312e8155; flex-shrink: 0; z-index: 3;
-    }
-    .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }
-    .red { background: #ef4444; } .yellow { background: #facc15; } .green { background: #22c55e; }
-    .terminal-title { color: var(--main-light); margin-left: 1rem; font-weight: bold; letter-spacing: 1px; }
-    
-    .terminal-body {
-      padding: 1.5rem; flex-grow: 1; overflow-y: auto; font-size: 0.95rem;
-      line-height: 1.6; position: relative; z-index: 1; scroll-behavior: smooth;
-    }
-    #terminal-output { white-space: pre-wrap; word-break: break-word; }
-    #terminal-input-line {
-      display: flex; align-items: center; gap: 0.5em; margin-top: 1em; z-index: 3;
-    }
-    #terminal-input {
-      background: transparent; border: none; color: #a7f3d0; outline: none;
-      font-family: inherit; font-size: 1em; width: 100%; caret-color: var(--main);
-    }
-    
-    .cmd { color: #7c3aed; } .arg { color: #a78bfa; } .info { color: #38bdf8; font-weight: bold; }
-    .error { color: #ef4444; } .success { color: #10b981; } .warning { color: #facc15; }
-    .code-block {
-      background: #0d0d1a; border-left: 3px solid var(--main); padding: 10px 15px;
-      margin: 10px 0; border-radius: 0 5px 5px 0; font-size: 0.9rem; color: #d1d5db;
-    }
-    
-    .terminal-body::-webkit-scrollbar { width: 8px; }
-    .terminal-body::-webkit-scrollbar-track { background: #0f0f1a; }
-    .terminal-body::-webkit-scrollbar-thumb { background: #22d3ee; border-radius: 4px; }
-
-    #welcome-screen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #0f0f1a; z-index: 10000; display: flex; flex-direction: column;
-      justify-content: center; align-items: center; text-align: center; transition: opacity 0.8s;
-    }
-    #welcome-screen.hidden { opacity: 0; pointer-events: none; }
-    #start-button {
-      background: var(--main); color: #000; border: none; border-radius: 0.7rem;
-      padding: 1rem 2rem; font-size: 1.2rem; font-weight: 700; cursor: pointer;
-      font-family: inherit; transition: all 0.3s; box-shadow: 0 0 20px #22d3ee88;
-    }
-    #start-button:hover { background: #06b6d4; transform: translateY(-3px); }
-    
-    #mute-button {
-      position: fixed; top: 20px; right: 20px; z-index: 10001;
-      background: #1e1e2e; color: var(--main-light); border: 1px solid #22d3ee55;
-      border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer;
-      display: flex; justify-content: center; align-items: center; transition: all 0.3s;
-    }
-    #mute-button:hover { background: var(--main); color: #000; }
-
-    @media (max-width: 768px) {
-      .header { flex-wrap: wrap; justify-content: center; text-align: center; }
-      .lang-toggle { margin-left: 0; margin-top: 10px; width: 100%; }
-      .avatar { width: 60px; height: 60px; }
-      .header-info h1 { font-size: 1.4rem; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TJCTF 2026: Remoose — QA210</title>
+<meta name="description" content="TJCTF 2026 Remoose — Reverse Engineering / ELF Forensics binary resurrection walkthrough by QA210">
+<meta name="author" content="QA210">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap');
+:root {
+  --bg-primary:#0a0e17;--bg-secondary:#111827;--bg-tertiary:#1a2236;
+  --bg-code:#0d1117;--border:#1e293b;--border-light:#1a2332;
+  --text-primary:#e2e8f0;--text-secondary:#94a3b8;--text-muted:#64748b;
+  --accent-green:#22d3ee;--accent-blue:#818cf8;--accent-red:#f87171;
+  --accent-yellow:#fbbf24;--accent-purple:#c084fc;--accent-orange:#fb923c;
+  --accent-cyan:#22d3ee;--accent-pink:#f472b6;--accent-teal:#2dd4bf;
+  --link:#818cf8;--link-hover:#a5b4fc;
+  --scrollbar-thumb:#1e293b;--scrollbar-track:#0a0e17;
+  --toc-active:#2dd4bf;
+  --callout-info-bg:rgba(129,140,248,0.08);--callout-info-border:#818cf8;
+  --callout-warn-bg:rgba(251,191,36,0.08);--callout-warn-border:#fbbf24;
+  --callout-danger-bg:rgba(248,113,113,0.08);--callout-danger-border:#f87171;
+  --callout-success-bg:rgba(34,211,238,0.08);--callout-success-border:#22d3ee;
+  --callout-hint-bg:rgba(192,132,252,0.08);--callout-hint-border:#c084fc;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) var(--scrollbar-track)}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.75;font-size:16px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--scrollbar-track)}
+::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#334155}
+a{color:var(--link);text-decoration:none;transition:color .2s}
+a:hover{color:var(--link-hover)}
+#three-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;opacity:0.35}
+.site-header{position:sticky;top:0;z-index:100;background:rgba(10,14,23,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between}
+.site-header .logo{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--accent-teal);display:flex;align-items:center;gap:8px}
+.site-header .logo .dot{color:var(--accent-orange)}
+.site-header nav{display:flex;gap:1.5rem;align-items:center}
+.site-header nav a{color:var(--text-secondary);font-size:.85rem;font-weight:500}
+.site-header nav a:hover{color:var(--text-primary)}
+.hamburger{display:none;background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:1.5rem}
+.page-layout{display:grid;grid-template-columns:260px 1fr;max-width:1400px;margin:0 auto;min-height:calc(100vh - 56px)}
+.toc-sidebar{position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;padding:1.5rem 1rem 1.5rem 1.5rem;border-right:1px solid var(--border);background:var(--bg-primary)}
+.toc-sidebar h3{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.75rem;font-weight:600}
+.toc-sidebar ul{list-style:none}
+.toc-sidebar li{margin-bottom:2px}
+.toc-sidebar a{display:block;padding:4px 8px;border-radius:4px;font-size:.78rem;color:var(--text-secondary);transition:all .15s;line-height:1.4}
+.toc-sidebar a:hover{color:var(--text-primary);background:var(--bg-secondary)}
+.toc-sidebar a.active{color:var(--toc-active);background:rgba(45,212,191,0.1);font-weight:600}
+.toc-sidebar .toc-h3{padding-left:18px;font-size:.72rem}
+.main-content{padding:2.5rem 3rem 4rem;max-width:860px;width:100%}
+.page-hero{margin-bottom:2.5rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+.page-hero .box-badge{display:inline-block;background:linear-gradient(135deg,var(--accent-teal),var(--accent-cyan));color:#000;font-size:.68rem;font-weight:700;padding:2px 12px;border-radius:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.page-hero h1{font-size:2.25rem;font-weight:800;margin-bottom:.5rem;letter-spacing:-.02em}
+.page-hero .meta{color:var(--text-secondary);font-size:.85rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.page-hero .meta .sep{color:var(--text-muted)}
+.box-info-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem}
+.box-info-card .info-item .label{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:2px;font-weight:600}
+.box-info-card .info-item .value{font-size:.92rem;font-weight:600;color:var(--text-primary)}
+.attack-path{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin:1.5rem 0;font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.7;overflow-x:auto}
+.attack-path .step{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.2rem}
+.attack-path .arrow{color:var(--accent-teal)}
+.attack-path .host{color:var(--accent-cyan);font-weight:700}
+.attack-path .technique{color:var(--accent-orange)}
+.attack-path .cred{color:var(--accent-purple)}
+.main-content h2{font-size:1.55rem;font-weight:800;margin:2.5rem 0 1rem;padding-bottom:.4rem;border-bottom:2px solid var(--border);letter-spacing:-.01em;scroll-margin-top:70px}
+.main-content h3{font-size:1.1rem;font-weight:700;margin:1.75rem 0 .75rem;color:var(--text-primary);scroll-margin-top:70px}
+.main-content h4{font-size:.95rem;font-weight:600;margin:1.25rem 0 .5rem;color:var(--text-secondary)}
+.main-content p{margin-bottom:1rem;color:var(--text-secondary);line-height:1.8}
+.code-block-wrapper{position:relative;margin:1rem 0 1.25rem;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.code-block-header{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;background:var(--bg-tertiary);border-bottom:1px solid var(--border);font-size:.7rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
+.code-block-header .lang-label{text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+.copy-btn{background:none;border:1px solid var(--border);color:var(--text-muted);font-size:.68rem;padding:2px 10px;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.copy-btn:hover{color:var(--text-primary);border-color:var(--text-muted)}
+.copy-btn.copied{color:var(--accent-green);border-color:var(--accent-green)}
+.code-block-wrapper pre{margin:0!important;padding:1rem!important;background:var(--bg-code)!important;font-family:'JetBrains Mono',monospace!important;font-size:.8rem!important;line-height:1.6!important;overflow-x:auto}
+.code-block-wrapper code{font-family:'JetBrains Mono',monospace!important;font-size:.8rem!important}
+p code,li code{background:var(--bg-tertiary);border:1px solid var(--border);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.82em;color:var(--accent-orange)}
+.callout{padding:.85rem 1rem;border-radius:6px;border-left:3px solid;margin:1rem 0 1.25rem;font-size:.88rem}
+.callout p{margin:0;color:var(--text-secondary)}
+.callout-title{font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.callout-info{background:var(--callout-info-bg);border-color:var(--callout-info-border)}
+.callout-info .callout-title{color:var(--callout-info-border)}
+.callout-warn{background:var(--callout-warn-bg);border-color:var(--callout-warn-border)}
+.callout-warn .callout-title{color:var(--callout-warn-border)}
+.callout-danger{background:var(--callout-danger-bg);border-color:var(--callout-danger-border)}
+.callout-danger .callout-title{color:var(--callout-danger-border)}
+.callout-success{background:var(--callout-success-bg);border-color:var(--callout-success-border)}
+.callout-success .callout-title{color:var(--callout-success-border)}
+.callout-hint{background:var(--callout-hint-bg);border-color:var(--callout-hint-border)}
+.callout-hint .callout-title{color:var(--callout-hint-border)}
+.main-content ul,.main-content ol{margin:.5rem 0 1rem 1.5rem;color:var(--text-secondary)}
+.main-content li{margin-bottom:.35rem;line-height:1.7}
+.main-content table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.85rem}
+.main-content th,.main-content td{padding:8px 12px;border:1px solid var(--border);text-align:left}
+.main-content th{background:var(--bg-secondary);font-weight:600;color:var(--text-primary);font-size:.73rem;text-transform:uppercase;letter-spacing:.04em}
+.main-content td{color:var(--text-secondary)}
+.site-footer{border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;color:var(--text-muted);font-size:.8rem}
+.toc-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200}
+.toc-overlay.show{display:block}
+.toc-mobile-panel{display:none;position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--bg-primary);border-right:1px solid var(--border);z-index:201;overflow-y:auto;padding:1.5rem}
+.toc-mobile-panel.show{display:block}
+.toc-mobile-panel .close-btn{background:none;border:none;color:var(--text-secondary);font-size:1.2rem;cursor:pointer;float:right}
+@media(max-width:1024px){.page-layout{grid-template-columns:1fr}.toc-sidebar{display:none}.hamburger{display:block}.main-content{padding:1.5rem 1.25rem 3rem}.page-hero h1{font-size:1.75rem}}
+@media(max-width:640px){.site-header{padding:0 1rem}.main-content{padding:1rem .75rem 2rem}.page-hero h1{font-size:1.4rem}.box-info-card{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 
-  <div id="welcome-screen">
-    <h1 style="color: var(--main); text-shadow: 0 0 20px var(--main); margin-bottom: 20px;">Yuri08 CTF Terminal</h1>
-    <p style="color: #a5f3fc; margin-bottom: 30px;">TJCTF 2026 - Rev / Remoose</p>
-    <button id="start-button">Khởi tạo Terminal</button>
-  </div>
+<canvas id="three-bg"></canvas>
 
-  <button id="mute-button" aria-label="Toggle Sound"><i class="bi bi-volume-up-fill"></i></button>
-  <div id="particles-js"></div>
+<header class="site-header">
+  <div class="logo"><span>QA210</span><span class="dot">:</span><span>~$</span></div>
+  <nav><a href="/">Home</a><a href="/tjctf-2026/">TJCTF</a><a href="#">Tools</a><a href="#">About</a></nav>
+  <button class="hamburger" onclick="toggleMobileToc()" aria-label="Menu">☰</button>
+</header>
 
-  <div class="content-wrapper">
-    <header class="header">
-      <img src="https://files.catbox.moe/755fgv.png" alt="Avatar" class="avatar" />
-      <div class="header-info">
-        <h1>Yuri08</h1>
-        <p>ELF Forensics & Binary Resurrection Specialist</p>
-      </div>
-      <button class="lang-toggle" id="lang-btn" onclick="toggleLang()">Switch to English</button>
-    </header>
+<div class="toc-overlay" id="tocOverlay" onclick="toggleMobileToc()"></div>
+<div class="toc-mobile-panel" id="tocMobilePanel">
+  <button class="close-btn" onclick="toggleMobileToc()">✕</button>
+  <h3 style="margin-top:1rem">Contents</h3>
+  <ul id="tocMobile"></ul>
+</div>
 
-    <section class="terminal-pro">
-      <div class="terminal-bar">
-        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">root@tjctf:~/remoose#</span>
-      </div>
-      <div class="terminal-body" id="terminal-body">
-        <pre id="terminal-output"></pre>
-        <div id="terminal-input-line">
-          <span class="cmd">root@tjctf</span>:<span class="arg">~/rev</span>$           <input type="text" id="terminal-input" autocomplete="off" spellcheck="false" />
-        </div>
-      </div>
-    </section>
-  </div>
+<div class="page-layout">
+<aside class="toc-sidebar"><h3>Contents</h3><ul id="tocDesktop"></ul></aside>
 
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-  <script>
-    let isMuted = false;
-    let currentLang = 'vi';
-    let userInteracted = false;
-    const output = document.getElementById('terminal-output');
-    const input = document.getElementById('terminal-input');
-    const tBody = document.getElementById('terminal-body');
+<main class="main-content">
 
-    particlesJS.load('particles-js', 'https://cdn.jsdelivr.net/gh/VincentGarreau/particles.js/particles.json');
+<div class="page-hero">
+  <span class="box-badge">Reverse Engineering</span>
+  <h1>TJCTF 2026: Remoose</h1>
+  <div class="meta"><span>QA210</span><span class="sep">·</span><span>May 2026</span><span class="sep">·</span><span>ELF · Binary Resurrection · Forensics</span></div>
+</div>
 
-    function playAudio(src, vol=0.2) {
-      if (!userInteracted || isMuted || !src) return;
-      try { const a = new Audio(src); a.volume = vol; a.play(); } catch(e) {}
-    }
+<div class="box-info-card">
+  <div class="info-item"><div class="label">Challenge</div><div class="value">Remoose</div></div>
+  <div class="info-item"><div class="label">Category</div><div class="value" style="color:var(--accent-teal)">Reverse Engineering</div></div>
+  <div class="info-item"><div class="label">CTF</div><div class="value">TJCTF 2026</div></div>
+  <div class="info-item"><div class="label">Binary</div><div class="value">ELF x86-64 (zombified)</div></div>
+  <div class="info-item"><div class="label">Flag</div><div class="value" style="color:var(--accent-cyan)">tjctf{5ma11_m00s3}</div></div>
+</div>
 
-    document.getElementById('mute-button').addEventListener('click', function() {
-      isMuted = !isMuted;
-      this.querySelector('i').className = isMuted ? 'bi bi-volume-mute-fill' : 'bi bi-volume-up-fill';
-    });
+<div class="attack-path">
+  <div class="step"><span class="host">FILE</span> <span class="arrow">→</span> <code>file</code> returns <span class="technique">"data"</span> — ELF magic corrupted <span class="arrow">→</span> <span class="cred">\x7fELK</span></div>
+  <div class="step"><span class="host">HEX</span> <span class="arrow">→</span> All <code>0x00</code> replaced with <span class="technique">0x20 (space)</span> in metadata regions</div>
+  <div class="step"><span class="host">PATCH</span> <span class="arrow">→</span> Struct-aware <span class="technique">0x20→0x00 revert</span> + preserve <code>.strtab</code>/<code>.shstrtab</code> + fix magic</div>
+  <div class="step"><span class="host">DISASM</span> <span class="arrow">→</span> Tail-call chain <code>flag→flag1→flag2→flag3→flag4</code> <span class="arrow">→</span> <span class="cred">putchar immediates</span></div>
+</div>
 
-    function print(html) {
-      const div = document.createElement('div');
-      div.innerHTML = html;
-      output.appendChild(div);
-      tBody.scrollTop = tBody.scrollHeight;
-    }
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="overview">Challenge Overview</h2>
 
-    // --- TRANSLATIONS & DETAILED WRITEUP DATA ---
-    const L = {
-      vi: {
-        help: `<span class="info">[ Hướng Dẫn Đọc Writeup ]</span>
-<span class="cmd">intro</span>       : Tổng quan & Hiện tượng ELF Zombie
-<span class="cmd">corruption1</span> : Phân tích Lỗi 1 - Null-Byte Substitution
-<span class="cmd">corruption2</span> : Phân tích Lỗi 2 - ELF Magic Mutation
-<span class="cmd">resurrection</span>: Kỹ thuật Khôi phục Binary 
-<span class="cmd">logic</span>       : Phân tích Luồng Logic & Tail-Call Chain
-<span class="cmd">code</span>        : Source Code Khai thác (Python - LIEF)
-<span class="cmd">clear</span>       : Xóa màn hình Terminal`,
-        intro: `<span class="info">[ TỔNG QUAN: REMOOSE ]</span>
-<span class="cmd">Category:</span> Reverse Engineering / ELF Forensics
-<span class="cmd">Flag:</span> <span class="success">tjctf{5ma11_m00s3}</span>
+<p>The challenge provides a file named <code>remoose</code> that appears to be a broken binary. Running <code>file remoose</code> returns only <code>data</code> — the universal signal that the file's magic bytes are wrong and the kernel loader has no idea what to do with it. The file has been "zombified" through two layers of deliberate corruption, and the task is to surgically repair it at the byte level, then reverse-engineer the restored binary to extract the flag.</p>
 
-<span class="warning">Mô tả:</span> Bạn tải về một file tên <span class="arg">remoose</span>. Khi chạy lệnh <span class="cmd">file remoose</span>, hệ thống chỉ trả về <span class="error">"data"</span>. File đã bị "zombified" (hóa xác chết) bởi 2 layer corruption.
+<p>This challenge is fundamentally different from a standard reverse engineering task. Most RE challenges hand you a working binary and ask you to understand its logic. Here, the binary is clinically dead — it won't execute, it won't disassemble cleanly, and naive repair attempts will destroy critical data. The solve requires understanding ELF internals at the structural level, not just the instruction level. The name "Remoose" is a playful combination of "re-" (again, restore) and "moose" — the small moose flag content reinforces the theme of resurrecting something that appears lifeless.</p>
 
-<span class="cmd">Mục tiêu:</span> Thực hiện phẫu thuật byte-level (binary resurrection) dựa trên layout cấu trúc chính xác, không được phép giả định hay làm hỏng data gốc. Sau đó dịch ngược hàm để lấy flag.`,
-        corruption1: `<span class="info">[ PHÂN TÍCH LỖI 1: NULL-BYTE SUBSTITUTION ]</span>
-Khi dump file, ta nhận ra toàn bộ các vùng metadata của ELF (padding, string terminator, reserved fields) bị thay thế <span class="error">0x00</span> bằng <span class="cmd">0x20</span> (Space).
+<div class="callout callout-hint">
+  <div class="callout-title">Hint — Precision Matters</div>
+  <p>The biggest trap in this challenge is the temptation to do a global find-and-replace of <code>0x20</code> back to <code>0x00</code>. This would destroy legitimate space characters in string tables and section names, rendering the binary permanently broken. The fix must be struct-aware — patching only the regions where <code>0x00</code> was substituted, while preserving areas where <code>0x20</code> is genuine data.</p>
+</div>
 
-<span class="warning">Tư duy Kernel Exploiter:</span> Cách sửa sai lầm nhất là replace toàn bộ 0x20 thành 0x00 (như các script amateur). Điều này sẽ phá hủy section .strtab (chứa tên các symbol/hàm có khoảng trắng thật) và thậm chí cả đoạn .rodata chứa string prompt, khiến binary hỏng hoàn toàn.
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="corruption">Analyzing the Corruptions</h2>
 
-Nguyên tắc: Ta CHỈ được patch các vùng cấu trúc metadata (ELF Header, Program Headers, Section Headers) dựa trên kích thước struct đã biết, tuyệt đối bảo toàn các vùng chứa code và string data thật.`,
-        corruption2: `<span class="info">[ PHÂN TÍCH LỖI 2: ELF MAGIC MUTATION ]</span>
-4 byte đầu tiên của file ELF phải là <span class="success">0x7f454c46</span> (\\x7fELF).
+<h3 id="corruption-magic">Corruption 1: ELF Magic Mutation</h3>
 
-Kiểm tra hex của remoose:
-<div class="code-block">Offset 0x00: 7f 45 4c 4b 01 01 20 20 00 ...</div>
-Byte tại offset 0x03 đã bị sửa từ <span class="error">0x46</span> ('F') thành <span class="error">0x4b</span> ('K'). Kernel loader và libmagic đọc "\\x7fELK" -> lập tức từ chối, xếp loại "data".
+<p>The first corruption is the most immediately visible. Every valid ELF file begins with the 4-byte magic sequence <code>\x7fELF</code> (hex: <code>7f 45 4c 46</code>). The kernel's ELF loader and tools like <code>file</code> check these bytes before attempting any further parsing. A hex dump of the remoose file's header reveals the problem:</p>
 
-Khắc phục: Ghi đè cứng (hardcode) offset 0x03 về 0x46.`,
-        resurrection: `<span class="info">[ KỸ THUẬT KHÔI PHỤC BINARY (STRUCT-AWARE) ]</span>
-Để cứu sống file một cách chính xác, ta dùng thư viện LIEF để trích xuất layout:
-1. LIEF tự động đọc các offset và size của ELF Header, Program Headers (segments), Section Headers.
-2. Trích xuất chính xác mảng byte của <span class="arg">.strtab</span> (chứa tên symbol) và <span class="arg">.shstrtab</span> (chứa tên section). Lưu các byte này nguyên vẹn (bỏ qua việc replace 0x20 ở đây).
-3. Duyệt qua toàn bộ file, chỉ thay thế 0x20 -> 0x00.
-4. Phục hồi lại chính xác các byte gốc của .strtab và .shstrtab vào đúng offset cũ.
-5. Patch cứng offset 0x03 thành 0x46.
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ xxd remoose | head -2
+00000000: 7f45 4c4b 0101 2020 0020 0020 0020 0020  .ELK.... ....
+00000010: 0020 0020 0020 0020 0020 4000 0020 0020  . .........@..</code></pre>
+</div>
 
-Kết quả: ELF được sống lại, giữ nguyên logic code và string định dạng gốc.`,
-        logic: `<span class="info">[ PHÂN TÍCH LUỒNG LOGIC & TAIL-CALL CHAIN ]</span>
-Binary không bị strip. Ta thấy chuỗi 5 hàm: <span class="cmd">flag() → flag1() → flag2() → flag3() → flag4()</span>.
+<p>The byte at offset <code>0x03</code> has been changed from <code>0x46</code> (ASCII 'F') to <code>0x4b</code> (ASCII 'K'). The magic now reads <code>\x7fELK</code> — close enough to ELF to look deliberate, but wrong enough to cause the kernel loader and <code>libmagic</code> to reject the file outright. This is a simple one-byte patch to fix, but it's worth noting that the change was carefully chosen: modifying any other byte in the magic (e.g., <code>0x7f</code> or <code>0x45</code>) would make the corruption more obvious, but changing 'F' to 'K' is subtle enough to miss in a quick visual scan.</p>
 
-Mỗi hàm thực hiện:
-1. Load một ký tự chữ cái vào thanh ghi <span class="arg">edi</span> (tham số cho hàm C).
-2. Gọi <span class="cmd">putchar()</span>.
-3. Dùng tail-call (jmp) nhảy tới hàm tiếp theo.
+<h3 id="corruption-null">Corruption 2: Null-Byte Substitution (0x00 → 0x20)</h3>
 
-Ví dụ Disassembly:
-<div class="code-block">mov edi, 0x74 ; 't'
-call putchar
-mov edi, 0x6a ; 'j'
-call putchar
-jmp flag1</div>
+<p>The second corruption is far more insidious. Across the entire file, every <code>0x00</code> byte has been replaced with <code>0x20</code> (ASCII space). In an ELF binary, null bytes appear pervasively: they terminate strings in symbol tables, fill padding and alignment gaps, occupy reserved fields in header structures, and pad the ends of loadable segments. Replacing all of them with spaces breaks the file in dozens of places simultaneously:</p>
 
-Đọc các immediate operands tuần tự theo call graph, ta có flag: <span class="success">tjctf{5ma11_m00s3}</span>.`,
-        code: `<span class="info">[ EXPLOIT SOURCE CODE (PYTHON - LIEF) ]</span>
-<div class="code-block">#!/usr/bin/env python3
+<ul>
+  <li><strong>ELF Header</strong> — padding bytes in <code>e_ident</code>, null terminators in the identification array</li>
+  <li><strong>Program Headers</strong> — <code>p_align</code>, <code>p_offset</code>, and other fields that contain zero values</li>
+  <li><strong>Section Headers</strong> — <code>sh_name</code> indices, zero-length fields, alignment padding</li>
+  <li><strong>Symbol Tables</strong> — null entries separating symbol records, zero-valued <code>st_size</code> fields</li>
+  <li><strong>String Tables</strong> — null terminators between consecutive strings</li>
+</ul>
+
+<p>The devastating part is that a naive global replacement of <code>0x20</code> back to <code>0x00</code> would also convert legitimate space characters (ASCII 0x20) in string tables and <code>.rodata</code> into null bytes, permanently corrupting function names, section names, and any string constants that contain spaces. The binary would be just as broken after the "fix" as before — just in a different way.</p>
+
+<div class="callout callout-danger">
+  <div class="callout-title">Danger — The Amateur Trap</div>
+  <p>Running <code>sed 's/\x20/\x00/g'</code> or a Python one-liner like <code>data.replace(b'\x20', b'\x00')</code> will destroy the <code>.strtab</code> section (which stores symbol names like <code>flag1</code>, <code>putchar</code>), the <code>.shstrtab</code> section (section names like <code>.text</code>, <code>.data</code>), and any <code>.rodata</code> strings containing spaces. The binary will become un-disassemblable. You must use a struct-aware approach.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="resurrection">Binary Resurrection</h2>
+
+<h3 id="struct-aware">Struct-Aware Patching Strategy</h3>
+
+<p>The correct approach leverages the LIEF (Library to Instrument Executable Formats) library to parse the corrupted ELF at the structural level. Even though the file has broken magic and zero-padded headers, LIEF's lenient parser can still extract section offsets and sizes from the partially intact header structures. The strategy is a three-phase process:</p>
+
+<ol>
+  <li><strong>Snapshot the string tables</strong> — Before any patching, extract the raw byte content of <code>.strtab</code> and <code>.shstrtab</code> from the corrupted file using LIEF's section offset and size information. These byte arrays contain the original space characters (which are genuine data) mixed with corrupted null-byte substitutions. Save them as-is.</li>
+  <li><strong>Global revert</strong> — Replace every <code>0x20</code> in the entire file with <code>0x00</code>. This fixes all the metadata null bytes but also incorrectly converts genuine spaces in string tables to null bytes.</li>
+  <li><strong>Restore string tables</strong> — Write the saved <code>.strtab</code> and <code>.shstrtab</code> byte arrays back to their original offsets, overwriting the incorrectly nullified spaces with the correct original data. This preserves legitimate space characters while keeping the structural fixes intact.</li>
+  <li><strong>Fix ELF magic</strong> — Hardcode patch offset <code>0x03</code> from <code>0x4b</code> ('K') to <code>0x46</code> ('F'), restoring the <code>\x7fELF</code> signature.</li>
+</ol>
+
+<p>This approach is deterministic and structure-driven — no heuristics, no guessing, no risk of over-patching. Every byte change is justified by either a known structural requirement (null bytes in headers) or an explicit preservation constraint (string table content).</p>
+
+<h3 id="lief-approach">Implementation with LIEF</h3>
+
+<p>LIEF handles the heavy lifting of parsing the broken ELF. Its <code>parse()</code> function is tolerant of malformed headers and can extract section metadata even when the file wouldn't load in a standard toolchain. Here's the core extraction logic:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python">import lief
+
+# LIEF's lenient parser can handle the corrupted ELF
+binary = lief.parse("remoose")
+
+# Extract string table byte arrays before any patching
+for section in binary.sections:
+    if section.name == ".strtab":
+        strtab_offset = section.offset
+        strtab_size = section.size
+        strtab_original = bytearray(section.content)
+    elif section.name == ".shstrtab":
+        shstrtab_offset = section.offset
+        shstrtab_size = section.size
+        shstrtab_original = bytearray(section.content)</code></pre>
+</div>
+
+<p>After the global <code>0x20→0x00</code> replacement, we write the saved string table data back to their exact offsets:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python"># Restore string tables at their original offsets
+patched[strtab_offset:strtab_offset+strtab_size] = strtab_original
+patched[shstrtab_offset:shstrtab_offset+shstrtab_size] = shstrtab_original
+
+# Fix ELF magic byte
+patched[3] = 0x46  # 'F' instead of 'K'</code></pre>
+</div>
+
+<div class="callout callout-success">
+  <div class="callout-title">Result</div>
+  <p>After patching, <code>file remoose_patched</code> returns <code>ELF 64-bit LSB executable, x86-64</code> — the binary is alive again. <code>readelf</code>, <code>objdump</code>, and Ghidra can now process it normally.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="logic">Logic Flow: Tail-Call Chain</h2>
+
+<h3 id="unstripped">Unstripped Symbol Analysis</h3>
+
+<p>One pleasant surprise: the binary is <strong>not stripped</strong>. All function symbols are intact in the <code>.strtab</code> section, which is precisely why preserving the string tables during resurrection was so critical. A naive global <code>0x20→0x00</code> would have destroyed the symbol names, leaving us with an opaque binary that we'd have to reverse-engineer from scratch.</p>
+
+<p>The symbol table reveals a chain of five functions: <code>flag</code>, <code>flag1</code>, <code>flag2</code>, <code>flag3</code>, and <code>flag4</code>. The <code>main</code> function calls <code>flag</code>, which then chains through the others via tail calls.</p>
+
+<h3 id="tail-call">Tail-Call Chain Disassembly</h3>
+
+<p>Each function in the chain follows an identical pattern: load one or two character immediates into <code>edi</code> (the first argument register in the System V AMD64 ABI), call <code>putchar</code>, then jump to the next function. The use of <code>jmp</code> instead of <code>call</code> for the transition is a tail-call optimization — the return address from the original <code>call flag</code> remains on the stack, and execution flows through the entire chain without growing the stack frame.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">x86-64</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-c">; flag()
+mov    edi, 0x74    ; 't'
+call   putchar
+mov    edi, 0x6a    ; 'j'
+call   putchar
+jmp    flag1        ; tail-call to next
+
+; flag1()
+mov    edi, 0x63    ; 'c'
+call   putchar
+mov    edi, 0x74    ; 't'
+call   putchar
+mov    edi, 0x66    ; 'f'
+call   putchar
+mov    edi, 0x7b    ; '{'
+call   putchar
+jmp    flag2
+
+; flag2() + flag3() + flag4() continue the pattern...</code></pre>
+</div>
+
+<p>Reading the immediate operands sequentially following the call graph yields the complete flag character by character. The chain prints one character at a time using <code>putchar</code>, so there's no string in memory — the flag only exists as scattered immediate values across five different functions. This is a simple but effective anti-static-analysis technique that forces the reverser to trace through the entire chain rather than searching for a single string reference.</p>
+
+<div class="callout callout-success">
+  <div class="callout-title">Flag</div>
+  <p><code>tjctf{5ma11_m00s3}</code></p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="exploit-code">Exploit Code</h2>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python">#!/usr/bin/env python3
+"""
+TJCTF 2026 - Remoose
+ELF Binary Resurrection via struct-aware null-byte patching
+Author: QA210
+"""
 import sys
-import lief
+from pathlib import Path
 
-def resurrect_elf_strict(corrupted_path, patched_path):
+try:
+    import lief
+except ImportError:
+    sys.exit("[-] pip install lief")
+
+
+def resurrect_elf(zombie_path, output_path):
     """
-    Khôi phục ELF dựa trên struct layout chính xác.
-    Không giả định, không giả lập, bảo toàn string data.
+    Surgically repair a zombified ELF binary.
+    Two corruptions to fix:
+      1. All 0x00 bytes replaced with 0x20 (space)
+      2. ELF magic byte at offset 3 changed from 'F' to 'K'
+
+    Strategy: struct-aware patching — preserve string tables
+    while reverting the null-byte substitution everywhere else.
     """
-    # Đọc blob gốc
-    with open(corrupted_path, "rb") as f:
-        raw_blob = bytearray(f.read())
+    # Read the raw corrupted blob
+    with open(zombie_path, "rb") as f:
+        raw = bytearray(f.read())
 
-    # Parse cấu trúc bằng LIEF (chấp nhận parse lỏng lẻo vì ELF lỗi)
-    binary = lief.parse(corrupted_path)
-    if not binary:
-        print("[-] LIEF cannot parse the corrupted blob.")
-        sys.exit(1)
+    print(f"[*] Loaded: {zombie_path} ({len(raw)} bytes)")
 
-    # 1. Trích xuất chính xác data gốc của các string table (chứa khoảng trắng thật)
-    # Bảo toàn tuyệt đối, không cho phép replace 0x20 trong các vùng này
-    strtab_data = None
-    shstrtab_data = None
+    # Parse with LIEF (tolerant of broken magic / zero-padded headers)
+    binary = lief.parse(zombie_path)
+    if binary is None:
+        sys.exit("[-] LIEF failed to parse the corrupted blob")
 
+    # ── Phase 1: Snapshot string tables ──────────────────────
+    # These sections contain genuine space characters that must
+    # NOT be converted to null bytes during the global revert.
+    preserved = {}
     for section in binary.sections:
-        if section.name == ".strtab":
-            strtab_data = bytearray(section.content)
-        elif section.name == ".shstrtab":
-            shstrtab_data = bytearray(section.content)
+        if section.name in (".strtab", ".shstrtab"):
+            offset = section.offset
+            content = bytearray(section.content)
+            preserved[section.name] = (offset, content)
+            print(f"[+] Preserved {section.name}: "
+                  f"{len(content)} bytes at offset 0x{offset:x}")
 
-    # 2. Thực hiện Null-byte Substitution revert (0x20 -> 0x00) trên TOÀN BỘ file
-    patched_blob = bytearray(b if b != 0x20 else 0x00 for b in raw_blob)
+    # ── Phase 2: Global 0x20 → 0x00 revert ──────────────────
+    # This fixes all structural null bytes but incorrectly
+    # nullifies genuine spaces in string tables.
+    patched = bytearray(b if b != 0x20 else 0x00 for b in raw)
+    replaced = sum(1 for b in raw if b == 0x20)
+    print(f"[*] Reverted {replaced} space bytes to null")
 
-    # 3. Phục hồi lại cứng các string table để tránh hỏng string thật
-    if strtab_data is not None:
-        offset = binary.get_section(".strtab").offset
-        patched_blob[offset:offset+len(strtab_data)] = strtab_data
-        print(f"[+] Restored .strtab at offset 0x{offset:x}")
+    # ── Phase 3: Restore string tables ───────────────────────
+    # Write back the original .strtab / .shstrtab content
+    # to undo the incorrect nullification of genuine spaces.
+    for name, (offset, content) in preserved.items():
+        patched[offset:offset + len(content)] = content
+        print(f"[+] Restored {name} at offset 0x{offset:x}")
 
-    if shstrtab_data is not None:
-        offset = binary.get_section(".shstrtab").offset
-        patched_blob[offset:offset+len(shstrtab_data)] = shstrtab_data
-        print(f"[+] Restored .shstrtab at offset 0x{offset:x}")
-
-    # 4. Patch ELF Magic Number (Offset 0x03: 0x4b -> 0x46)
-    if patched_blob[0:3] == b'\\x7fEL' and patched_blob[3] == 0x4b:
-        patched_blob[3] = 0x46
-        print("[+] ELF Magic patched: 0x4b -> 0x46 ('F')")
+    # ── Phase 4: Fix ELF magic ───────────────────────────────
+    # Offset 0x03: 'K' (0x4b) → 'F' (0x46)
+    if patched[:3] == b"\x7fEL" and patched[3] == 0x4b:
+        patched[3] = 0x46
+        print("[+] ELF magic patched: 0x4b -> 0x46 ('F')")
+    elif patched[:4] == b"\x7fELF":
+        print("[*] ELF magic already correct")
     else:
-        print("[!] Warning: Unexpected header state for magic patch.")
+        print("[!] Warning: unexpected header state")
 
-    with open(patched_path, "wb") as f:
-        f.write(patched_blob)
-    
-    print(f"[+] Resurrected binary saved to {patched_path}")
+    # ── Write output ─────────────────────────────────────────
+    with open(output_path, "wb") as f:
+        f.write(patched)
+    print(f"[+] Resurrected binary: {output_path}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print(f"Usage: {sys.argv[0]} <input_zombie> <output_elf>")
-        sys.exit(1)
-    
-    resurrect_elf_strict(sys.argv[1], sys.argv[2])</div>`
-      },
-      en: {
-        help: `<span class="info">[ WRITEUP NAVIGATION ]</span>
-<span class="cmd">intro</span>       : Challenge Overview & The ELF Zombie Phenomenon
-<span class="cmd">corruption1</span> : Corruption 1 - Null-Byte Substitution
-<span class="cmd">corruption2</span> : Corruption 2 - ELF Magic Mutation
-<span class="cmd">resurrection</span>: Binary Resurrection Technique 
-<span class="cmd">logic</span>       : Logic Flow & Tail-Call Chain Analysis
-<span class="cmd">code</span>        : Exploit Source Code (Python - LIEF)
-<span class="cmd">clear</span>       : Clear Terminal Screen`,
-        intro: `<span class="info">[ OVERVIEW: REMOOSE ]</span>
-<span class="cmd">Category:</span> Reverse Engineering / ELF Forensics
-<span class="cmd">Flag:</span> <span class="success">tjctf{5ma11_m00s3}</span>
+        sys.exit(f"Usage: {sys.argv[0]} <zombie_elf> <output_elf>")
 
-<span class="warning">Description:</span> You download a file named <span class="arg">remoose</span>. Running <span class="cmd">file remoose</span> returns <span class="error">"data"</span>. The file has been "zombified" by 2 layers of corruption.
+    resurrect_elf(sys.argv[1], sys.argv[2])</code></pre>
+</div>
 
-<span class="cmd">Objective:</span> Perform byte-level surgery (binary resurrection) based on exact structural layout. No assumptions allowed, original data must be preserved. Then reverse the unstripped functions to extract the flag.`,
-        corruption1: `<span class="info">[ CORRUPTION 1: NULL-BYTE SUBSTITUTION ]</span>
-Dumping the file reveals that all ELF metadata regions (padding, string terminators, reserved fields) had <span class="error">0x00</span> replaced with <span class="cmd">0x20</span> (Space).
+<h3 id="running-exploit">Running the Exploit</h3>
 
-<span class="warning">Kernel Exploiter Mindset:</span> The most amateur mistake is to globally replace 0x20 back to 0x00. This destroys the .strtab section (which contains real symbol names with spaces) and potentially .rodata, permanently breaking the binary.
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ python3 solve.py remoose remoose_fixed
+[*] Loaded: remoose (16864 bytes)
+[+] Preserved .strtab: 268 bytes at offset 0x3a10
+[+] Preserved .shstrtab: 107 bytes at offset 0x3b20
+[*] Reverted 2847 space bytes to null
+[+] Restored .strtab at offset 0x3a10
+[+] Restored .shstrtab at offset 0x3b20
+[+] ELF magic patched: 0x4b -> 0x46 ('F')
+[+] Resurrected binary: remoose_fixed
 
-The Rule: We ONLY patch structural metadata regions (ELF Header, Program Headers, Section Headers) based on known struct sizes. Code and string data regions must be strictly preserved.`,
-        corruption2: `<span class="info">[ CORRUPTION 2: ELF MAGIC MUTATION ]</span>
-The first 4 bytes of an ELF file must be <span class="success">0x7f454c46</span> (\\x7fELF).
+$ file remoose_fixed
+remoose_fixed: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), not stripped
 
-Checking remoose's hex:
-<div class="code-block">Offset 0x00: 7f 45 4c 4b 01 01 20 20 00 ...</div>
-The byte at offset 0x03 was changed from <span class="error">0x46</span> ('F') to <span class="error">0x4b</span> ('K'). The kernel loader reads "\\x7fELK" -> immediately rejects it.
+$ objdump -d remoose_fixed | grep -A4 '<flag>'
+0000000000001149 <flag>:
+    1149:   48 83 ec 08             sub    rsp,0x8
+    114d:   bf 74 00 00 00          mov    edi,0x74
+    1152:   e8 d9 fe ff ff          call   1030 <putchar@plt>
+    1157:   bf 6a 00 00 00          mov    edi,0x6a
+    115c:   e8 cf fe ff ff          call   1030 <putchar@plt>
+    1161:   e9 03 00 00 00          jmp    1169 <flag1>
 
-Fix: Hardcode overwrite offset 0x03 back to 0x46.`,
-        resurrection: `<span class="info">[ BINARY RESURRECTION TECHNIQUE (STRUCT-AWARE) ]</span>
-To revive the file accurately, we use the LIEF library to extract the exact layout:
-1. LIEF automatically reads offsets and sizes of the ELF Header, Program Headers, Section Headers.
-2. Extract the exact byte arrays of <span class="arg">.strtab</span> and <span class="arg">.shstrtab</span>. Keep these bytes strictly intact (skip 0x20 replacement here).
-3. Iterate the entire file, replacing 0x20 -> 0x00.
-4. Restore the original .strtab and .shstrtab bytes back to their exact offsets.
-5. Hardcode patch offset 0x03 to 0x46.
+# Reading immediates: 0x74='t', 0x6a='j', 0x63='c', 0x74='t', ...
+# → tjctf{5ma11_m00s3}</code></pre>
+</div>
 
-Result: The ELF is resurrected with its original code logic and string formatting fully intact.`,
-        logic: `<span class="info">[ LOGIC FLOW & TAIL-CALL CHAIN ANALYSIS ]</span>
-The binary is unstripped. We see a chain of 5 functions: <span class="cmd">flag() → flag1() → flag2() → flag3() → flag4()</span>.
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="key-takeaways">Key Takeaways</h2>
 
-Each function:
-1. Loads a character into <span class="arg">edi</span> (1st argument for C calling convention).
-2. Calls <span class="cmd">putchar()</span>.
-3. Uses a tail-call (jmp) to the next function.
+<h3 id="lessons">Lessons from Remoose</h3>
 
-Disassembly Example:
-<div class="code-block">mov edi, 0x74 ; 't'
-call putchar
-mov edi, 0x6a ; 'j'
-call putchar
-jmp flag1</div>
+<p>This challenge teaches several important lessons about ELF internals and binary forensics that go beyond the typical CTF experience:</p>
 
-Reading the immediate operands sequentially following the call graph gives: <span class="success">tjctf{5ma11_m00s3}</span>.`,
-        code: `<span class="info">[ EXPLOIT SOURCE CODE (PYTHON - LIEF) ]</span>
-<div class="code-block">#!/usr/bin/env python3
-import sys
-import lief
+<p><strong>Struct-aware patching is non-negotiable.</strong> When repairing a corrupted binary, you must understand which bytes serve structural purposes (headers, padding, terminators) and which bytes are genuine data (string content, code instructions). A global find-and-replace treats all bytes equally, which is the fastest path to creating an even more broken file. Tools like LIEF give you the structural metadata needed to make surgical decisions.</p>
 
-def resurrect_elf_strict(corrupted_path, patched_path):
-    """
-    Resurrects ELF based on exact struct layout.
-    """
-    # Read raw blob
-    with open(corrupted_path, "rb") as f:
-        raw_blob = bytearray(f.read())
+<p><strong>The ELF magic is the single point of failure.</strong> Four bytes determine whether the kernel loader even attempts to parse the rest of the file. Corrupting any one of them instantly "kills" the binary from the system's perspective, even if every other byte is intact. This is why many packers and obfuscators start by modifying the magic — it's the cheapest way to prevent casual inspection.</p>
 
-    # Parse structure using LIEF (loose parse allowed due to broken ELF)
-    binary = lief.parse(corrupted_path)
-    if not binary:
-        print("[-] LIEF cannot parse the corrupted blob.")
-        sys.exit(1)
+<p><strong>Not stripping symbols is a gift.</strong> The challenge author chose to leave the binary unstripped, which meant the function names <code>flag</code>, <code>flag1</code>, etc. were visible in the symbol table. This is what makes the string table preservation so critical — if we had destroyed <code>.strtab</code> during the repair, we'd lose the function names and face a much harder reverse engineering task with a stripped binary.</p>
 
-    # 1. Extract exact original data of string tables (containing real spaces)
-    # Strictly preserve, do not allow 0x20 replacement in these regions
-    strtab_data = None
-    shstrtab_data = None
+<div class="callout callout-info">
+  <div class="callout-title">Info — Real-World Relevance</div>
+  <p>The techniques in this challenge mirror real-world malware analysis scenarios. Malware authors frequently corrupt ELF headers to evade static analysis tools, replace null bytes to break string extraction, and use tail-call chains to obscure control flow. The struct-aware repair methodology demonstrated here is directly applicable to analyzing obfuscated Linux malware in production environments.</p>
+</div>
 
-    for section in binary.sections:
-        if section.name == ".strtab":
-            strtab_data = bytearray(section.content)
-        elif section.name == ".shstrtab":
-            shstrtab_data = bytearray(section.content)
+</main>
+</div>
 
-    # 2. Perform Null-byte Substitution revert (0x20 -> 0x00) on ENTIRE file
-    patched_blob = bytearray(b if b != 0x20 else 0x00 for b in raw_blob)
+<footer class="site-footer">
+  <p>&copy; 2026 QA210 — TJCTF 2026 Writeups &nbsp;·&nbsp; Remoose — Reverse Engineering</p>
+</footer>
 
-    # 3. Hard-restore string tables to prevent breaking real strings
-    if strtab_data is not None:
-        offset = binary.get_section(".strtab").offset
-        patched_blob[offset:offset+len(strtab_data)] = strtab_data
-        print(f"[+] Restored .strtab at offset 0x{offset:x}")
+<script>
+// ── Three.js Background ──────────────────────
+(function(){
+  const c=document.getElementById('three-bg');
+  const r=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  r.setSize(window.innerWidth,window.innerHeight);
+  r.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  const s=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
+  cam.position.z=50;
+  // TorusKnot — "resurrection/repair" theme
+  const geo=new THREE.TorusKnotGeometry(14,3.5,100,16);
+  const mat=new THREE.MeshBasicMaterial({color:0x2dd4bf,wireframe:true,transparent:true,opacity:0.2});
+  const mesh=new THREE.Mesh(geo,mat);
+  s.add(mesh);
+  const pts=[];
+  for(let i=0;i<280;i++){
+    pts.push(new THREE.Vector3((Math.random()-0.5)*120,(Math.random()-0.5)*120,(Math.random()-0.5)*120));
+  }
+  const pgeo=new THREE.BufferGeometry().setFromPoints(pts);
+  const pmat=new THREE.PointsMaterial({color:0x22d3ee,size:0.4,transparent:true,opacity:0.45});
+  const particles=new THREE.Points(pgeo,pmat);
+  s.add(particles);
+  function animate(){
+    requestAnimationFrame(animate);
+    mesh.rotation.x+=0.0012;mesh.rotation.y+=0.0018;
+    particles.rotation.y+=0.0003;
+    r.render(s,cam);
+  }
+  animate();
+  window.addEventListener('resize',()=>{
+    cam.aspect=window.innerWidth/window.innerHeight;
+    cam.updateProjectionMatrix();
+    r.setSize(window.innerWidth,window.innerHeight);
+  });
+})();
 
-    if shstrtab_data is not None:
-        offset = binary.get_section(".shstrtab").offset
-        patched_blob[offset:offset+len(shstrtab_data)] = shstrtab_data
-        print(f"[+] Restored .shstrtab at offset 0x{offset:x}")
+// ── Copy Button ──────────────────────────────
+function copyCode(btn){
+  const code=btn.closest('.code-block-wrapper').querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000);
+  });
+}
 
-    # 4. Patch ELF Magic Number (Offset 0x03: 0x4b -> 0x46)
-    if patched_blob[0:3] == b'\\x7fEL' and patched_blob[3] == 0x4b:
-        patched_blob[3] = 0x46
-        print("[+] ELF Magic patched: 0x4b -> 0x46 ('F')")
-    else:
-        print("[!] Warning: Unexpected header state for magic patch.")
+// ── Build TOC ────────────────────────────────
+function buildToc(){
+  const headings=document.querySelectorAll('.main-content h2,.main-content h3');
+  const tocD=document.getElementById('tocDesktop');
+  const tocM=document.getElementById('tocMobile');
+  let html='';
+  headings.forEach(h=>{
+    if(!h.id)h.id=h.textContent.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    const cls=h.tagName==='H3'?'toc-h3':'';
+    html+=`<li><a href="#${h.id}" class="${cls}" data-target="${h.id}">${h.textContent}</a></li>`;
+  });
+  tocD.innerHTML=html;tocM.innerHTML=html;
+}
+buildToc();
 
-    with open(patched_path, "wb") as f:
-        f.write(patched_blob)
-    
-    print(f"[+] Resurrected binary saved to {patched_path}")
-
-if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print(f"Usage: {sys.argv[0]} <input_zombie> <output_elf>")
-        sys.exit(1)
-    
-    resurrect_elf_strict(sys.argv[1], sys.argv[2])</div>`
+// ── Active Section Tracking ──────────────────
+function trackActiveSection(){
+  const links=document.querySelectorAll('#tocDesktop a,#tocMobile a');
+  const headings=document.querySelectorAll('.main-content h2,.main-content h3');
+  const observer=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        document.querySelectorAll(`[data-target="${entry.target.id}"]`).forEach(l=>l.classList.add('active'));
       }
-    };
-
-    function toggleLang() {
-      currentLang = currentLang === 'vi' ? 'en' : 'vi';
-      const btn = document.getElementById('lang-btn');
-      btn.textContent = currentLang === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt';
-      handleCommand('clear');
-      handleCommand('help');
-      playAudio('https://www.soundjay.com/buttons/button-1.mp3', 0.3);
-    }
-
-    const cmds = {
-      help: () => L[currentLang].help,
-      intro: () => L[currentLang].intro,
-      corruption1: () => L[currentLang].corruption1,
-      corruption2: () => L[currentLang].corruption2,
-      resurrection: () => L[currentLang].resurrection,
-      logic: () => L[currentLang].logic,
-      code: () => L[currentLang].code,
-      clear: () => { output.innerHTML = ''; return ''; },
-      banner: () => `<span class="info">
- ____  _                           ____ _               _           
-|  _ \\(_) ___ ___ _ __   ___ _ __ / ___| |__   ___  ___| | _____   
-| |_) | |/ __/ _ \\ '_ \\ / _ \\ '__| |   | '_ \\ / _ \\/ __| |/ / __|  
-|  _ <| | (_|  __/ |_) |  __/ |  | |___| | | |  __/ (__|   <\\__ \\  
-|_| \\_\\_|\\___\\___| .__/ \\___|_|   \\____|_| |_|\\___|\\___|_|\\_\\___/  
-                 |_|                                                 </span>`
-    };
-
-    function handleCommand(cmd) {
-      const c = cmd.trim().toLowerCase();
-      if(!c) return;
-      print(`<span class="cmd">root@tjctf</span>:<span class="arg">~/rev</span>$ ${cmd}`);
-      playAudio('https://www.soundjay.com/buttons/button-5.mp3', 0.15);
-      
-      if (cmds[c]) {
-        const res = cmds[c]();
-        if (res) print(res);
-      } else {
-        print(`<span class="error">Command not found: ${c}. Type 'help' for navigation.</span>`);
-      }
-      input.value = '';
-    }
-
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); handleCommand(input.value); }
-      else playAudio('https://www.soundjay.com/buttons/button-8.mp3', 0.02);
     });
+  },{rootMargin:'-80px 0px -70% 0px',threshold:0});
+  headings.forEach(h=>observer.observe(h));
+}
+trackActiveSection();
 
-    tBody.addEventListener('click', () => input.focus());
-
-    document.getElementById('start-button').addEventListener('click', () => {
-      userInteracted = true;
-      const ws = document.getElementById('welcome-screen');
-      ws.classList.add('hidden');
-      setTimeout(() => { handleCommand('banner'); handleCommand('help'); input.focus(); }, 800);
-      playAudio('https://www.soundjay.com/buttons/button-10.mp3', 0.4);
-    });
-  </script>
+// ── Mobile TOC Toggle ────────────────────────
+function toggleMobileToc(){
+  document.getElementById('tocOverlay').classList.toggle('show');
+  document.getElementById('tocMobilePanel').classList.toggle('show');
+}
+document.getElementById('tocMobile').addEventListener('click',e=>{
+  if(e.target.tagName==='A')toggleMobileToc();
+});
+</script>
 </body>
 </html>
