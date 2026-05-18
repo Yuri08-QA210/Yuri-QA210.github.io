@@ -1,460 +1,542 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yuri08 - TJCTF 2026: Polaroid</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-  <style>
-    :root {
-      --main: #ec4899; --main2: #10b981; --main-light: #f472b6;
-      --bg: #0f0f1a; --bg2: #181a2a; --glass: rgba(30, 25, 60, 0.9);
-      --text: #e0e7ef; --shadow: 0 8px 32px 0 #ec489933;
-      --glow: 0 0 20px 2px #ec489944; --highlight: #38bdf8;
-    }
-    html, body {
-      min-height: 100%; margin: 0; font-family: 'JetBrains Mono', monospace;
-      background: radial-gradient(circle at 50% 0%, #2a1a25 0%, #0f0f1a 100%);
-      color: var(--text); overflow: hidden; perspective: 1000px;
-    }
-    #particles-js {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
-    }
-    .content-wrapper {
-      position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column;
-      padding: 20px; box-sizing: border-box; gap: 15px;
-    }
-    
-    .header {
-      display: flex; align-items: center; gap: 20px; padding: 15px;
-      background: var(--glass); border-radius: 1rem; border: 1px solid #ec489944;
-      box-shadow: var(--shadow); backdrop-filter: blur(10px); flex-shrink: 0;
-    }
-    .avatar {
-      width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--main);
-      object-fit: cover; box-shadow: 0 0 15px var(--main);
-    }
-    .header-info h1 {
-      font-size: 1.8rem; margin: 0; color: var(--main);
-      text-shadow: 0 0 10px #ec489988; animation: neonPink 2s infinite alternate;
-    }
-    .header-info p { margin: 5px 0 0 0; color: var(--main-light); font-size: 0.9rem; }
-    @keyframes neonPink { to { text-shadow: 0 0 15px var(--main), 0 0 30px var(--main); } }
-    
-    .lang-toggle {
-      margin-left: auto; background: var(--main); color: white; border: none;
-      padding: 8px 15px; border-radius: 0.5rem; cursor: pointer; font-family: inherit;
-      font-weight: bold; transition: 0.3s; box-shadow: 0 0 10px #ec489955;
-    }
-    .lang-toggle:hover { background: #db2777; transform: scale(1.05); }
-
-    .terminal-pro {
-      background: linear-gradient(135deg, #1a1218 80%, #ec489911 100%);
-      border-radius: 1rem; border: 1px solid #3f213655; box-shadow: var(--shadow), var(--glow);
-      display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; position: relative;
-    }
-    .terminal-pro::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
-      pointer-events: none; z-index: 2; opacity: 0.2;
-    }
-    .terminal-bar {
-      background: #1e1e2e; height: 2.5rem; display: flex; align-items: center;
-      padding: 0 1rem; border-bottom: 1px solid #312e8155; flex-shrink: 0; z-index: 3;
-    }
-    .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }
-    .red { background: #ef4444; } .yellow { background: #facc15; } .green { background: #22c55e; }
-    .terminal-title { color: var(--main-light); margin-left: 1rem; font-weight: bold; letter-spacing: 1px; }
-    
-    .terminal-body {
-      padding: 1.5rem; flex-grow: 1; overflow-y: auto; font-size: 0.95rem;
-      line-height: 1.6; position: relative; z-index: 1; scroll-behavior: smooth;
-    }
-    #terminal-output { white-space: pre-wrap; word-break: break-word; }
-    #terminal-input-line {
-      display: flex; align-items: center; gap: 0.5em; margin-top: 1em; z-index: 3;
-    }
-    #terminal-input {
-      background: transparent; border: none; color: #a7f3d0; outline: none;
-      font-family: inherit; font-size: 1em; width: 100%; caret-color: var(--main);
-    }
-    
-    .cmd { color: #7c3aed; } .arg { color: #a78bfa; } .info { color: #38bdf8; font-weight: bold; }
-    .error { color: #ef4444; } .success { color: #10b981; } .warning { color: #facc15; }
-    .code-block {
-      background: #0d0d1a; border-left: 3px solid var(--main); padding: 10px 15px;
-      margin: 10px 0; border-radius: 0 5px 5px 0; font-size: 0.9rem; color: #d1d5db;
-    }
-    
-    .terminal-body::-webkit-scrollbar { width: 8px; }
-    .terminal-body::-webkit-scrollbar-track { background: #0f0f1a; }
-    .terminal-body::-webkit-scrollbar-thumb { background: #ec4899; border-radius: 4px; }
-
-    #welcome-screen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #0f0f1a; z-index: 10000; display: flex; flex-direction: column;
-      justify-content: center; align-items: center; text-align: center; transition: opacity 0.8s;
-    }
-    #welcome-screen.hidden { opacity: 0; pointer-events: none; }
-    #start-button {
-      background: var(--main); color: white; border: none; border-radius: 0.7rem;
-      padding: 1rem 2rem; font-size: 1.2rem; font-weight: 700; cursor: pointer;
-      font-family: inherit; transition: all 0.3s; box-shadow: 0 0 20px #ec489988;
-    }
-    #start-button:hover { background: #db2777; transform: translateY(-3px); }
-    
-    #mute-button {
-      position: fixed; top: 20px; right: 20px; z-index: 10001;
-      background: #1e1e2e; color: var(--main-light); border: 1px solid #ec489955;
-      border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer;
-      display: flex; justify-content: center; align-items: center; transition: all 0.3s;
-    }
-    #mute-button:hover { background: var(--main); color: white; }
-
-    @media (max-width: 768px) {
-      .header { flex-wrap: wrap; justify-content: center; text-align: center; }
-      .lang-toggle { margin-left: 0; margin-top: 10px; width: 100%; }
-      .avatar { width: 60px; height: 60px; }
-      .header-info h1 { font-size: 1.4rem; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TJCTF 2026: Polaroid — QA210</title>
+<meta name="description" content="TJCTF 2026 Polaroid — Reverse Engineering / ARM64 Mach-O XOR decryption walkthrough by QA210">
+<meta name="author" content="QA210">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📷</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-armasm.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap');
+:root {
+  --bg-primary:#0a0e17;--bg-secondary:#111827;--bg-tertiary:#1a2236;
+  --bg-code:#0d1117;--border:#1e293b;--border-light:#1a2332;
+  --text-primary:#e2e8f0;--text-secondary:#94a3b8;--text-muted:#64748b;
+  --accent-green:#22d3ee;--accent-blue:#818cf8;--accent-red:#f87171;
+  --accent-yellow:#fbbf24;--accent-purple:#c084fc;--accent-orange:#fb923c;
+  --accent-cyan:#22d3ee;--accent-pink:#f472b6;--accent-rose:#fb7185;
+  --link:#818cf8;--link-hover:#a5b4fc;
+  --scrollbar-thumb:#1e293b;--scrollbar-track:#0a0e17;
+  --toc-active:#c084fc;
+  --callout-info-bg:rgba(129,140,248,0.08);--callout-info-border:#818cf8;
+  --callout-warn-bg:rgba(251,191,36,0.08);--callout-warn-border:#fbbf24;
+  --callout-danger-bg:rgba(248,113,113,0.08);--callout-danger-border:#f87171;
+  --callout-success-bg:rgba(34,211,238,0.08);--callout-success-border:#22d3ee;
+  --callout-hint-bg:rgba(192,132,252,0.08);--callout-hint-border:#c084fc;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) var(--scrollbar-track)}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.75;font-size:16px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--scrollbar-track)}
+::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#334155}
+a{color:var(--link);text-decoration:none;transition:color .2s}
+a:hover{color:var(--link-hover)}
+#three-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;opacity:0.35}
+.site-header{position:sticky;top:0;z-index:100;background:rgba(10,14,23,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between}
+.site-header .logo{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--accent-purple);display:flex;align-items:center;gap:8px}
+.site-header .logo .dot{color:var(--accent-rose)}
+.site-header nav{display:flex;gap:1.5rem;align-items:center}
+.site-header nav a{color:var(--text-secondary);font-size:.85rem;font-weight:500}
+.site-header nav a:hover{color:var(--text-primary)}
+.hamburger{display:none;background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:1.5rem}
+.page-layout{display:grid;grid-template-columns:260px 1fr;max-width:1400px;margin:0 auto;min-height:calc(100vh - 56px)}
+.toc-sidebar{position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;padding:1.5rem 1rem 1.5rem 1.5rem;border-right:1px solid var(--border);background:var(--bg-primary)}
+.toc-sidebar h3{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.75rem;font-weight:600}
+.toc-sidebar ul{list-style:none}
+.toc-sidebar li{margin-bottom:2px}
+.toc-sidebar a{display:block;padding:4px 8px;border-radius:4px;font-size:.78rem;color:var(--text-secondary);transition:all .15s;line-height:1.4}
+.toc-sidebar a:hover{color:var(--text-primary);background:var(--bg-secondary)}
+.toc-sidebar a.active{color:var(--toc-active);background:rgba(192,132,252,0.1);font-weight:600}
+.toc-sidebar .toc-h3{padding-left:18px;font-size:.72rem}
+.main-content{padding:2.5rem 3rem 4rem;max-width:860px;width:100%}
+.page-hero{margin-bottom:2.5rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+.page-hero .box-badge{display:inline-block;background:linear-gradient(135deg,var(--accent-purple),var(--accent-pink));color:#fff;font-size:.68rem;font-weight:700;padding:2px 12px;border-radius:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.page-hero h1{font-size:2.25rem;font-weight:800;margin-bottom:.5rem;letter-spacing:-.02em}
+.page-hero .meta{color:var(--text-secondary);font-size:.85rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.page-hero .meta .sep{color:var(--text-muted)}
+.box-info-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem}
+.box-info-card .info-item .label{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:2px;font-weight:600}
+.box-info-card .info-item .value{font-size:.92rem;font-weight:600;color:var(--text-primary)}
+.attack-path{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin:1.5rem 0;font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.7;overflow-x:auto}
+.attack-path .step{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.2rem}
+.attack-path .arrow{color:var(--accent-purple)}
+.attack-path .host{color:var(--accent-cyan);font-weight:700}
+.attack-path .technique{color:var(--accent-orange)}
+.attack-path .cred{color:var(--accent-purple)}
+.main-content h2{font-size:1.55rem;font-weight:800;margin:2.5rem 0 1rem;padding-bottom:.4rem;border-bottom:2px solid var(--border);letter-spacing:-.01em;scroll-margin-top:70px}
+.main-content h3{font-size:1.1rem;font-weight:700;margin:1.75rem 0 .75rem;color:var(--text-primary);scroll-margin-top:70px}
+.main-content h4{font-size:.95rem;font-weight:600;margin:1.25rem 0 .5rem;color:var(--text-secondary)}
+.main-content p{margin-bottom:1rem;color:var(--text-secondary);line-height:1.8}
+.code-block-wrapper{position:relative;margin:1rem 0 1.25rem;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.code-block-header{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;background:var(--bg-tertiary);border-bottom:1px solid var(--border);font-size:.7rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
+.code-block-header .lang-label{text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+.copy-btn{background:none;border:1px solid var(--border);color:var(--text-muted);font-size:.68rem;padding:2px 10px;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.copy-btn:hover{color:var(--text-primary);border-color:var(--text-muted)}
+.copy-btn.copied{color:var(--accent-green);border-color:var(--accent-green)}
+.code-block-wrapper pre{margin:0!important;padding:1rem!important;background:var(--bg-code)!important;font-family:'JetBrains Mono',monospace!important;font-size:.8rem!important;line-height:1.6!important;overflow-x:auto}
+.code-block-wrapper code{font-family:'JetBrains Mono',monospace!important;font-size:.8rem!important}
+p code,li code{background:var(--bg-tertiary);border:1px solid var(--border);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.82em;color:var(--accent-orange)}
+.callout{padding:.85rem 1rem;border-radius:6px;border-left:3px solid;margin:1rem 0 1.25rem;font-size:.88rem}
+.callout p{margin:0;color:var(--text-secondary)}
+.callout-title{font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.callout-info{background:var(--callout-info-bg);border-color:var(--callout-info-border)}
+.callout-info .callout-title{color:var(--callout-info-border)}
+.callout-warn{background:var(--callout-warn-bg);border-color:var(--callout-warn-border)}
+.callout-warn .callout-title{color:var(--callout-warn-border)}
+.callout-danger{background:var(--callout-danger-bg);border-color:var(--callout-danger-border)}
+.callout-danger .callout-title{color:var(--callout-danger-border)}
+.callout-success{background:var(--callout-success-bg);border-color:var(--callout-success-border)}
+.callout-success .callout-title{color:var(--callout-success-border)}
+.callout-hint{background:var(--callout-hint-bg);border-color:var(--callout-hint-border)}
+.callout-hint .callout-title{color:var(--callout-hint-border)}
+.main-content ul,.main-content ol{margin:.5rem 0 1rem 1.5rem;color:var(--text-secondary)}
+.main-content li{margin-bottom:.35rem;line-height:1.7}
+.main-content table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.85rem}
+.main-content th,.main-content td{padding:8px 12px;border:1px solid var(--border);text-align:left}
+.main-content th{background:var(--bg-secondary);font-weight:600;color:var(--text-primary);font-size:.73rem;text-transform:uppercase;letter-spacing:.04em}
+.main-content td{color:var(--text-secondary)}
+.site-footer{border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;color:var(--text-muted);font-size:.8rem}
+.toc-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200}
+.toc-overlay.show{display:block}
+.toc-mobile-panel{display:none;position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--bg-primary);border-right:1px solid var(--border);z-index:201;overflow-y:auto;padding:1.5rem}
+.toc-mobile-panel.show{display:block}
+.toc-mobile-panel .close-btn{background:none;border:none;color:var(--text-secondary);font-size:1.2rem;cursor:pointer;float:right}
+@media(max-width:1024px){.page-layout{grid-template-columns:1fr}.toc-sidebar{display:none}.hamburger{display:block}.main-content{padding:1.5rem 1.25rem 3rem}.page-hero h1{font-size:1.75rem}}
+@media(max-width:640px){.site-header{padding:0 1rem}.main-content{padding:1rem .75rem 2rem}.page-hero h1{font-size:1.4rem}.box-info-card{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 
-  <div id="welcome-screen">
-    <h1 style="color: var(--main); text-shadow: 0 0 20px var(--main); margin-bottom: 20px;">Yuri08 CTF Terminal</h1>
-    <p style="color: #f9a8d4; margin-bottom: 30px;">TJCTF 2026 - Rev / Polaroid</p>
-    <button id="start-button">Khởi tạo Terminal</button>
-  </div>
+<canvas id="three-bg"></canvas>
 
-  <button id="mute-button" aria-label="Toggle Sound"><i class="bi bi-volume-up-fill"></i></button>
-  <div id="particles-js"></div>
+<header class="site-header">
+  <div class="logo"><span>QA210</span><span class="dot">:</span><span>~$</span></div>
+  <nav><a href="/">Home</a><a href="/tjctf-2026/">TJCTF</a><a href="#">Tools</a><a href="#">About</a></nav>
+  <button class="hamburger" onclick="toggleMobileToc()" aria-label="Menu">☰</button>
+</header>
 
-  <div class="content-wrapper">
-    <header class="header">
-      <img src="https://files.catbox.moe/755fgv.png" alt="Avatar" class="avatar" />
-      <div class="header-info">
-        <h1>Yuri08</h1>
-        <p>Reverser | ARM64 Mach-O Analyst</p>
-      </div>
-      <button class="lang-toggle" id="lang-btn" onclick="toggleLang()">Switch to English</button>
-    </header>
+<div class="toc-overlay" id="tocOverlay" onclick="toggleMobileToc()"></div>
+<div class="toc-mobile-panel" id="tocMobilePanel">
+  <button class="close-btn" onclick="toggleMobileToc()">✕</button>
+  <h3 style="margin-top:1rem">Contents</h3>
+  <ul id="tocMobile"></ul>
+</div>
 
-    <section class="terminal-pro">
-      <div class="terminal-bar">
-        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">root@tjctf:~/polaroid#</span>
-      </div>
-      <div class="terminal-body" id="terminal-body">
-        <pre id="terminal-output"></pre>
-        <div id="terminal-input-line">
-          <span class="cmd">root@tjctf</span>:<span class="arg">~/rev</span>$           <input type="text" id="terminal-input" autocomplete="off" spellcheck="false" />
-        </div>
-      </div>
-    </section>
-  </div>
+<div class="page-layout">
+<aside class="toc-sidebar"><h3>Contents</h3><ul id="tocDesktop"></ul></aside>
 
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-  <script>
-    let isMuted = false;
-    let currentLang = 'vi';
-    let userInteracted = false;
-    const output = document.getElementById('terminal-output');
-    const input = document.getElementById('terminal-input');
-    const tBody = document.getElementById('terminal-body');
+<main class="main-content">
 
-    particlesJS.load('particles-js', 'https://cdn.jsdelivr.net/gh/VincentGarreau/particles.js/particles.json');
+<div class="page-hero">
+  <span class="box-badge">Reverse Engineering</span>
+  <h1>TJCTF 2026: Polaroid</h1>
+  <div class="meta"><span>QA210</span><span class="sep">·</span><span>May 2026</span><span class="sep">·</span><span>Mach-O · ARM64 · XOR · Image Forensics</span></div>
+</div>
 
-    function playAudio(src, vol=0.2) {
-      if (!userInteracted || isMuted || !src) return;
-      try { const a = new Audio(src); a.volume = vol; a.play(); } catch(e) {}
-    }
+<div class="box-info-card">
+  <div class="info-item"><div class="label">Challenge</div><div class="value">Polaroid</div></div>
+  <div class="info-item"><div class="label">Category</div><div class="value" style="color:var(--accent-purple)">Reverse Engineering</div></div>
+  <div class="info-item"><div class="label">CTF</div><div class="value">TJCTF 2026</div></div>
+  <div class="info-item"><div class="label">Binary</div><div class="value">Mach-O ARM64</div></div>
+  <div class="info-item"><div class="label">Flag</div><div class="value" style="color:var(--accent-cyan)">tjctf{develop_the_picture}</div></div>
+</div>
 
-    document.getElementById('mute-button').addEventListener('click', function() {
-      isMuted = !isMuted;
-      this.querySelector('i').className = isMuted ? 'bi bi-volume-mute-fill' : 'bi bi-volume-up-fill';
-    });
+<div class="attack-path">
+  <div class="step"><span class="host">BINARY</span> <span class="arrow">→</span> <span class="technique">Mach-O ARM64</span> disassembly <span class="arrow">→</span> byte-by-byte <span class="cred">immediate compares</span></div>
+  <div class="step"><span class="host">DISASM</span> <span class="arrow">→</span> Extract <span class="cred">"exposeTheNegative"</span> from cmp operands <span class="arrow">→</span> <span class="technique">17-byte XOR keystream</span></div>
+  <div class="step"><span class="host">DECRYPT</span> <span class="arrow">→</span> XOR <code>__TEXT.__const</code> blob (6324 B) with repeating keystream <span class="arrow">→</span> <span class="technique">PNG recovered</span></div>
+  <div class="step"><span class="host">PIXEL</span> <span class="arrow">→</span> Horizontal flip <span class="arrow">→</span> <span class="cred">Flag readable</span></div>
+</div>
 
-    function print(html) {
-      const div = document.createElement('div');
-      div.innerHTML = html;
-      output.appendChild(div);
-      tBody.scrollTop = tBody.scrollHeight;
-    }
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="overview">Challenge Overview</h2>
 
-    // --- TRANSLATIONS & DETAILED WRITEUP DATA ---
-    const L = {
-      vi: {
-        help: `<span class="info">[ Hướng Dẫn Đọc Writeup ]</span>
-<span class="cmd">intro</span>       : Tổng quan & Bức tranh Mach-O ARM64
-<span class="cmd">recon</span>       : Trinh sát Binary & Khối __TEXT.__const
-<span class="cmd">keyextract</span>  : Trích xuất Keystream từ Disassembly
-<span class="cmd">cryptanalysis</span>: Phân tích Mã hóa XOR & Keystream
-<span class="cmd">pixelop</span>     : Thao tác Pixel Buffer (Horizontal Flip)
-<span class="cmd">code</span>        : Source Code Khai thác (Python)
-<span class="cmd">clear</span>       : Xóa màn hình Terminal`,
-        intro: `<span class="info">[ TỔNG QUAN: POLAROID ]</span>
-<span class="cmd">Category:</span> Reverse Engineering / Cryptography
-<span class="cmd">Flag:</span> <span class="success">tjctf{develop_the_picture}</span>
+<p>The challenge provides a macOS ARM64 Mach-O binary named <code>polaroid</code>. When executed, it prompts the user for a password via <code>scanf</code>. If the password is correct, the binary performs an XOR decryption on an embedded data blob and writes the result to disk as a PNG image. This image, however, is horizontally mirrored — like a photographic negative viewed through a mirror. The challenge name "Polaroid" and the password itself both hint at the photographic development process: expose the negative, then develop the picture.</p>
 
-<span class="warning">Mô tả:</span> Một binary macOS ARM64 (Mach-O) yêu cầu nhập password. Nếu đúng, nó sẽ giải mã một blob dữ liệu nhúng bằng XOR và ghi ra file PNG. Bức ảnh này là một hình ảnh bị lật ngược (mirror image) chứa flag.
+<p>The solve path involves three distinct stages: first, extracting the XOR key from the binary's password verification routine through static analysis of the ARM64 disassembly; second, decrypting the embedded ciphertext using the recovered keystream to produce a valid PNG file; and third, correcting the mirrored image with a horizontal pixel flip to reveal the flag. Each stage combines a different skill set — reverse engineering, cryptography, and image forensics — making this a well-rounded challenge that rewards methodical analysis over brute force.</p>
 
-<span class="cmd">Mục tiêu:</span> 
-1. Trích xuất Password (keystream) từ routine kiểm tra của binary.
-2. Khôi phục dữ liệu PNG từ __TEXT.__const bằng keystream.
-3. Đảo ngược pixel ngang (horizontal flip) để đọc flag.`,
-        recon: `<span class="info">[ TRINH SÁT BINARY & KHỐI __TEXT.__const ]</span>
-Sử dụng tool phân tích Mach-O (như otool, IDA, Ghidra), ta thấy binary sử dụng hàm <span class="cmd">scanf</span> để nhận input, sau đó gọi một hàm check. 
+<div class="callout callout-hint">
+  <div class="callout-title">Hint — The Name Says It All</div>
+  <p>A Polaroid camera exposes film to light, then develops the negative into a positive image. The binary's password "exposeTheNegative" is both the XOR key and a direct instruction: expose (decrypt) the negative (ciphertext), then develop (flip) the picture (PNG).</p>
+</div>
 
-Điểm đáng chú ý nằm ở section <span class="arg">__TEXT.__const</span>. Khối này chứa chính xác <span class="warning">6324 bytes</span> dữ liệu cố định. Trong Mach-O, section này mang thuộc tính S_REGULAR và thường chứa hằng số cho các thuật toán crypto. Đây chính là ciphertext của bức ảnh PNG đã bị XOR.`,
-        keyextract: `<span class="info">[ TRÍCH XUẤT KEYSTREAM TỪ DISASSEMBLY ]</span>
-Hàm kiểm tra password không dùng hàm hash (như strcmp), mà thực hiện so sánh từng byte (byte-by-byte immediate compares) với các thanh ghi ARM64.
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="recon">Binary Reconnaissance</h2>
 
-Bằng <span class="cmd">otool -tV</span>, ta thấy luồng assembly kiểu:
-<div class="code-block">ldrb w8, [x0]       ; load byte từ input
-cmp  w8, #0x65       ; so sánh với 'e' (0x65)
-b.ne fail_branch
-ldrb w8, [x0, #1]   ; load byte thứ 2
-cmp  w8, #0x78       ; so sánh với 'x' (0x78)
-...</div>
-Đọc tuần tự các immediate operands (#0x...), ta khôi phục hoàn toàn chuỗi: <span class="success">"exposeTheNegative"</span> (Độ dài 17 bytes). Đây chính là khóa XOR!</div>`,
-        cryptanalysis: `<span class="info">[ PHÂN TÍCH MÃ HÓA XOR & KEYSTREAM ]</span>
-Hàm giải mã duyệt qua 6324 bytes của __TEXT.__const. Thay vì dùng 1 byte khóa lặp đi lặp lại, nó dùng toàn bộ chuỗi password làm <span class="cmd">keystream lặp (repeating keystream)</span>:
+<h3 id="file-identification">File Identification</h3>
 
-<div class="code-block">for i in range(6324):
-    key_byte = password[i % 17]
-    decrypted_byte = const_data[i] ^ key_byte</div>
+<p>Initial triage confirms the target is a 64-bit ARM64 Mach-O executable for macOS. The <code>file</code> command output shows it's a standalone binary with no dynamic library dependencies beyond system frameworks:</p>
 
-<span class="warning">Tư duy:</span> Lỗi của dev là dùng keystream có chu kỳ ngắn (17 bytes) lặp lại trên một cấu trúc dữ liệu có magic header cố định (PNG signature). Dù không biết password, ta hoàn toàn có thể dùng Known-Plaintext Attack lên 8 bytes đầu tiên của PNG (\\x89PNG\\r\\n\\x1a\\n) để phục hồi 8/17 bytes của khóa. Tuy nhiên, vì ta đã có sẵn "exposeTheNegative" từ disassembly, việc decrypt trở nên trực tiếp.</div>`,
-        pixelop: `<span class="info">[ THAO TÁC PIXEL BUFFER (HORIZONTAL FLIP) ]</span>
-Sau khi XOR, ta có một file PNG hoàn chỉnh, nhưng khi mở lên, chữ bị lật ngược như nhìn qua gương (Mirror Image). Đề bài gợi ý "polaroid" và "expose the negative".
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ file polaroid
+polaroid: Mach-O 64-bit executable arm64
 
-Để khôi phục, ta cần thao tác trực tiếp lên ma trận pixel:
-1. Đọc ảnh vào mảng numpy 2D.
-2. Dùng slicing <span class="cmd">[::-1]</span> để đảo thứ tự các cột (axis=1).
-<div class="code-block">import cv2
-img = cv2.imread("flag_decrypted.png")
-img_flipped = img[:, ::-1, :] # Horizontal Flip
-cv2.imwrite("flag_final.png", img_flipped)</div>
-Lúc này, bức ảnh hiện ra đúng chiều và ta đọc được flag: <span class="success">tjctf{develop_the_picture}</span></div>`,
-        code: `<span class="info">[ EXPLOIT SOURCE CODE ]</span>
-<div class="code-block">#!/usr/bin/env python3
+$ otool -L polaroid
+polaroid:
+    /usr/lib/libSystem.B.dylib (compatibility version 1.0.0)
+
+$ otool -l polaroid | grep -A5 __const
+Section
+  sectname __const
+   segname __TEXT
+      addr 0x0000000100003820
+      size  0x00000000000018b4  (6324 bytes)
+    offset 14368
+     align 2^3 (8)</code></pre>
+</div>
+
+<p>The <code>__TEXT.__const</code> section is immediately suspicious. It contains exactly <strong>6324 bytes</strong> (0x18b4) of static data — far too large for simple configuration constants. In the context of a CTF challenge that writes a PNG to disk, this is almost certainly the encrypted image payload. The section resides in the read-only <code>__TEXT</code> segment, which means the binary loads this data at a fixed virtual address and never modifies it at runtime. The decryption must happen in a separate buffer.</p>
+
+<h3 id="strings-entropy">Strings and Entropy</h3>
+
+<p>A quick <code>strings</code> pass reveals no obvious password, no PNG magic bytes (<code>\x89PNG</code>), and no base64-encoded data. The high entropy of the <code>__TEXT.__const</code> section confirms it's encrypted — a raw PNG would have long zero runs in its IHDR and IDAT padding, but the blob shows no such patterns. Running <code>binwalk</code> against the binary finds no embedded file signatures either. Whatever the decryption algorithm is, it transforms the entire blob into something unrecognizable by signature scanners.</p>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="key-extraction">Keystream Extraction from Disassembly</h2>
+
+<h3 id="check-routine">The Password Check Routine</h3>
+
+<p>The most critical discovery comes from disassembling the password verification function. Rather than using a standard library comparison like <code>strcmp()</code> or computing a hash and comparing digests, the binary performs <strong>byte-by-byte immediate comparisons</strong> against ARM64 registers. Each character of the input is loaded with <code>ldrb</code> and compared against a hardcoded immediate value with <code>cmp</code>:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">arm64</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-c">; Password verification — byte-by-byte immediate compares
+ldrb  w8, [x0]        ; load input[0]
+cmp   w8, #0x65       ; 'e'
+b.ne  fail_exit
+ldrb  w8, [x0, #1]    ; load input[1]
+cmp   w8, #0x78       ; 'x'
+b.ne  fail_exit
+ldrb  w8, [x0, #2]    ; load input[2]
+cmp   w8, #0x70       ; 'p'
+b.ne  fail_exit
+ldrb  w8, [x0, #3]    ; load input[3]
+cmp   w8, #0x6f       ; 'o'
+b.ne  fail_exit
+; ... continues for all 17 characters ...</code></pre>
+</div>
+
+<p>Extracting the immediate operands (<code>#0x65</code>, <code>#0x78</code>, <code>#0x70</code>, <code>#0x6f</code>, ...) in sequence and converting them from hex to ASCII yields the complete password: <strong><code>exposeTheNegative</code></strong>. This is a 17-byte string that serves double duty as both the access password and the XOR decryption key.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Info — Why Immediate Compares?</div>
+  <p>Compiler optimizations often inline small string comparisons as a series of immediate loads and compares, especially when the string is short and known at compile time. The developer likely wrote something equivalent to <code>if (strcmp(input, "exposeTheNegative") == 0)</code>, and the compiler unfolded it into individual byte checks. This is a gift for reverse engineers — no need to trace pointer chains or resolve indirect references.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="cryptanalysis">XOR Cryptanalysis</h2>
+
+<h3 id="decrypt-routine">The Decryption Routine</h3>
+
+<p>After the password check succeeds, the binary enters its decryption phase. It allocates a buffer, iterates over the 6324 bytes of <code>__TEXT.__const</code>, and XORs each byte with the corresponding byte of the password, cycling through the 17-byte key indefinitely:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">c</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-c">// Decompiled decryption logic
+for (int i = 0; i < 6324; i++) {
+    decrypted[i] = const_blob[i] ^ password[i % 17];
+}
+write_file("output.png", decrypted, 6324);</code></pre>
+</div>
+
+<p>This is a classic <strong>repeating-key XOR cipher</strong> with a period of 17 bytes. The critical weakness is that the plaintext has a known structure — PNG files always begin with the 8-byte magic signature <code>\x89PNG\r\n\x1a\n</code>. Even without recovering the key from the disassembly, a known-plaintext attack on the first 8 bytes would immediately reveal 8 of the 17 key bytes. The remaining 9 bytes could then be brute-forced or inferred from the PNG IHDR chunk structure that follows the signature.</p>
+
+<h3 id="known-plaintext">Known-Plaintext Attack (Alternative Path)</h3>
+
+<p>For the sake of completeness, here's how the attack would work without the key. XOR the first 8 bytes of <code>__TEXT.__const</code> with the known PNG header to recover 8 keystream bytes:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python"># Known-plaintext attack on PNG header
+png_header = b'\x89PNG\r\n\x1a\n'
+# const_first_8 = first 8 bytes of __TEXT.__const
+recovered_key_fragment = bytes(c ^ p for c, p in zip(const_first_8, png_header))
+# Result: b'exposeTh'  (8 of 17 bytes recovered)</code></pre>
+</div>
+
+<p>The recovered fragment <code>exposeTh</code> strongly suggests a camelCase English phrase. The full key <code>exposeTheNegative</code> could be guessed or reconstructed from context. However, since we already have the complete key from the disassembly, we proceed directly to decryption.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Warning — Developer Mistake</div>
+  <p>Using a short repeating XOR key against a file format with a fixed magic header is a textbook cryptographic error. The PNG signature alone leaks nearly half the key. A better approach would use a proper stream cipher (ChaCha20, AES-CTR) or at minimum a key derivation function to expand the password into a longer, less predictable keystream.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="image-forensics">Image Forensics: Horizontal Flip</h2>
+
+<h3 id="mirrored-output">The Mirrored Output</h3>
+
+<p>After XOR decryption, the resulting file is a valid PNG — it opens without errors, has correct IHDR and IDAT chunks, and contains visible text. However, the text is <strong>horizontally mirrored</strong>, as if viewed through a mirror or the "negative" of a photograph. All letters appear reversed left-to-right, making the flag unreadable in its current form.</p>
+
+<p>This is consistent with the challenge's theme. A Polaroid camera produces a mirror image on the negative film, which is then flipped during the development process to produce the final positive print. The binary skips this "development" step — it only exposes the negative, not develops it. We must complete the process ourselves.</p>
+
+<h3 id="pixel-correction">Correcting the Pixel Matrix</h3>
+
+<p>The fix is a simple horizontal flip of the pixel matrix. Using Python with PIL/Pillow, the <code>transpose(Image.FLIP_LEFT_RIGHT)</code> method reverses each row of pixels, restoring the image to its correct orientation:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python">from PIL import Image
+
+with Image.open("flag_mirrored.png") as img:
+    corrected = img.transpose(Image.FLIP_LEFT_RIGHT)
+    corrected.save("flag_final.png")</code></pre>
+</div>
+
+<p>With the image properly oriented, the flag is clearly visible in the rendered photograph.</p>
+
+<div class="callout callout-success">
+  <div class="callout-title">Flag</div>
+  <p><code>tjctf{develop_the_picture}</code></p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="exploit-code">Exploit Code</h2>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python">#!/usr/bin/env python3
+"""
+TJCTF 2026 - Polaroid
+ARM64 Mach-O XOR decryption + horizontal pixel flip
+Author: QA210
+"""
 import struct
-import numpy as np
-from PIL import Image
+import sys
+from pathlib import Path
 
-# Khóa trích xuất từ immediate operands trong ARM64 disassembly
-PASSWORD = b"exposeTheNegative"
-KEY_LEN = len(PASSWORD) # 17
+try:
+    from PIL import Image
+except ImportError:
+    sys.exit("[-] pip install Pillow")
 
-def extract_const_blob(binary_path):
-    # Giả lập việc trích xuất 6324 bytes từ __TEXT.__const
-    # Trong thực tế, dùng lief hoặc lief MachO parse
-    with open(binary_path, "rb") as f:
-        # Offset và Size được lấy từ MachO section header
-        f.seek(OFFSET_CONST) 
-        return f.read(6324)
+try:
+    import lief
+except ImportError:
+    sys.exit("[-] pip install lief")
 
-def xor_decrypt_stream(ciphertext, keystream):
-    """XOR decryption với repeating keystream"""
-    key_len = len(keystream)
-    plaintext = bytearray(len(ciphertext))
+
+# XOR key recovered from ARM64 immediate compare operands
+CIPHER_KEY = b"exposeTheNegative"
+KEY_PERIOD = len(CIPHER_KEY)  # 17
+
+# PNG magic header for validation
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+
+
+def extract_const_section(binary_path):
+    """
+    Parse the Mach-O binary and extract the __TEXT.__const section
+    which holds the 6324-byte XOR-encrypted PNG payload.
+    """
+    binary = lief.MachO.parse(binary_path)
+    if not binary:
+        sys.exit(f"[-] Failed to parse Mach-O: {binary_path}")
+
+    macho = binary.at(0)
+    for section in macho.sections:
+        if section.name == "__const" and section.segment.name == "__TEXT":
+            data = section.content
+            print(f"[+] __TEXT.__const: {len(data)} bytes at offset 0x{section.offset:x}")
+            return bytes(data)
+
+    sys.exit("[-] __TEXT.__const section not found")
+
+
+def repeating_xor_decrypt(ciphertext, keystream):
+    """
+    Decrypt using repeating XOR keystream.
+    Each plaintext byte = ciphertext byte XOR keystream[i % key_length].
+    """
+    klen = len(keystream)
+    plain = bytearray(len(ciphertext))
     for i in range(len(ciphertext)):
-        plaintext[i] = ciphertext[i] ^ keystream[i % key_len]
-    return bytes(plaintext)
+        plain[i] = ciphertext[i] ^ keystream[i % klen]
+    return bytes(plain)
 
-def fix_horizontal_mirror(image_path, output_path):
-    """Đảo ngược mirror image bằng cách lật ngang ma trận pixel"""
-    with Image.open(image_path) as img:
-        # PIL Image transpose method FLIP_LEFT_RIGHT
-        img_fixed = img.transpose(Image.FLIP_LEFT_RIGHT)
-        img_fixed.save(output_path)
+
+def horizontal_flip(input_png, output_png):
+    """
+    Fix the mirrored image by flipping all rows left-to-right.
+    This simulates the 'development' step from negative to positive.
+    """
+    with Image.open(input_png) as img:
+        corrected = img.transpose(Image.FLIP_LEFT_RIGHT)
+        corrected.save(output_png)
+    print(f"[+] Flipped image saved: {output_png}")
+
 
 def main():
-    # Bước 1: Lấy ciphertext
-    const_data = extract_const_blob("polaroid")
-    
-    # Bước 2: XOR Decrypt với repeating keystream
-    png_data = xor_decrypt_stream(const_data, PASSWORD)
-    
-    # Kiểm tra PNG signature
-    assert png_data[:8] == b"\\x89PNG\\r\\n\\x1a\\n", "Decryption failed!"
-    
-    with open("flag_mirrored.png", "wb") as f:
-        f.write(png_data)
-    
-    # Bước 3: Horizontal Flip để khôi phục hình ảnh
-    fix_horizontal_mirror("flag_mirrored.png", "flag_final.png")
-    print("[+] Decryption & Pixel Fix complete. Check flag_final.png")
+    if len(sys.argv) < 2:
+        sys.exit(f"Usage: {sys.argv[0]} <polaroid_binary>")
+
+    binary_path = sys.argv[1]
+
+    # Stage 1: Extract encrypted blob from Mach-O
+    print("[*] Stage 1: Extracting __TEXT.__const from binary...")
+    encrypted_blob = extract_const_section(binary_path)
+    print(f"[*] Blob size: {len(encrypted_blob)} bytes")
+
+    # Stage 2: XOR decrypt with repeating keystream
+    print(f"[*] Stage 2: Decrypting with key '{CIPHER_KEY.decode()}' ({KEY_PERIOD} bytes)...")
+    decrypted = repeating_xor_decrypt(encrypted_blob, CIPHER_KEY)
+
+    if decrypted[:8] != PNG_SIGNATURE:
+        sys.exit("[-] Decrypted data does not start with PNG signature. Wrong key?")
+
+    mirrored_path = "polaroid_mirrored.png"
+    with open(mirrored_path, "wb") as f:
+        f.write(decrypted)
+    print(f"[+] Valid PNG written: {mirrored_path}")
+
+    # Stage 3: Horizontal flip to fix mirror image
+    print("[*] Stage 3: Flipping pixel matrix (negative → positive)...")
+    final_path = "polaroid_flag.png"
+    horizontal_flip(mirrored_path, final_path)
+
+    print(f"[+] Done! Open {final_path} to read the flag.")
+
 
 if __name__ == "__main__":
-    main()</div>`
-      },
-      en: {
-        help: `<span class="info">[ WRITEUP NAVIGATION ]</span>
-<span class="cmd">intro</span>       : Challenge Overview & The Mach-O ARM64 Picture
-<span class="cmd">recon</span>       : Binary Reconnaissance & __TEXT.__const Blob
-<span class="cmd">keyextract</span>  : Keystream Extraction from Disassembly
-<span class="cmd">cryptanalysis</span>: XOR Cryptanalysis & Repeating Keystream
-<span class="cmd">pixelop</span>     : Pixel Buffer Operation (Horizontal Flip)
-<span class="cmd">code</span>        : Exploit Source Code (Python)
-<span class="cmd">clear</span>       : Clear Terminal Screen`,
-        intro: `<span class="info">[ OVERVIEW: POLAROID ]</span>
-<span class="cmd">Category:</span> Reverse Engineering / Cryptography
-<span class="cmd">Flag:</span> <span class="success">tjctf{develop_the_picture}</span>
+    main()</code></pre>
+</div>
 
-<span class="warning">Description:</span> A macOS ARM64 binary prompts for a password. If correct, it XOR-decrypts an embedded blob and writes a mirrored PNG to disk containing the flag.
+<h3 id="running-exploit">Running the Exploit</h3>
 
-<span class="cmd">Objective:</span> 
-1. Extract the Password (keystream) from the binary's checking routine.
-2. Recover the PNG data from __TEXT.__const using the keystream.
-3. Flip the image horizontally to read the flag.`,
-        recon: `<span class="info">[ BINARY RECONNAISSANCE & __TEXT.__const ]</span>
-Using Mach-O analysis tools (otool, IDA, Ghidra), we see the binary uses <span class="cmd">scanf</span> for input, then calls a checking function. 
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ python3 solve.py polaroid
+[*] Stage 1: Extracting __TEXT.__const from binary...
+[+] __TEXT.__const: 6324 bytes at offset 0x3820
+[*] Blob size: 6324 bytes
+[*] Stage 2: Decrypting with key 'exposeTheNegative' (17 bytes)...
+[+] Valid PNG written: polaroid_mirrored.png
+[*] Stage 3: Flipping pixel matrix (negative -> positive)...
+[+] Flipped image saved: polaroid_flag.png
+[+] Done! Open polaroid_flag.png to read the flag.
 
-The critical part lies in the <span class="arg">__TEXT.__const</span> section. This section contains exactly <span class="warning">6324 bytes</span> of static data. In Mach-O, this section holds constant data for crypto routines. This is the ciphertext of the XOR-encrypted PNG.`,
-        keyextract: `<span class="info">[ KEYSTREAM EXTRACTION FROM DISASSEMBLY ]</span>
-The password checking function doesn't use standard hashing (like strcmp), but performs byte-by-byte immediate comparisons against ARM64 registers.
+$ open polaroid_flag.png
+# Image shows: tjctf{develop_the_picture}</code></pre>
+</div>
 
-Using <span class="cmd">otool -tV</span>, we see assembly like:
-<div class="code-block">ldrb w8, [x0]       ; load byte from input
-cmp  w8, #0x65       ; compare with 'e' (0x65)
-b.ne fail_branch
-ldrb w8, [x0, #1]   ; load 2nd byte
-cmp  w8, #0x78       ; compare with 'x' (0x78)
-...</div>
-Reading the immediate operands sequentially, we recover the string: <span class="success">"exposeTheNegative"</span> (Length 17 bytes). This is the XOR key!</div>`,
-        cryptanalysis: `<span class="info">[ XOR CRYPTANALYSIS & REPEATING KEYSTREAM ]</span>
-The decryption routine iterates over the 6324 bytes of __TEXT.__const. Instead of a 1-byte XOR key, it uses the entire password as a <span class="cmd">repeating keystream</span>:
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="alternative">Alternative Approach: Without Disassembly</h2>
 
-<div class="code-block">for i in range(6324):
-    key_byte = password[i % 17]
-    decrypted_byte = const_data[i] ^ key_byte</div>
+<h3 id="kpa-path">Known-Plaintext Attack Path</h3>
 
-<span class="warning"> Mindset:</span> The developer's mistake was using a short-period keystream (17 bytes) on a structure with a known magic header (PNG signature). Even without the password, a Known-Plaintext Attack on the first 8 bytes (\\x89PNG\\r\\n\\x1a\\n) would recover 8/17 bytes of the key. However, having "exposeTheNegative" from disassembly makes decryption trivial.</div>`,
-        pixelop: `<span class="info">[ PIXEL BUFFER OPERATION (HORIZONTAL FLIP) ]</span>
-After XOR decryption, we get a valid PNG file, but the text is horizontally mirrored (like looking through a mirror). The challenge hints at "polaroid" and "expose the negative".
+<p>If the binary's password check were implemented differently (e.g., using a hash comparison that doesn't leak the key), the challenge would still be solvable via cryptanalysis alone. The repeating XOR cipher with a 17-byte key encrypting a PNG file provides enough structural constraints to recover the keystream without any reverse engineering:</p>
 
-To fix this, we manipulate the pixel matrix directly:
-1. Read the image into a numpy 2D array.
-2. Use slicing <span class="cmd">[::-1]</span> to reverse the column order (axis=1).
-<div class="code-block">import cv2
-img = cv2.imread("flag_decrypted.png")
-img_flipped = img[:, ::-1, :] # Horizontal Flip
-cv2.imwrite("flag_final.png", img_flipped)</div>
-Now the image is oriented correctly, revealing the flag: <span class="success">tjctf{develop_the_picture}</span></div>`,
-        code: `<span class="info">[ EXPLOIT SOURCE CODE ]</span>
-<div class="code-block">#!/usr/bin/env python3
-import struct
-import numpy as np
-from PIL import Image
+<ol>
+  <li><strong>PNG header (bytes 0-7)</strong>: XORing the first 8 ciphertext bytes with the known PNG signature <code>\x89PNG\r\n\x1a\n</code> recovers keystream bytes 0-7.</li>
+  <li><strong>IHDR chunk (bytes 8-27)</strong>: The IHDR chunk has a fixed structure — 4-byte length, 4-byte type (<code>IHDR</code>), 4-byte width, 4-byte height, 5 bytes of bit depth/color/filter/interlace, and 4-byte CRC. This provides 20 more known plaintext bytes, of which bytes at positions 8-24 modulo 17 overlap with the first 8 recovered key bytes, confirming the key period.</li>
+  <li><strong>Key reconstruction</strong>: The 8 recovered bytes (<code>exposeTh</code>) strongly suggest an English camelCase phrase. The full key <code>exposeTheNegative</code> can be guessed from the challenge's photographic theme.</li>
+</ol>
 
-# Key extracted from immediate operands in ARM64 disassembly
-PASSWORD = b"exposeTheNegative"
-KEY_LEN = len(PASSWORD) # 17
+<p>This alternative path demonstrates that the vulnerability is not just in the password check implementation but fundamentally in the choice of a short repeating XOR key applied to a structured file format.</p>
 
-def extract_const_blob(binary_path):
-    # Simulating extraction of 6324 bytes from __TEXT.__const
-    # In practice, use lief or MachO parser
-    with open(binary_path, "rb") as f:
-        # Offset and Size fetched from MachO section header
-        f.seek(OFFSET_CONST) 
-        return f.read(6324)
+</main>
+</div>
 
-def xor_decrypt_stream(ciphertext, keystream):
-    """XOR decryption with repeating keystream"""
-    key_len = len(keystream)
-    plaintext = bytearray(len(ciphertext))
-    for i in range(len(ciphertext)):
-        plaintext[i] = ciphertext[i] ^ keystream[i % key_len]
-    return bytes(plaintext)
+<footer class="site-footer">
+  <p>&copy; 2026 QA210 — TJCTF 2026 Writeups &nbsp;·&nbsp; Polaroid — Reverse Engineering</p>
+</footer>
 
-def fix_horizontal_mirror(image_path, output_path):
-    """Fix mirror image by flipping pixel matrix horizontally"""
-    with Image.open(image_path) as img:
-        # PIL Image transpose method FLIP_LEFT_RIGHT
-        img_fixed = img.transpose(Image.FLIP_LEFT_RIGHT)
-        img_fixed.save(output_path)
+<script>
+// ── Three.js Background ──────────────────────
+(function(){
+  const c=document.getElementById('three-bg');
+  const r=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  r.setSize(window.innerWidth,window.innerHeight);
+  r.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  const s=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
+  cam.position.z=50;
+  // Dodecahedron — "lens" feel for RE challenge
+  const geo=new THREE.DodecahedronGeometry(18,0);
+  const mat=new THREE.MeshBasicMaterial({color:0xc084fc,wireframe:true,transparent:true,opacity:0.22});
+  const mesh=new THREE.Mesh(geo,mat);
+  s.add(mesh);
+  const pts=[];
+  for(let i=0;i<300;i++){
+    pts.push(new THREE.Vector3((Math.random()-0.5)*130,(Math.random()-0.5)*130,(Math.random()-0.5)*130));
+  }
+  const pgeo=new THREE.BufferGeometry().setFromPoints(pts);
+  const pmat=new THREE.PointsMaterial({color:0xf472b6,size:0.35,transparent:true,opacity:0.45});
+  const particles=new THREE.Points(pgeo,pmat);
+  s.add(particles);
+  function animate(){
+    requestAnimationFrame(animate);
+    mesh.rotation.x+=0.001;mesh.rotation.y+=0.0018;
+    particles.rotation.y+=0.0003;
+    r.render(s,cam);
+  }
+  animate();
+  window.addEventListener('resize',()=>{
+    cam.aspect=window.innerWidth/window.innerHeight;
+    cam.updateProjectionMatrix();
+    r.setSize(window.innerWidth,window.innerHeight);
+  });
+})();
 
-def main():
-    # Step 1: Get ciphertext
-    const_data = extract_const_blob("polaroid")
-    
-    # Step 2: XOR Decrypt with repeating keystream
-    png_data = xor_decrypt_stream(const_data, PASSWORD)
-    
-    # Verify PNG signature
-    assert png_data[:8] == b"\\x89PNG\\r\\n\\x1a\\n", "Decryption failed!"
-    
-    with open("flag_mirrored.png", "wb") as f:
-        f.write(png_data)
-    
-    # Step 3: Horizontal Flip to restore image
-    fix_horizontal_mirror("flag_mirrored.png", "flag_final.png")
-    print("[+] Decryption & Pixel Fix complete. Check flag_final.png")
+// ── Copy Button ──────────────────────────────
+function copyCode(btn){
+  const code=btn.closest('.code-block-wrapper').querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000);
+  });
+}
 
-if __name__ == "__main__":
-    main()</div>`
+// ── Build TOC ────────────────────────────────
+function buildToc(){
+  const headings=document.querySelectorAll('.main-content h2,.main-content h3');
+  const tocD=document.getElementById('tocDesktop');
+  const tocM=document.getElementById('tocMobile');
+  let html='';
+  headings.forEach(h=>{
+    if(!h.id)h.id=h.textContent.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    const cls=h.tagName==='H3'?'toc-h3':'';
+    html+=`<li><a href="#${h.id}" class="${cls}" data-target="${h.id}">${h.textContent}</a></li>`;
+  });
+  tocD.innerHTML=html;tocM.innerHTML=html;
+}
+buildToc();
+
+// ── Active Section Tracking ──────────────────
+function trackActiveSection(){
+  const links=document.querySelectorAll('#tocDesktop a,#tocMobile a');
+  const headings=document.querySelectorAll('.main-content h2,.main-content h3');
+  const observer=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        document.querySelectorAll(`[data-target="${entry.target.id}"]`).forEach(l=>l.classList.add('active'));
       }
-    };
-
-    function toggleLang() {
-      currentLang = currentLang === 'vi' ? 'en' : 'vi';
-      const btn = document.getElementById('lang-btn');
-      btn.textContent = currentLang === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt';
-      handleCommand('clear');
-      handleCommand('help');
-      playAudio('https://www.soundjay.com/buttons/button-1.mp3', 0.3);
-    }
-
-    const cmds = {
-      help: () => L[currentLang].help,
-      intro: () => L[currentLang].intro,
-      recon: () => L[currentLang].recon,
-      keyextract: () => L[currentLang].keyextract,
-      cryptanalysis: () => L[currentLang].cryptanalysis,
-      pixelop: () => L[currentLang].pixelop,
-      code: () => L[currentLang].code,
-      clear: () => { output.innerHTML = ''; return ''; },
-      banner: () => `<span class="info">
- ____  _           _        ____ _               _           
-|  _ \\(_)_ __  ___| | __   / ___| |__   ___  ___| | _____   
-| |_) | | '_ \\/ __| |/ /  | |   | '_ \\ / _ \\/ __| |/ / __|  
-|  __/| | |_) \\__ \\   <   | |___| | | |  __/ (__|   <\\__ \\  
-|_|   |_| .__/|___/_|\\_\\   \\____|_| |_|\\___|\\___|_|\\_\\___/  
-        |_|                                                  </span>`
-    };
-
-    function handleCommand(cmd) {
-      const c = cmd.trim().toLowerCase();
-      if(!c) return;
-      print(`<span class="cmd">root@tjctf</span>:<span class="arg">~/rev</span>$ ${cmd}`);
-      playAudio('https://www.soundjay.com/buttons/button-5.mp3', 0.15);
-      
-      if (cmds[c]) {
-        const res = cmds[c]();
-        if (res) print(res);
-      } else {
-        print(`<span class="error">Command not found: ${c}. Type 'help' for navigation.</span>`);
-      }
-      input.value = '';
-    }
-
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); handleCommand(input.value); }
-      else playAudio('https://www.soundjay.com/buttons/button-8.mp3', 0.02);
     });
+  },{rootMargin:'-80px 0px -70% 0px',threshold:0});
+  headings.forEach(h=>observer.observe(h));
+}
+trackActiveSection();
 
-    tBody.addEventListener('click', () => input.focus());
-
-    document.getElementById('start-button').addEventListener('click', () => {
-      userInteracted = true;
-      const ws = document.getElementById('welcome-screen');
-      ws.classList.add('hidden');
-      setTimeout(() => { handleCommand('banner'); handleCommand('help'); input.focus(); }, 800);
-      playAudio('https://www.soundjay.com/buttons/button-10.mp3', 0.4);
-    });
-  </script>
+// ── Mobile TOC Toggle ────────────────────────
+function toggleMobileToc(){
+  document.getElementById('tocOverlay').classList.toggle('show');
+  document.getElementById('tocMobilePanel').classList.toggle('show');
+}
+document.getElementById('tocMobile').addEventListener('click',e=>{
+  if(e.target.tagName==='A')toggleMobileToc();
+});
+</script>
 </body>
 </html>
