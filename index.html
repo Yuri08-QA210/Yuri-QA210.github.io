@@ -10,6 +10,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
+/* ═══════════════════════════════════════════════════════════════════
+   QA210 BLOG v2 — Premium CTF / Security Research Homepage
+   ═══════════════════════════════════════════════════════════════════ */
 :root{
   --bg0:#06080c;--bg1:#0b0f17;--bg2:#111827;--bg3:#1a2234;--bg4:#222d42;
   --border:#1e293b;--border-light:#334155;--border-glow:rgba(88,166,255,0.15);
@@ -285,10 +288,10 @@ img{max-width:100%;display:block}
 <!-- ═══ FILTER BAR ═══ -->
 <div class="filter-bar" id="writeups">
   <span class="filter-label">Filter:</span>
-  <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All<span class="count">20</span></button>
+  <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All<span class="count">21</span></button>
   <button class="filter-btn" data-filter="htb" onclick="setFilter(this)">Hack The Box<span class="count">9</span></button>
-  <button class="filter-btn" data-filter="prolab" onclick="setFilter(this)">Pro Labs<span class="count">3</span></button>
-  <button class="filter-btn" data-filter="aptlab" onclick="setFilter(this)">APT Labs<span class="count">0</span></button>
+  <button class="filter-btn" data-filter="prolab" onclick="setFilter(this)">Pro Labs<span class="count">4</span></button>
+  <button class="filter-btn" data-filter="aptlab" onclick="setFilter(this)">APT Labs<span class="count">1</span></button>
   <button class="filter-btn" data-filter="tjctf" onclick="setFilter(this)">TJCTF<span class="count">11</span></button>
   <button class="filter-btn" data-filter="ad" onclick="setFilter(this)">AD<span class="count">4</span></button>
   <button class="filter-btn" data-filter="pwn" onclick="setFilter(this)">Pwn<span class="count">3</span></button>
@@ -308,7 +311,7 @@ img{max-width:100%;display:block}
     <div class="post-top">
       <span class="platform-badge endgame">Endgame</span>
       <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2025</span>
+      <span class="post-date">2026</span>
     </div>
     <h3>HTB Endgame: XEN</h3>
     <p class="post-excerpt">Complete domain compromise through Citrix VDI breakout, Kerberoasting, NetScaler PCAP analysis, password spraying, and SeBackupPrivilege abuse to extract ntds.dit from the Domain Controller. Six flags across the entire kill chain.</p>
@@ -321,7 +324,7 @@ img{max-width:100%;display:block}
     <div class="post-top">
       <span class="platform-badge prolab">Pro Lab</span>
       <span class="diff-badge hard">Hard</span>
-      <span class="post-date">2025</span>
+      <span class="post-date">2026</span>
     </div>
     <h3>HTB Pro Lab: Dante</h3>
     <p class="post-excerpt">Red Team Operator Level I lab walkthrough. Pivoting through 14 machines across three subnets using Ligolo-ng, WordPress exploitation, LLMNR poisoning, buffer overflows, and KeePass credential extraction to achieve domain dominance.</p>
@@ -334,7 +337,7 @@ img{max-width:100%;display:block}
     <div class="post-top">
       <span class="platform-badge prolab">Pro Lab</span>
       <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2025</span>
+      <span class="post-date">2026</span>
     </div>
     <h3>HTB Pro Lab: Cybernetics</h3>
     <p class="post-excerpt">Red Team Operator Level II. Advanced Active Directory attacks across five domains including Kerberos delegation abuse, GPO exploitation, forest trust pivoting, and cross-domain compromise with 25 flags.</p>
@@ -344,14 +347,26 @@ img{max-width:100%;display:block}
   </a>
 
   <!-- APT LABS -->
-  <div class="section-heading" id="aptlab-section" style="margin-top:.5rem">APT Labs</div>
+  <a href="/htb/prolabs/aptlabs/" class="post-card" data-platform="aptlab" data-tags="apt-labs,red-team,ad,pivoting,credential-harvesting">
+    <div class="post-top">
+      <span class="platform-badge aptlab">Pro Lab</span>
+      <span class="diff-badge insane">Insane</span>
+      <span class="post-date">2026</span>
+    </div>
+    <h3>HTB Pro Lab:APTLabs</h3>
+    <p class="post-excerpt">Advanced Persistent Threat simulation environment. Realistic enterprise AD attack scenarios involving credential harvesting, lateral movement, C2 infrastructure, and full domain compromise across hardened networks.</p>
+    <div class="post-tags">
+      <span class="tag">APT</span><span class="tag">Red Team</span><span class="tag">AD</span><span class="tag">Pivoting</span><span class="tag">Credential Harvest</span>
+    </div>
+  </a>
 
   <!-- INSANE BOXES -->
+  <div class="section-heading" id="insane-section" style="margin-top:.5rem">Hack The Box Insane</div>
   <a href="/htb/insane/darkcorp/" class="post-card" data-platform="htb" data-tags="ad,ntlm-relay,gpo-abuse,windows,kerberos">
     <div class="post-top">
       <span class="platform-badge htb">HTB</span>
       <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2025</span>
+      <span class="post-date">2026</span>
     </div>
     <h3>DarkCorp</h3>
     <p class="post-excerpt">Full Active Directory chain attack including NTLM relay, GPO abuse, Silver Ticket forgery, and Shadow Credential exploitation on a hardened Windows domain environment.</p>
@@ -364,7 +379,7 @@ img{max-width:100%;display:block}
     <div class="post-top">
       <span class="platform-badge htb">HTB</span>
       <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2025</span>
+      <span class="post-date">2026</span>
     </div>
     <h3>Sorcery</h3>
     <p class="post-excerpt">Docker escape through Kafka RCE combined with SSRF chain exploitation, leading to FreeIPA domain compromise through container breakout and privilege escalation.</p>
@@ -377,7 +392,7 @@ img{max-width:100%;display:block}
     <div class="post-top">
       <span class="platform-badge htb">HTB</span>
       <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2025</span>
+      <span class="post-date">2026</span>
     </div>
     <h3>Brainfuck</h3>
     <p class="post-excerpt">WordPress exploitation combined with RSA cryptographic attacks. From web application foothold through custom cipher decryption to root access on a hardened Linux system.</p>
@@ -390,7 +405,7 @@ img{max-width:100%;display:block}
     <div class="post-top">
       <span class="platform-badge htb">HTB</span>
       <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2025</span>
+      <span class="post-date">2026</span>
     </div>
     <h3>APT</h3>
     <p class="post-excerpt">Advanced persistent threat simulation on a Windows Domain Controller. NTLMv1 downgrade attacks, DC exploitation, and multi-stage privilege escalation in a hardened AD environment.</p>
@@ -403,7 +418,7 @@ img{max-width:100%;display:block}
     <div class="post-top">
       <span class="platform-badge htb">HTB</span>
       <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2025</span>
+      <span class="post-date">2026</span>
     </div>
     <h3>Rope</h3>
     <p class="post-excerpt">Binary exploitation through format string vulnerability to ROP chain construction. Stack-based buffer overflow with custom exploit development on a 64-bit Linux binary with protections.</p>
@@ -416,7 +431,7 @@ img{max-width:100%;display:block}
     <div class="post-top">
       <span class="platform-badge htb">HTB</span>
       <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2025</span>
+      <span class="post-date">2026</span>
     </div>
     <h3>RopeTwo</h3>
     <p class="post-excerpt">V8 engine out-of-bounds exploitation leading to browser sandbox escape and kernel-level privilege escalation. Advanced pwn chain from JavaScript engine to root on Linux.</p>
@@ -429,7 +444,7 @@ img{max-width:100%;display:block}
   <a href="/htb/sherlock/aptnightmare2/" class="post-card" data-platform="htb" data-tags="forensics,rootkit,memory-forensics,malware">
     <div class="post-top">
       <span class="platform-badge sherlock">Sherlock</span>
-      <span class="post-date">2025</span>
+      <span class="post-date">2026</span>
     </div>
     <h3>APTNightmare2</h3>
     <p class="post-excerpt">Memory forensics investigation of an APT intrusion. Rootkit analysis, process reconstruction, and indicator extraction from a compromised Windows memory dump.</p>
@@ -649,7 +664,7 @@ img{max-width:100%;display:block}
 <!-- ═══════════ FOOTER ═══════════ -->
 <footer class="site-footer">
   <div class="footer-inner">
-    <div class="footer-left">&copy; 2026 <span>QA210</span> &mdash; Security Research & CTF Writeups</div>
+    <div class="footer-left">&copy; 2025 <span>QA210</span> &mdash; Security Research & CTF Writeups</div>
     <div class="footer-links">
       <a href="/">Home</a>
       <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
