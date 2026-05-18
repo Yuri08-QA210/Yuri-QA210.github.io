@@ -10,7 +10,7 @@
         :root {
             --main: #7c3aed; --main-light: #a78bfa; --accent: #10b981;
             --bg: #0a0b10; --bg2: #12141d; --glass: rgba(20, 20, 35, 0.85); --text: #e0e7ef;
-            --team-color: #f59e0b; /* Màu vàng cho team */
+            --team-color: #f59e0b; --htb-color: #f85149;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
@@ -37,8 +37,7 @@
             color: var(--main-light); text-decoration: none; font-size: 0.9rem; transition: color 0.3s;
         }
         .nav-links a:hover { color: var(--accent); }
-        
-        /* Nút Team đặc biệt */
+
         .team-btn {
             display: inline-flex; align-items: center; gap: 0.5rem;
             background: rgba(245, 158, 11, 0.15); border: 1px solid var(--team-color);
@@ -72,7 +71,6 @@
         }
         @keyframes blink { 50% { border-color: transparent; } }
 
-        /* Team Affiliation Section */
         .team-affiliation {
             margin-bottom: 2.5rem;
             padding: 1rem 2rem;
@@ -108,6 +106,12 @@
             font-family: 'Orbitron', sans-serif; font-size: 2rem; color: var(--accent);
             text-align: center; margin: 4rem 0 2rem; text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
         }
+        .section-title.htb-title {
+            color: var(--htb-color);
+            text-shadow: 0 0 15px rgba(248, 81, 73, 0.5);
+        }
+
+        /* ── CTF Grid ── */
         .ctf-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem; padding: 0 5% 4rem; max-width: 1400px; margin: 0 auto;
@@ -118,11 +122,13 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: transform 0.3s, border-color 0.3s;
         }
         .category-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .category-card.htb-card:hover { border-color: var(--htb-color); }
         .category-header {
             font-family: 'Orbitron', sans-serif; font-size: 1.2rem; color: var(--main);
             margin-bottom: 1rem; border-bottom: 1px solid rgba(124, 58, 237, 0.3);
             padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;
         }
+        .category-header.htb-header { color: var(--htb-color); border-bottom-color: rgba(248, 81, 73, 0.3); }
         .challenge-list { display: flex; flex-direction: column; gap: 0.8rem; }
         .challenge-link {
             display: flex; justify-content: space-between; align-items: center;
@@ -134,12 +140,31 @@
             background: rgba(16, 185, 129, 0.15); border-color: var(--accent);
             transform: translateX(5px); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
         }
+        .challenge-link.htb-link {
+            background: rgba(248, 81, 73, 0.05); border-color: rgba(248, 81, 73, 0.2);
+        }
+        .challenge-link.htb-link:hover {
+            background: rgba(248, 81, 73, 0.15); border-color: var(--htb-color);
+            box-shadow: 0 0 10px rgba(248, 81, 73, 0.2);
+        }
         .ch-name { font-weight: 600; font-size: 0.9rem; }
         .ch-tags { display: flex; gap: 0.5rem; }
         .ch-tag {
             font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px;
             background: rgba(124, 58, 237, 0.2); color: var(--main-light);
         }
+        .ch-tag.diff-insane {
+            background: rgba(248, 81, 73, 0.2); color: var(--htb-color);
+            font-weight: 700; text-transform: uppercase;
+        }
+
+        /* ── Difficulty badge in card ── */
+        .ch-difficulty {
+            font-size: 0.65rem; padding: 0.15rem 0.45rem; border-radius: 3px;
+            text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;
+        }
+        .ch-difficulty.insane { background: rgba(248,81,73,0.25); color: #f87171; }
+
         footer {
             text-align: center; padding: 2rem; border-top: 1px solid rgba(124, 58, 237, 0.2);
             color: #555; font-size: 0.8rem;
@@ -162,6 +187,7 @@
         <a href="/" class="logo">&lt;Yuri08/&gt;</a>
         <div class="nav-links">
             <a href="#about">About</a>
+            <a href="#htb">HTB</a>
             <a href="#tjctf2026">Writeups</a>
             <a href="https://github.com/Yuri08-QA210" target="_blank"><i class="bi bi-github"></i> GitHub</a>
             <a href="https://w4llz.me/" target="_blank" class="team-btn">
@@ -174,7 +200,7 @@
         <img src="https://files.catbox.moe/755fgv.png" alt="Yuri08 Avatar" class="avatar" />
         <h1>Yuri08</h1>
         <div class="subtitle"><span id="typing-element" class="typing-text"></span></div>
-        
+
         <div class="team-affiliation">
             <span>Member of</span>
             <a href="https://w4llz.me/" target="_blank">W4LLZ</a>
@@ -193,10 +219,80 @@
         </div>
     </section>
 
+    <!-- ═══════════ HTB SECTION ═══════════ -->
+    <section id="htb">
+        <div class="section-title htb-title">// HACK THE BOX — INSANE</div>
+        <div class="ctf-grid">
+
+            <!-- HTB Insane -->
+            <div class="category-card htb-card">
+                <div class="category-header htb-header"><i class="bi bi-skull"></i> Insane Boxes</div>
+                <div class="challenge-list">
+                    <a href="/htb/insane/darkcorp/" class="challenge-link htb-link">
+                        <span class="ch-name">DarkCorp</span>
+                        <div class="ch-tags">
+                            <span class="ch-tag diff-insane">Insane</span>
+                            <span class="ch-tag">AD</span>
+                            <span class="ch-tag">Windows</span>
+                        </div>
+                    </a>
+                    <a href="/htb/insane/sorcery/" class="challenge-link htb-link">
+                        <span class="ch-name">Sorcery</span>
+                        <div class="ch-tags">
+                            <span class="ch-tag diff-insane">Insane</span>
+                            <span class="ch-tag">Docker</span>
+                            <span class="ch-tag">FreeIPA</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- HTB Stats -->
+            <div class="category-card htb-card">
+                <div class="category-header htb-header"><i class="bi bi-bar-chart-fill"></i> HTB Profile</div>
+                <div class="challenge-list">
+                    <a href="https://app.hackthebox.com/profile/overview" target="_blank" class="challenge-link htb-link">
+                        <span class="ch-name">Hacker Rank</span>
+                        <div class="ch-tags"><span class="ch-tag">Omniscient</span></div>
+                    </a>
+                    <a href="#" class="challenge-link htb-link">
+                        <span class="ch-name">Boxes Owned</span>
+                        <div class="ch-tags"><span class="ch-tag">User + Root</span></div>
+                    </a>
+                    <a href="#" class="challenge-link htb-link">
+                        <span class="ch-name">Challenges Solved</span>
+                        <div class="ch-tags"><span class="ch-tag">Full Pwn</span></div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- HTB Techniques -->
+            <div class="category-card htb-card">
+                <div class="category-header htb-header"><i class="bi bi-bug-fill"></i> Key Techniques</div>
+                <div class="challenge-list">
+                    <a href="/htb/insane/darkcorp/" class="challenge-link htb-link">
+                        <span class="ch-name">AD Chain Attacks</span>
+                        <div class="ch-tags"><span class="ch-tag">NTLM Relay</span><span class="ch-tag">GPO Abuse</span></div>
+                    </a>
+                    <a href="/htb/insane/sorcery/" class="challenge-link htb-link">
+                        <span class="ch-name">Container Escapes</span>
+                        <div class="ch-tags"><span class="ch-tag">Kafka RCE</span><span class="ch-tag">SSRF</span></div>
+                    </a>
+                    <a href="/htb/insane/darkcorp/" class="challenge-link htb-link">
+                        <span class="ch-name">Kerberos Attacks</span>
+                        <div class="ch-tags"><span class="ch-tag">Silver Ticket</span><span class="ch-tag">Shadow Cred</span></div>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ═══════════ TJCTF SECTION ═══════════ -->
     <section id="tjctf2026">
         <div class="section-title">// TJCTF 2026 WRITEUPS</div>
         <div class="ctf-grid">
-            
+
             <!-- Web -->
             <div class="category-card">
                 <div class="category-header"><i class="bi bi-globe2"></i> Web</div>
@@ -287,7 +383,7 @@
         </div>
     </section>
 
-    <footer>&copy; 2026 Yuri08 -  Write Up</footer>
+    <footer>&copy; 2026 Yuri08 - Write Up</footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
