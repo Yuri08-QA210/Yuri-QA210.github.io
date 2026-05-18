@@ -1,0 +1,1095 @@
+DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCT2019 — re3 | QA210</title>
+<meta name="description" content="CCT2019 re3 Reverse Engineering writeup — .NET GUI slider challenge solved via decompilation, constraint solving, and XOR decryption by QA210">
+<meta name="author" content="QA210">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔓</text></svg>">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Prism.js -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════════════════
+   CSS Variables — QA210 Dark Theme
+   ═══════════════════════════════════════════════════ */
+:root {
+  --bg0: #06080c;
+  --bg1: #0b0f17;
+  --bg2: #111827;
+  --bg3: #1a2234;
+  --border: #1e293b;
+  --border-light: #334155;
+  --text0: #f1f5f9;
+  --text1: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-dim: rgba(59, 130, 246, 0.15);
+  --purple: #a855f7;
+  --purple-dim: rgba(168, 85, 247, 0.12);
+  --green: #22c55e;
+  --green-dim: rgba(34, 197, 94, 0.12);
+  --red: #ef4444;
+  --red-dim: rgba(239, 68, 68, 0.12);
+  --yellow: #eab308;
+  --yellow-dim: rgba(234, 179, 8, 0.12);
+  --cyan: #06b6d4;
+  --orange: #f97316;
+  --scrollbar-thumb: #334155;
+  --scrollbar-track: #0b0f17;
+  --callout-info-bg: rgba(59, 130, 246, 0.08);
+  --callout-info-border: #3b82f6;
+  --callout-warning-bg: rgba(234, 179, 8, 0.08);
+  --callout-warning-border: #eab308;
+  --callout-danger-bg: rgba(239, 68, 68, 0.08);
+  --callout-danger-border: #ef4444;
+}
+
+/* ═══════════════════════════════════════════════════
+   Reset & Base
+   ═══════════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg0);
+  color: var(--text1);
+  line-height: 1.75;
+  font-size: 16px;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+a { color: var(--accent); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--accent-hover); }
+
+/* ═══════════════════════════════════════════════════
+   Three.js Background Canvas
+   ═══════════════════════════════════════════════════ */
+#three-bg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* ═══════════════════════════════════════════════════
+   Site Header
+   ═══════════════════════════════════════════════════ */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(6, 8, 12, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.site-header .logo {
+  font-family: 'Space Grotesk', 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.site-header .logo .caret { color: var(--purple); }
+.site-header .logo .prompt { color: var(--text3); font-weight: 400; }
+
+.site-header nav {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.site-header nav a {
+  color: var(--text2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.site-header nav a:hover { color: var(--text0); }
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text0);
+  cursor: pointer;
+  font-size: 1.5rem;
+}
+
+/* ═══════════════════════════════════════════════════
+   Breadcrumbs
+   ═══════════════════════════════════════════════════ */
+.breadcrumbs {
+  position: relative;
+  z-index: 1;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  padding: 0.55rem 2rem;
+  font-size: 0.78rem;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.breadcrumbs a {
+  color: var(--text2);
+  font-weight: 500;
+}
+
+.breadcrumbs a:hover { color: var(--accent); }
+.breadcrumbs .sep { color: var(--border-light); margin: 0 2px; }
+.breadcrumbs .current { color: var(--text0); font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════
+   Page Layout — Sidebar on RIGHT
+   ═══════════════════════════════════════════════════ */
+.page-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 270px;
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 56px - 40px);
+}
+
+.main-content {
+  padding: 2.5rem 3rem 4rem;
+  max-width: 880px;
+  width: 100%;
+}
+
+/* ═══════════════════════════════════════════════════
+   TOC Sidebar — RIGHT, Sticky
+   ═══════════════════════════════════════════════════ */
+.toc-sidebar {
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding: 1.75rem 1.25rem 1.75rem 1rem;
+  border-left: 1px solid var(--border);
+  background: var(--bg0);
+}
+
+.toc-sidebar h3 {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text3);
+  margin-bottom: 0.85rem;
+  font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.toc-sidebar ul { list-style: none; }
+
+.toc-sidebar li { margin-bottom: 1px; }
+
+.toc-sidebar a {
+  display: block;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.79rem;
+  color: var(--text2);
+  transition: all 0.15s;
+  line-height: 1.45;
+}
+
+.toc-sidebar a:hover {
+  color: var(--text0);
+  background: var(--bg2);
+}
+
+.toc-sidebar a.active {
+  color: var(--accent);
+  background: var(--accent-dim);
+  font-weight: 600;
+}
+
+.toc-sidebar .toc-h3 {
+  padding-left: 20px;
+  font-size: 0.74rem;
+}
+
+/* ═══════════════════════════════════════════════════
+   Hero Section
+   ═══════════════════════════════════════════════════ */
+.page-hero {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.page-hero .challenge-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--red-dim);
+  color: var(--red);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.85rem;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.page-hero h1 {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.03em;
+  color: var(--text0);
+}
+
+.page-hero .meta {
+  color: var(--text2);
+  font-size: 0.875rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.page-hero .meta .sep { color: var(--border-light); }
+
+/* ═══════════════════════════════════════════════════
+   Info Card
+   ═══════════════════════════════════════════════════ */
+.box-info-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.box-info-card .info-item .label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text3);
+  margin-bottom: 3px;
+  font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.box-info-card .info-item .value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text0);
+}
+
+/* ═══════════════════════════════════════════════════
+   Section Headings
+   ═══════════════════════════════════════════════════ */
+.main-content h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 2.75rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border);
+  letter-spacing: -0.01em;
+  scroll-margin-top: 72px;
+  color: var(--text0);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.main-content h2 .section-icon {
+  color: var(--purple);
+  font-size: 1.2rem;
+}
+
+.main-content h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--text0);
+  scroll-margin-top: 72px;
+}
+
+.main-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--text2);
+}
+
+.main-content p {
+  margin-bottom: 1rem;
+  color: var(--text2);
+  line-height: 1.85;
+}
+
+/* ═══════════════════════════════════════════════════
+   Code Blocks
+   ═══════════════════════════════════════════════════ */
+.code-block-wrapper {
+  position: relative;
+  margin: 1rem 0 1.25rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.72rem;
+  color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.code-block-header .lang-label {
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text3);
+}
+
+.copy-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-size: 0.68rem;
+  padding: 2px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.copy-btn:hover {
+  color: var(--text0);
+  border-color: var(--border-light);
+}
+
+.copy-btn.copied {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.code-block-wrapper pre {
+  margin: 0 !important;
+  padding: 1rem !important;
+  background: var(--bg0) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.82rem !important;
+  line-height: 1.65 !important;
+  overflow-x: auto;
+}
+
+.code-block-wrapper code {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.82rem !important;
+}
+
+/* Inline code */
+p code, li code {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82em;
+  color: var(--orange);
+}
+
+/* ═══════════════════════════════════════════════════
+   Callout Boxes
+   ═══════════════════════════════════════════════════ */
+.callout {
+  padding: 0.9rem 1.1rem;
+  border-radius: 7px;
+  border-left: 3px solid;
+  margin: 1rem 0 1.25rem;
+  font-size: 0.9rem;
+}
+
+.callout p { margin: 0; color: var(--text2); }
+
+.callout-title {
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Info (Blue) */
+.callout-info {
+  background: var(--callout-info-bg);
+  border-color: var(--callout-info-border);
+}
+.callout-info .callout-title { color: var(--callout-info-border); }
+
+/* Warning (Yellow) */
+.callout-warning {
+  background: var(--callout-warning-bg);
+  border-color: var(--callout-warning-border);
+}
+.callout-warning .callout-title { color: var(--callout-warning-border); }
+
+/* Danger (Red) */
+.callout-danger {
+  background: var(--callout-danger-bg);
+  border-color: var(--callout-danger-border);
+}
+.callout-danger .callout-title { color: var(--callout-danger-border); }
+
+/* ═══════════════════════════════════════════════════
+   Lists & Tables
+   ═══════════════════════════════════════════════════ */
+.main-content ul, .main-content ol {
+  margin: 0.5rem 0 1rem 1.5rem;
+  color: var(--text2);
+}
+
+.main-content li {
+  margin-bottom: 0.35rem;
+  line-height: 1.75;
+}
+
+.main-content strong {
+  color: var(--text0);
+  font-weight: 600;
+}
+
+.main-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+}
+
+.main-content th, .main-content td {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.main-content th {
+  background: var(--bg2);
+  font-weight: 600;
+  color: var(--text0);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.main-content td { color: var(--text2); }
+
+/* ═══════════════════════════════════════════════════
+   Key Result Box
+   ═══════════════════════════════════════════════════ */
+.key-result {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(59, 130, 246, 0.08));
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin: 1.25rem 0;
+  text-align: center;
+}
+
+.key-result .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--purple);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.key-result .value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text0);
+  letter-spacing: 0.04em;
+  word-break: break-all;
+}
+
+/* ═══════════════════════════════════════════════════
+   Footer
+   ═══════════════════════════════════════════════════ */
+.site-footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--border);
+  padding: 1.5rem 2rem;
+  text-align: center;
+  color: var(--text3);
+  font-size: 0.8rem;
+  background: var(--bg0);
+  margin-top: auto;
+}
+
+.site-footer .team {
+  color: var(--purple);
+  font-weight: 600;
+}
+
+.site-footer .author {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════
+   Mobile TOC
+   ═══════════════════════════════════════════════════ */
+.toc-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 200;
+}
+.toc-overlay.show { display: block; }
+
+.toc-mobile-panel {
+  display: none;
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 290px;
+  background: var(--bg1);
+  border-left: 1px solid var(--border);
+  z-index: 201;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+.toc-mobile-panel.show { display: block; }
+.toc-mobile-panel .close-btn {
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 1.2rem;
+  cursor: float;
+  float: right;
+}
+
+/* ═══════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .page-layout { grid-template-columns: 1fr; }
+  .toc-sidebar { display: none; }
+  .hamburger { display: block; }
+  .main-content { padding: 1.5rem 1.25rem 3rem; }
+  .page-hero h1 { font-size: 1.85rem; }
+}
+
+@media (max-width: 640px) {
+  .site-header { padding: 0 1rem; }
+  .main-content { padding: 1rem 0.75rem 2rem; }
+  .page-hero h1 { font-size: 1.45rem; }
+  .box-info-card { grid-template-columns: 1fr 1fr; }
+  .breadcrumbs { padding: 0.55rem 1rem; font-size: 0.72rem; }
+  .key-result .value { font-size: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ Three.js Background Canvas ═══ -->
+<canvas id="three-bg"></canvas>
+
+<!-- ═══ Site Header ═══ -->
+<header class="site-header">
+  <div class="logo">
+    <span>QA210</span>
+    <span class="caret">:</span>
+    <span class="prompt">~$</span>
+  </div>
+  <nav>
+    <a href="/"><i class="bi bi-house-door" style="margin-right:4px"></i>Home</a>
+    <a href="#"><i class="bi bi-shield-lock" style="margin-right:4px"></i>CTF</a>
+    <a href="#"><i class="bi bi-tools" style="margin-right:4px"></i>Tools</a>
+    <a href="#"><i class="bi bi-info-circle" style="margin-right:4px"></i>About</a>
+  </nav>
+  <button class="hamburger" onclick="toggleMobileToc()" aria-label="Menu"><i class="bi bi-list"></i></button>
+</header>
+
+<!-- ═══ Breadcrumbs ═══ -->
+<div class="breadcrumbs">
+  <a href="/"><i class="bi bi-house-door-fill" style="margin-right:3px"></i>Home</a>
+  <span class="sep"><i class="bi bi-chevron-right"></i></span>
+  <a href="#">CCT2019</a>
+  <span class="sep"><i class="bi bi-chevron-right"></i></span>
+  <span class="current">re3</span>
+</div>
+
+<!-- ═══ Mobile TOC ═══ -->
+<div class="toc-overlay" id="tocOverlay" onclick="toggleMobileToc()"></div>
+<div class="toc-mobile-panel" id="tocMobilePanel">
+  <button class="close-btn" onclick="toggleMobileToc()"><i class="bi bi-x-lg"></i></button>
+  <h3 style="margin-top:1rem;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);font-weight:700;font-family:'Space Grotesk',sans-serif">Contents</h3>
+  <ul id="tocMobile" style="margin-top:0.75rem"></ul>
+</div>
+
+<!-- ═══ Page Layout ═══ -->
+<div class="page-layout">
+
+  <!-- ── Main Content ── -->
+  <main class="main-content">
+
+    <!-- ═══ HERO ═══ -->
+    <div class="page-hero">
+      <span class="challenge-badge"><i class="bi bi-bug-fill"></i> Hard</span>
+      <h1>CCT2019 — re3</h1>
+      <div class="meta">
+        <span><i class="bi bi-person-fill" style="margin-right:3px"></i>QA210</span>
+        <span class="sep">·</span>
+        <span><i class="bi bi-calendar3" style="margin-right:3px"></i>2019</span>
+        <span class="sep">·</span>
+        <span><i class="bi bi-cpu" style="margin-right:3px"></i>Reverse Engineering</span>
+        <span class="sep">·</span>
+        <span><i class="bi bi-globe2" style="margin-right:3px"></i>TryHackMe</span>
+      </div>
+    </div>
+
+    <!-- ═══ BOX INFO ═══ -->
+    <div class="box-info-card">
+      <div class="info-item"><div class="label">Challenge</div><div class="value">re3</div></div>
+      <div class="info-item"><div class="label">Category</div><div class="value">Reverse Engineering</div></div>
+      <div class="info-item"><div class="label">Difficulty</div><div class="value" style="color:var(--red)">Hard</div></div>
+      <div class="info-item"><div class="label">Platform</div><div class="value">TryHackMe</div></div>
+      <div class="info-item"><div class="label">Binary Type</div><div class="value">.NET GUI</div></div>
+      <div class="info-item"><div class="label">Key Format</div><div class="value" style="color:var(--orange)">32-char hex</div></div>
+    </div>
+
+    <div class="callout callout-info">
+      <div class="callout-title"><i class="bi bi-info-circle-fill"></i> Important Note</div>
+      <p>The key for this challenge is a <strong>32-character hex blob</strong>, NOT in <code>CCT{.*}</code> format. Don't waste time looking for flag wrappers.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <h2 id="overview"><span class="section-icon"><i class="bi bi-search"></i></span> Challenge Overview</h2>
+
+    <p>We're given a Windows PE executable with a GUI containing 4 sliders and a "Check!" button. The goal is to find the correct combination of slider values to make the program reveal a 32-character hex key.</p>
+
+    <p>This is a <strong>.NET GUI reverse engineering</strong> challenge where we must find the correct slider values to unlock a hidden key through decompilation, constraint solving, and XOR decryption.</p>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <h2 id="recon"><span class="section-icon"><i class="bi bi-clipboard-data"></i></span> Initial Reconnaissance</h2>
+
+    <p>First, let's identify the file type:</p>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+      <pre><code class="language-bash">$ file re3.exe
+# PE32 executable (GUI) Intel 80386 Mono/.Net assembly, for MS Windows, 3 sections</code></pre>
+    </div>
+
+    <p>It's a <strong>.NET assembly</strong> — perfect for decompilation. Running <code>strings</code> reveals interesting details including class names like <code>byteA</code>, <code>byteB</code>, <code>checkButton</code>, <code>bar1</code>-<code>bar4</code>, and methods like <code>goodBoy</code>, <code>badBoy</code>.</p>
+
+    <div class="callout callout-info">
+      <div class="callout-title"><i class="bi bi-info-circle-fill"></i> Why .NET Matters</div>
+      <p>.NET assemblies compile to IL (Intermediate Language) rather than native machine code. This makes them trivially decompilable — even obfuscated assemblies can often be fully recovered with tools like dnSpy, JetBrains dotPeek, or Ghidra's .NET module.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <h2 id="decompilation"><span class="section-icon"><i class="bi bi-code-slash"></i></span> Decompilation with Ghidra/JetBrains</h2>
+
+    <p>Decompiling the .NET assembly reveals the complete source code. The key components are:</p>
+
+    <h3 id="byte-arrays">The Byte Arrays</h3>
+
+    <p>Two critical byte arrays are found in the class:</p>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header"><span class="lang-label">csharp</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+      <pre><code class="language-csharp">private byte[] byteA = new byte[32]
+{
+    20, 22, 100, 23, 21, 99, 100, 97, 99, 98, 21, 97, 100, 97, 16, 21,
+    16, 23, 22, 17, 98, 21, 102, 16, 23, 18, 19, 101, 17, 99, 102, 18
+};
+private byte[] byteB = new byte[32]
+{
+    125, 92, 93, 86, 19, 64, 91, 82, 95, 95, 19, 67, 82, 64, 64, 18,
+    19, 114, 84, 82, 90, 93, 12, 19, 116, 90, 69, 86, 19, 70, 67, 12
+};</code></pre>
+    </div>
+
+    <h3 id="check-logic">The Check Logic</h3>
+
+    <p>The event handler for the "Check!" button implements three constraints:</p>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header"><span class="lang-label">csharp</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+      <pre><code class="language-csharp">private void eventHandlerA(object A_0, EventArgs A_1)
+{
+    int v1 = this.bar1.Value;
+    int v2 = this.bar2.Value;
+    int v3 = this.bar3.Value;
+    int v4 = this.bar4.Value;
+    int sum = 711;
+    int product = 711000000;
+
+    if (v1 + v2 + v3 + v4 == sum && 
+        v1 * v2 * v3 * v4 == product && 
+        v1 > v2 && v2 > v3 && v3 > v4)
+    {
+        MessageBox.Show(this.goodBoy(v1, v2, v3, v4, (byte[]) this.byteA.Clone()));
+    }
+    else
+    {
+        MessageBox.Show(this.badBoy(v1, v2, v3, v4, (byte[]) this.byteA.Clone()));
+    }
+}</code></pre>
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-title"><i class="bi bi-exclamation-triangle-fill"></i> Constraint Analysis</div>
+      <p>Three constraints must be satisfied simultaneously: <strong>sum = 711</strong>, <strong>product = 711,000,000</strong>, and <strong>strictly descending order</strong> (v1 &gt; v2 &gt; v3 &gt; v4). This severely limits the search space.</p>
+    </div>
+
+    <h3 id="decryption-methods">The Decryption Methods</h3>
+
+    <p>Two methods handle the success/failure paths:</p>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header"><span class="lang-label">csharp</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+      <pre><code class="language-csharp">private string goodBoy(int v1, int v2, int v3, int v4, byte[] data)
+{
+    for (int i = 0; i < data.Length; i++)
+        data[i] = (byte)(data[i] ^ (byte)(this.c ^ v2));
+    return Encoding.ASCII.GetString(data);
+}
+
+private string badBoy(int v1, int v2, int v3, int v4, byte[] data)
+{
+    for (int i = 0; i < data.Length; i++)
+        data[i] = (byte)(this.byteB[i] ^ this.d);
+    return Encoding.ASCII.GetString(data);
+}</code></pre>
+    </div>
+
+    <p>Where <code>c = 177</code> and <code>d = 51</code>. The <code>goodBoy</code> method uses <code>c ^ v2</code> as the XOR key on <code>byteA</code>, while <code>badBoy</code> uses the constant <code>d</code> on <code>byteB</code>.</p>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <h2 id="solving-sliders"><span class="section-icon"><i class="bi bi-calculator"></i></span> Solving the Slider Values</h2>
+
+    <p>We need to find 4 values where:</p>
+    <ul>
+      <li><strong>Sum</strong> = 711</li>
+      <li><strong>Product</strong> = 711,000,000</li>
+      <li><strong>Ordering</strong>: v1 &gt; v2 &gt; v3 &gt; v4</li>
+    </ul>
+
+    <p>This is essentially factoring 711,000,000 into 4 factors that sum to 711:</p>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+      <pre><code class="language-python">target_sum = 711
+target_product = 711000000
+
+# 711000000 = 711 * 1000000
+# Factoring: 711 = 3 * 3 * 79, 1000000 = 10^6
+# After analysis: 325, 150, 120, 116
+# 325 + 150 + 120 + 116 = 711  ✓
+# 325 * 150 * 120 * 116 = 711000000  ✓
+# 325 > 150 > 120 > 116  ✓</code></pre>
+    </div>
+
+    <div class="key-result">
+      <div class="label">Correct Slider Values</div>
+      <div class="value">325, 150, 120, 116</div>
+    </div>
+
+    <p>The factorization can be derived by observing that <code>711,000,000 = 711 × 10⁶</code>. Breaking down the prime factorization <code>2⁶ × 3² × 5⁶ × 79</code>, and distributing the prime factors into four groups that satisfy both the sum and ordering constraints, uniquely yields <strong>325, 150, 120, 116</strong>.</p>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <h2 id="decrypting-key"><span class="section-icon"><i class="bi bi-key"></i></span> Decrypting the Key</h2>
+
+    <p>With <code>v2 = 150</code>, the <code>goodBoy</code> XOR key is: <code>177 ^ 150 = 39</code></p>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+      <pre><code class="language-python">byteA = [20, 22, 100, 23, 21, 99, 100, 97, 99, 98, 21, 97, 100, 97, 16, 21,
+         16, 23, 22, 17, 98, 21, 102, 16, 23, 18, 19, 101, 17, 99, 102, 18]
+c = 177
+v2 = 150
+key = c ^ v2  # = 39
+
+result = ""
+for b in byteA:
+    result += chr(b ^ key)
+
+print(result)
+# 46d75cdacb5ada050761b5f0723e1cf2</code></pre>
+    </div>
+
+    <div class="key-result">
+      <div class="label"><i class="bi bi-flag-fill" style="margin-right:4px"></i>Flag</div>
+      <div class="value">46d75cdacb5ada050761b5f0723e1cf2</div>
+    </div>
+
+    <div class="callout callout-danger">
+      <div class="callout-title"><i class="bi bi-exclamation-octagon-fill"></i> Remember</div>
+      <p>The key is a <strong>raw 32-character hex blob</strong> — NOT wrapped in <code>CCT{...}</code>. This threw off many participants who expected the standard flag format.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <h2 id="verification"><span class="section-icon"><i class="bi bi-check-circle"></i></span> Verification</h2>
+
+    <p>We can verify the <strong>bad path</strong> too with <code>d = 51</code>:</p>
+
+    <div class="code-block-wrapper">
+      <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copy</button></div>
+      <pre><code class="language-python">byteB = [125, 92, 93, 86, 19, 64, 91, 82, 95, 95, 19, 67, 82, 64, 64, 18,
+         19, 114, 84, 82, 90, 93, 12, 19, 116, 90, 69, 86, 19, 70, 67, 12]
+d = 51
+
+result = ""
+for b in byteB:
+    result += chr(b ^ d)
+
+print(result)
+# None shall pass! Again? Give up?</code></pre>
+    </div>
+
+    <p>The bad path simply outputs a discouraging message — confirming that our decryption approach is correct and the good path is the only way to the flag.</p>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <h2 id="takeaways"><span class="section-icon"><i class="bi bi-lightbulb"></i></span> Key Takeaways</h2>
+
+    <ul>
+      <li><strong>.NET decompilation</strong> — .NET assemblies are trivially decompilable with Ghidra, dnSpy, or JetBrains dotPeek. Even obfuscated assemblies can be fully decompiled.</li>
+      <li><strong>Constraint solving</strong> — Factoring problems where sum and product constraints narrow down solutions. The combination of <code>sum = 711</code> and <code>product = 711,000,000</code> with ordering constraints leaves only one valid solution.</li>
+      <li><strong>XOR decryption</strong> — Simple single-byte XOR with a derived key (<code>c ^ v2</code>). Once the slider values are known, the XOR key is deterministic.</li>
+      <li><strong>Dotfuscator</strong> — Even obfuscated .NET assemblies can be fully decompiled. Obfuscation of variable names doesn't hide the logic.</li>
+      <li><strong>Integer factorization</strong> — Breaking down products into factors satisfying ordering constraints. Prime factorization of <code>711,000,000 = 2⁶ × 3² × 5⁶ × 79</code> is the key insight.</li>
+    </ul>
+
+    <div class="callout callout-warning">
+      <div class="callout-title"><i class="bi bi-exclamation-triangle-fill"></i> CTF Lesson</div>
+      <p>Always check the <strong>key format</strong> carefully. This challenge uses a raw hex key instead of the typical <code>CCT{...}</code> wrapper. Many teams wasted time looking for a flag format that didn't exist. Read the challenge description thoroughly!</p>
+    </div>
+
+  </main>
+
+  <!-- ── TOC Sidebar (RIGHT) ── -->
+  <aside class="toc-sidebar">
+    <h3><i class="bi bi-list-nested" style="margin-right:5px"></i>Contents</h3>
+    <ul id="tocDesktop"></ul>
+  </aside>
+
+</div>
+
+<!-- ═══ Footer ═══ -->
+<footer class="site-footer">
+  <p>&copy; 2025 <span class="author">QA210</span> &nbsp;·&nbsp; <span class="team">w4llz CTF Team</span> &nbsp;·&nbsp; CCT2019 — re3</p>
+</footer>
+
+<!-- ═════════════════════════════════════════════════════════════════════════
+     Scripts
+     ═════════════════════════════════════════════════════════════════════════ -->
+<script>
+// ── Three.js Animated Background ─────────────────────
+(function() {
+  const canvas = document.getElementById('three-bg');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 5;
+
+  // Icosahedron wireframe — purple #a855f7
+  const geometry = new THREE.IcosahedronGeometry(2.2, 1);
+  const material = new THREE.MeshBasicMaterial({
+    color: 0xa855f7,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.25
+  });
+  const icosahedron = new THREE.Mesh(geometry, material);
+  scene.add(icosahedron);
+
+  // Secondary smaller icosahedron
+  const geo2 = new THREE.IcosahedronGeometry(1.2, 2);
+  const mat2 = new THREE.MeshBasicMaterial({
+    color: 0x3b82f6,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.15
+  });
+  const ico2 = new THREE.Mesh(geo2, mat2);
+  scene.add(ico2);
+
+  // Particles
+  const particleGeo = new THREE.BufferGeometry();
+  const particleCount = 200;
+  const positions = new Float32Array(particleCount * 3);
+  for (let i = 0; i < particleCount * 3; i++) {
+    positions[i] = (Math.random() - 0.5) * 15;
+  }
+  particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const particleMat = new THREE.PointsMaterial({
+    color: 0xa855f7,
+    size: 0.02,
+    transparent: true,
+    opacity: 0.4
+  });
+  const particles = new THREE.Points(particleGeo, particleMat);
+  scene.add(particles);
+
+  let mouseX = 0, mouseY = 0;
+  document.addEventListener('mousemove', (e) => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 0.5;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 0.5;
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    icosahedron.rotation.x += 0.002;
+    icosahedron.rotation.y += 0.003;
+    ico2.rotation.x -= 0.003;
+    ico2.rotation.y -= 0.002;
+    particles.rotation.y += 0.0005;
+
+    // Subtle camera follow
+    camera.position.x += (mouseX - camera.position.x) * 0.02;
+    camera.position.y += (-mouseY - camera.position.y) * 0.02;
+    camera.lookAt(scene.position);
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+
+// ── Copy Button ──────────────────────────────────────
+function copyCode(btn) {
+  const code = btn.closest('.code-block-wrapper').querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    btn.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ── Build TOC ────────────────────────────────────────
+function buildToc() {
+  const headings = document.querySelectorAll('.main-content h2, .main-content h3');
+  const tocD = document.getElementById('tocDesktop');
+  const tocM = document.getElementById('tocMobile');
+  let html = '';
+  headings.forEach(h => {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : '';
+    // Strip icon HTML from TOC text
+    const text = h.textContent.trim();
+    html += `<li><a href="#${h.id}" class="${cls}" data-target="${h.id}">${text}</a></li>`;
+  });
+  tocD.innerHTML = html;
+  tocM.innerHTML = html;
+}
+buildToc();
+
+// ── Active Section Tracking ──────────────────────────
+function trackActiveSection() {
+  const links = document.querySelectorAll('#tocDesktop a, #tocMobile a');
+  const headings = document.querySelectorAll('.main-content h2, .main-content h3');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        document.querySelectorAll(`[data-target="${entry.target.id}"]`).forEach(l => l.classList.add('active'));
+      }
+    });
+  }, { rootMargin: '-80px 0px -70% 0px', threshold: 0 });
+  headings.forEach(h => observer.observe(h));
+}
+trackActiveSection();
+
+// ── Mobile TOC Toggle ────────────────────────────────
+function toggleMobileToc() {
+  document.getElementById('tocOverlay').classList.toggle('show');
+  document.getElementById('tocMobilePanel').classList.toggle('show');
+}
+document.getElementById('tocMobile').addEventListener('click', e => {
+  if (e.target.tagName === 'A') toggleMobileToc();
+});
+</script>
+</body>
+</html>
