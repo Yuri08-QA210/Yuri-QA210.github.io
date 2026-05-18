@@ -1,417 +1,549 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yuri08 - TJCTF 2026: Glitch</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-  <style>
-    :root {
-      --main: #7c3aed; --main2: #10b981; --main-light: #a78bfa;
-      --bg: #0f0f1a; --bg2: #181a2a; --glass: rgba(30, 25, 60, 0.9);
-      --text: #e0e7ef; --shadow: 0 8px 32px 0 #7c3aed33;
-      --glow: 0 0 20px 2px #7c3aed44; --highlight: #38bdf8;
-    }
-    html, body {
-      min-height: 100%; margin: 0; font-family: 'JetBrains Mono', monospace;
-      background: radial-gradient(circle at 50% 0%, #1a1a3a 0%, #0f0f1a 100%);
-      color: var(--text); overflow: hidden; perspective: 1000px;
-    }
-    #particles-js {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
-    }
-    .content-wrapper {
-      position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column;
-      padding: 20px; box-sizing: border-box; gap: 15px;
-    }
-    
-    .header {
-      display: flex; align-items: center; gap: 20px; padding: 15px;
-      background: var(--glass); border-radius: 1rem; border: 1px solid #7c3aed44;
-      box-shadow: var(--shadow); backdrop-filter: blur(10px); flex-shrink: 0;
-    }
-    .avatar {
-      width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--main);
-      object-fit: cover; box-shadow: 0 0 15px var(--main);
-    }
-    .header-info h1 {
-      font-size: 1.8rem; margin: 0; color: var(--main);
-      text-shadow: 0 0 10px #7c3aed88; animation: neonPurple 2s infinite alternate;
-    }
-    .header-info p { margin: 5px 0 0 0; color: var(--main-light); font-size: 0.9rem; }
-    @keyframes neonPurple { to { text-shadow: 0 0 15px var(--main), 0 0 30px var(--main); } }
-    
-    .lang-toggle {
-      margin-left: auto; background: var(--main); color: white; border: none;
-      padding: 8px 15px; border-radius: 0.5rem; cursor: pointer; font-family: inherit;
-      font-weight: bold; transition: 0.3s; box-shadow: 0 0 10px #7c3aed55;
-    }
-    .lang-toggle:hover { background: var(--main-light); transform: scale(1.05); }
-
-    .terminal-pro {
-      background: linear-gradient(135deg, #12121f 80%, #7c3aed11 100%);
-      border-radius: 1rem; border: 1px solid #312e8155; box-shadow: var(--shadow), var(--glow);
-      display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; position: relative;
-    }
-    .terminal-pro::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
-      pointer-events: none; z-index: 2; opacity: 0.2;
-    }
-    .terminal-bar {
-      background: #1e1e2e; height: 2.5rem; display: flex; align-items: center;
-      padding: 0 1rem; border-bottom: 1px solid #312e8155; flex-shrink: 0; z-index: 3;
-    }
-    .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }
-    .red { background: #ef4444; } .yellow { background: #facc15; } .green { background: #22c55e; }
-    .terminal-title { color: var(--main-light); margin-left: 1rem; font-weight: bold; letter-spacing: 1px; }
-    
-    .terminal-body {
-      padding: 1.5rem; flex-grow: 1; overflow-y: auto; font-size: 0.95rem;
-      line-height: 1.6; position: relative; z-index: 1; scroll-behavior: smooth;
-    }
-    #terminal-output { white-space: pre-wrap; word-break: break-word; }
-    #terminal-input-line {
-      display: flex; align-items: center; gap: 0.5em; margin-top: 1em; z-index: 3;
-    }
-    #terminal-input {
-      background: transparent; border: none; color: #a7f3d0; outline: none;
-      font-family: inherit; font-size: 1em; width: 100%; caret-color: var(--main);
-    }
-    
-    .cmd { color: #7c3aed; } .arg { color: #a78bfa; } .info { color: #38bdf8; font-weight: bold; }
-    .error { color: #ef4444; } .success { color: #10b981; } .warning { color: #facc15; }
-    .code-block {
-      background: #0d0d1a; border-left: 3px solid var(--main); padding: 10px 15px;
-      margin: 10px 0; border-radius: 0 5px 5px 0; font-size: 0.9rem; color: #d1d5db;
-    }
-    
-    .terminal-body::-webkit-scrollbar { width: 8px; }
-    .terminal-body::-webkit-scrollbar-track { background: #0f0f1a; }
-    .terminal-body::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 4px; }
-
-    #welcome-screen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #0f0f1a; z-index: 10000; display: flex; flex-direction: column;
-      justify-content: center; align-items: center; text-align: center; transition: opacity 0.8s;
-    }
-    #welcome-screen.hidden { opacity: 0; pointer-events: none; }
-    #start-button {
-      background: var(--main); color: white; border: none; border-radius: 0.7rem;
-      padding: 1rem 2rem; font-size: 1.2rem; font-weight: 700; cursor: pointer;
-      font-family: inherit; transition: all 0.3s; box-shadow: 0 0 20px #7c3aed88;
-    }
-    #start-button:hover { background: var(--main-light); transform: translateY(-3px); }
-    
-    #mute-button {
-      position: fixed; top: 20px; right: 20px; z-index: 10001;
-      background: #1e1e2e; color: var(--main-light); border: 1px solid #7c3aed55;
-      border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer;
-      display: flex; justify-content: center; align-items: center; transition: all 0.3s;
-    }
-    #mute-button:hover { background: var(--main); color: white; }
-
-    @media (max-width: 768px) {
-      .header { flex-wrap: wrap; justify-content: center; text-align: center; }
-      .lang-toggle { margin-left: 0; margin-top: 10px; width: 100%; }
-      .avatar { width: 60px; height: 60px; }
-      .header-info h1 { font-size: 1.4rem; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TJCTF 2026: Glitch — QA210</title>
+<meta name="description" content="TJCTF 2026 Glitch — Steganography / Resistor Color Code walkthrough by QA210">
+<meta name="author" content="QA210">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📺</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap');
+:root {
+  --bg-primary:#0a0e17;--bg-secondary:#111827;--bg-tertiary:#1a2236;
+  --bg-code:#0d1117;--border:#1e293b;--border-light:#1a2332;
+  --text-primary:#e2e8f0;--text-secondary:#94a3b8;--text-muted:#64748b;
+  --accent-green:#22d3ee;--accent-blue:#818cf8;--accent-red:#f87171;
+  --accent-yellow:#fbbf24;--accent-purple:#c084fc;--accent-orange:#fb923c;
+  --accent-cyan:#22d3ee;--accent-pink:#f472b6;--accent-rose:#fb7185;
+  --accent-violet:#8b5cf6;--accent-magenta:#d946ef;
+  --link:#818cf8;--link-hover:#a5b4fc;
+  --scrollbar-thumb:#1e293b;--scrollbar-track:#0a0e17;
+  --toc-active:#c084fc;
+  --callout-info-bg:rgba(129,140,248,0.08);--callout-info-border:#818cf8;
+  --callout-warn-bg:rgba(251,191,36,0.08);--callout-warn-border:#fbbf24;
+  --callout-danger-bg:rgba(248,113,113,0.08);--callout-danger-border:#f87171;
+  --callout-success-bg:rgba(34,211,238,0.08);--callout-success-border:#22d3ee;
+  --callout-hint-bg:rgba(192,132,252,0.08);--callout-hint-border:#c084fc;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) var(--scrollbar-track)}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.75;font-size:16px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--scrollbar-track)}
+::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#334155}
+a{color:var(--link);text-decoration:none;transition:color .2s}
+a:hover{color:var(--link-hover)}
+#three-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;opacity:0.35}
+.site-header{position:sticky;top:0;z-index:100;background:rgba(10,14,23,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between}
+.site-header .logo{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--accent-violet);display:flex;align-items:center;gap:8px}
+.site-header .logo .dot{color:var(--accent-magenta)}
+.site-header nav{display:flex;gap:1.5rem;align-items:center}
+.site-header nav a{color:var(--text-secondary);font-size:.85rem;font-weight:500}
+.site-header nav a:hover{color:var(--text-primary)}
+.hamburger{display:none;background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:1.5rem}
+.page-layout{display:grid;grid-template-columns:260px 1fr;max-width:1400px;margin:0 auto;min-height:calc(100vh - 56px)}
+.toc-sidebar{position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;padding:1.5rem 1rem 1.5rem 1.5rem;border-right:1px solid var(--border);background:var(--bg-primary)}
+.toc-sidebar h3{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.75rem;font-weight:600}
+.toc-sidebar ul{list-style:none}
+.toc-sidebar li{margin-bottom:2px}
+.toc-sidebar a{display:block;padding:4px 8px;border-radius:4px;font-size:.78rem;color:var(--text-secondary);transition:all .15s;line-height:1.4}
+.toc-sidebar a:hover{color:var(--text-primary);background:var(--bg-secondary)}
+.toc-sidebar a.active{color:var(--toc-active);background:rgba(192,132,252,0.1);font-weight:600}
+.toc-sidebar .toc-h3{padding-left:18px;font-size:.72rem}
+.main-content{padding:2.5rem 3rem 4rem;max-width:860px;width:100%}
+.page-hero{margin-bottom:2.5rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+.page-hero .box-badge{display:inline-block;background:linear-gradient(135deg,var(--accent-violet),var(--accent-magenta));color:#fff;font-size:.68rem;font-weight:700;padding:2px 12px;border-radius:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.page-hero h1{font-size:2.25rem;font-weight:800;margin-bottom:.5rem;letter-spacing:-.02em}
+.page-hero .meta{color:var(--text-secondary);font-size:.85rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.page-hero .meta .sep{color:var(--text-muted)}
+.box-info-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem}
+.box-info-card .info-item .label{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:2px;font-weight:600}
+.box-info-card .info-item .value{font-size:.92rem;font-weight:600;color:var(--text-primary)}
+.attack-path{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin:1.5rem 0;font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.7;overflow-x:auto}
+.attack-path .step{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.2rem}
+.attack-path .arrow{color:var(--accent-purple)}
+.attack-path .host{color:var(--accent-violet);font-weight:700}
+.attack-path .technique{color:var(--accent-orange)}
+.attack-path .cred{color:var(--accent-cyan)}
+.main-content h2{font-size:1.55rem;font-weight:800;margin:2.5rem 0 1rem;padding-bottom:.4rem;border-bottom:2px solid var(--border);letter-spacing:-.01em;scroll-margin-top:70px}
+.main-content h3{font-size:1.1rem;font-weight:700;margin:1.75rem 0 .75rem;color:var(--text-primary);scroll-margin-top:70px}
+.main-content h4{font-size:.95rem;font-weight:600;margin:1.25rem 0 .5rem;color:var(--text-secondary)}
+.main-content p{margin-bottom:1rem;color:var(--text-secondary);line-height:1.8}
+.code-block-wrapper{position:relative;margin:1rem 0 1.25rem;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.code-block-header{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;background:var(--bg-tertiary);border-bottom:1px solid var(--border);font-size:.7rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
+.code-block-header .lang-label{text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+.copy-btn{background:none;border:1px solid var(--border);color:var(--text-muted);font-size:.68rem;padding:2px 10px;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.copy-btn:hover{color:var(--text-primary);border-color:var(--text-muted)}
+.copy-btn.copied{color:var(--accent-green);border-color:var(--accent-green)}
+.code-block-wrapper pre{margin:0!important;padding:1rem!important;background:var(--bg-code)!important;font-family:'JetBrains Mono',monospace!important;font-size:.8rem!important;line-height:1.6!important;overflow-x:auto}
+.code-block-wrapper code{font-family:'JetBrains Mono',monospace!important;font-size:.8rem!important}
+p code,li code{background:var(--bg-tertiary);border:1px solid var(--border);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.82em;color:var(--accent-orange)}
+.callout{padding:.85rem 1rem;border-radius:6px;border-left:3px solid;margin:1rem 0 1.25rem;font-size:.88rem}
+.callout p{margin:0;color:var(--text-secondary)}
+.callout-title{font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.callout-info{background:var(--callout-info-bg);border-color:var(--callout-info-border)}
+.callout-info .callout-title{color:var(--callout-info-border)}
+.callout-warn{background:var(--callout-warn-bg);border-color:var(--callout-warn-border)}
+.callout-warn .callout-title{color:var(--callout-warn-border)}
+.callout-danger{background:var(--callout-danger-bg);border-color:var(--callout-danger-border)}
+.callout-danger .callout-title{color:var(--callout-danger-border)}
+.callout-success{background:var(--callout-success-bg);border-color:var(--callout-success-border)}
+.callout-success .callout-title{color:var(--callout-success-border)}
+.callout-hint{background:var(--callout-hint-bg);border-color:var(--callout-hint-border)}
+.callout-hint .callout-title{color:var(--callout-hint-border)}
+.main-content ul,.main-content ol{margin:.5rem 0 1rem 1.5rem;color:var(--text-secondary)}
+.main-content li{margin-bottom:.35rem;line-height:1.7}
+.main-content table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.85rem}
+.main-content th,.main-content td{padding:8px 12px;border:1px solid var(--border);text-align:left}
+.main-content th{background:var(--bg-secondary);font-weight:600;color:var(--text-primary);font-size:.73rem;text-transform:uppercase;letter-spacing:.04em}
+.main-content td{color:var(--text-secondary)}
+.color-swatch{display:inline-block;width:18px;height:18px;border-radius:3px;vertical-align:middle;margin-right:6px;border:1px solid rgba(255,255,255,0.15)}
+.resistor-table td:nth-child(2){font-family:'JetBrains Mono',monospace;font-weight:600}
+.site-footer{border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;color:var(--text-muted);font-size:.8rem}
+.toc-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200}
+.toc-overlay.show{display:block}
+.toc-mobile-panel{display:none;position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--bg-primary);border-right:1px solid var(--border);z-index:201;overflow-y:auto;padding:1.5rem}
+.toc-mobile-panel.show{display:block}
+.toc-mobile-panel .close-btn{background:none;border:none;color:var(--text-secondary);font-size:1.2rem;cursor:pointer;float:right}
+@media(max-width:1024px){.page-layout{grid-template-columns:1fr}.toc-sidebar{display:none}.hamburger{display:block}.main-content{padding:1.5rem 1.25rem 3rem}.page-hero h1{font-size:1.75rem}}
+@media(max-width:640px){.site-header{padding:0 1rem}.main-content{padding:1rem .75rem 2rem}.page-hero h1{font-size:1.4rem}.box-info-card{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 
-  <div id="welcome-screen">
-    <h1 style="color: var(--main); text-shadow: 0 0 20px var(--main); margin-bottom: 20px;">Yuri08 CTF Terminal</h1>
-    <p style="color: #c4b5fd; margin-bottom: 30px;">TJCTF 2026 - Misc / Glitch</p>
-    <button id="start-button">Khởi tạo Terminal</button>
-  </div>
+<canvas id="three-bg"></canvas>
 
-  <button id="mute-button" aria-label="Toggle Sound"><i class="bi bi-volume-up-fill"></i></button>
-  <div id="particles-js"></div>
+<header class="site-header">
+  <div class="logo"><span>QA210</span><span class="dot">:</span><span>~$</span></div>
+  <nav><a href="/">Home</a><a href="/tjctf-2026/">TJCTF</a><a href="#">Tools</a><a href="#">About</a></nav>
+  <button class="hamburger" onclick="toggleMobileToc()" aria-label="Menu">&#9776;</button>
+</header>
 
-  <div class="content-wrapper">
-    <header class="header">
-      <img src="https://files.catbox.moe/755fgv.png" alt="Avatar" class="avatar" />
-      <div class="header-info">
-        <h1>Yuri08</h1>
-        <p>Steganographer | Visual Crypto Analyst</p>
-      </div>
-      <button class="lang-toggle" id="lang-btn" onclick="toggleLang()">Switch to English</button>
-    </header>
+<div class="toc-overlay" id="tocOverlay" onclick="toggleMobileToc()"></div>
+<div class="toc-mobile-panel" id="tocMobilePanel">
+  <button class="close-btn" onclick="toggleMobileToc()">&#10005;</button>
+  <h3 style="margin-top:1rem">Contents</h3>
+  <ul id="tocMobile"></ul>
+</div>
 
-    <section class="terminal-pro">
-      <div class="terminal-bar">
-        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">root@tjctf:~/glitch#</span>
-      </div>
-      <div class="terminal-body" id="terminal-body">
-        <pre id="terminal-output"></pre>
-        <div id="terminal-input-line">
-          <span class="cmd">root@tjctf</span>:<span class="arg">~/glitch</span>$           <input type="text" id="terminal-input" autocomplete="off" spellcheck="false" />
-        </div>
-      </div>
-    </section>
-  </div>
+<div class="page-layout">
+<aside class="toc-sidebar"><h3>Contents</h3><ul id="tocDesktop"></ul></aside>
 
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-  <script>
-    let isMuted = false;
-    let currentLang = 'vi';
-    let userInteracted = false;
-    const output = document.getElementById('terminal-output');
-    const input = document.getElementById('terminal-input');
-    const tBody = document.getElementById('terminal-body');
+<main class="main-content">
 
-    particlesJS.load('particles-js', 'https://cdn.jsdelivr.net/gh/VincentGarreau/particles.js/particles.json');
+<div class="page-hero">
+  <span class="box-badge">Misc / Steganography</span>
+  <h1>TJCTF 2026: Glitch</h1>
+  <div class="meta"><span>QA210</span><span class="sep">&middot;</span><span>May 2026</span><span class="sep">&middot;</span><span>Resistor Color Code &middot; Visual Crypto &middot; ASCII Encoding</span></div>
+</div>
 
-    function playAudio(src, vol=0.2) {
-      if (!userInteracted || isMuted || !src) return;
-      try { const a = new Audio(src); a.volume = vol; a.play(); } catch(e) {}
-    }
+<div class="box-info-card">
+  <div class="info-item"><div class="label">Challenge</div><div class="value">Glitch</div></div>
+  <div class="info-item"><div class="label">Category</div><div class="value" style="color:var(--accent-violet)">Misc / Steganography</div></div>
+  <div class="info-item"><div class="label">CTF</div><div class="value">TJCTF 2026</div></div>
+  <div class="info-item"><div class="label">Provided</div><div class="value">glitch.png</div></div>
+  <div class="info-item"><div class="label">Flag</div><div class="value" style="color:var(--accent-cyan)">tjctf{D3S1GN+TECH_:)}</div></div>
+</div>
 
-    document.getElementById('mute-button').addEventListener('click', function() {
-      isMuted = !isMuted;
-      this.querySelector('i').className = isMuted ? 'bi bi-volume-mute-fill' : 'bi bi-volume-up-fill';
-    });
+<div class="attack-path">
+  <div class="step"><span class="host">IMAGE</span> <span class="arrow">&rarr;</span> <span class="technique">Glitched PNG</span> with horizontal color bands <span class="arrow">&rarr;</span> filter noise, extract <span class="cred">solid bands</span></div>
+  <div class="step"><span class="host">HINT</span> <span class="arrow">&rarr;</span> <span class="technique">"resist"</span> in description <span class="arrow">&rarr;</span> <span class="cred">Resistor Color Code</span> mapping</div>
+  <div class="step"><span class="host">DECODE</span> <span class="arrow">&rarr;</span> Band pairs &rarr; 2-digit decimal <span class="arrow">&rarr;</span> <span class="cred">ASCII character</span></div>
+  <div class="step"><span class="host">FLAG</span> <span class="arrow">&rarr;</span> <span class="cred">D3S1GN+TECH_:)</span> wrapped in tjctf{}</div>
+</div>
 
-    function print(html) {
-      const div = document.createElement('div');
-      div.innerHTML = html;
-      output.appendChild(div);
-      tBody.scrollTop = tBody.scrollHeight;
-    }
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="overview">Challenge Overview</h2>
 
-    // --- TRANSLATIONS & DETAILED WRITEUP DATA ---
-    const L = {
-      vi: {
-        help: `<span class="info">[ Hướng Dẫn Đọc Writeup ]</span>
-<span class="cmd">intro</span>       : Tổng quan Challenge & Hiện tượng Glitch
-<span class="cmd">signal</span>      : Tách tín hiệu khỏi nhiễu (Noise vs. Bands)
-<span class="cmd">resistor</span>    : Ánh xạ Mã màu Điện trở (Resistor Code)
-<span class="cmd">decode</span>      : Quy trình Giải mã ASCII từng cặp
-<span class="cmd">code</span>        : Source Code Khai thác (Python)
-<span class="cmd">clear</span>       : Xóa màn hình Terminal`,
-        intro: `<span class="info">[ TỔNG QUAN: GLITCH ]</span>
-<span class="cmd">Category:</span> Steganography / Visual Cryptography
-<span class="cmd">Flag:</span> <span class="success">tjctf{D3S1GN+TECH_:)}</span>
+<p>Glitch presents a single image file, <code>glitch.png</code>, that resembles a corrupted television broadcast &mdash; horizontal stripes of vivid color interspersed with snowy noise and visual artifacts. The challenge description, <em>&ldquo;Do not resist the g<sup>i</sup>l<sub>i</sub>t<sup>c</sup>h.&rdquo;</em>, is deliberately corrupted with zalgo-style text, reinforcing the &ldquo;glitch&rdquo; theme. The word &ldquo;resist&rdquo; is the critical hint: it&rsquo;s a pun on <strong>resistor</strong>, pointing directly to the electronic component color-coding system as the decoding mechanism.</p>
 
-<span class="warning">Mô tả:</span> "Do not resist the g̵͕̗͑̅l̶̢̂̚ḭ̶̐͗t̴͔̞̒͐c̸̭͈̄h̷̨̞͊͠." (Đừng chống lại lỗi glitch)
+<p>The solve path involves three conceptual stages. First, you must visually separate the intentional color bands (the signal) from the random pixel noise (the distraction). Second, you must recognize that the colors correspond to the standard resistor color code, where each color maps to a single digit. Third, you must read the bands in pairs from top to bottom, treating each pair as a two-digit decimal number that represents an ASCII character. The resulting plaintext, wrapped in the CTF&rsquo;s flag format, yields the answer.</p>
 
-<span class="cmd">Objective:</span> Khôi phục thông điệp ẩn từ bức ảnh bị nhiễu glitch và bọc nó trong tjctf{}.
-<span class="cmd">File cung cấp:</span> glitch.png - Một bức ảnh trông như màn hình TV bị hỏng, đầy nhiễu và các dải màu ngang.`,
-        signal: `<span class="info">[ TÁCH TÍN HIỆU KHỎI NHIỄU ]</span>
-Khi mở glitch.png, bạn sẽ thấy hàng tá các dải màu ngang xen kẽ "nhiễu" pixel. Phản ứng đầu tiên là dùng tool lọc nhiễu, nhưng điều đó không ra flag.
+<p>What makes this challenge elegant is the layered misdirection. The glitch aesthetic encourages players to reach for image forensics tools &mdash; stegsolve, LSB extraction, spectral analysis &mdash; when the actual encoding is purely visual and requires nothing more than recognizing a well-known electronics standard. The noise exists solely to obscure the band boundaries and make the pattern harder to spot at a glance.</p>
 
-<span class="warning">Quan sát trọng tâm:</span> Hãy bỏ qua các dải nhiễu nhấp nháy, tập trung vào các <span class="cmd">dải màu đặc (color bands)</span> dày và đồng nhất trải ngang ảnh. Chúng hiện diện một cách có chủ ý.
+<div class="callout callout-hint">
+  <div class="callout-title">Hint &mdash; &ldquo;Do not resist&rdquo;</div>
+  <p>The word <em>resist</em> in the description is not a philosophical statement about accepting chaos. It is a direct reference to <strong>resistors</strong> &mdash; passive electronic components whose values are encoded using colored bands painted on their surface. Every electronics student learns this code: Black=0, Brown=1, Red=2, through White=9. The challenge is telling you exactly what encoding scheme to use.</p>
+</div>
 
-Khi downsample hoặc làm mờ ảnh nhẹ, bạn sẽ nhận ra các dải màu này xếp theo một thứ tự từ trên xuống dưới. Đó chính là "tín hiệu" chứa dữ liệu ẩn.`,
-        resistor: `<span class="info">[ MÃ MÀU ĐIỆN TRỞ (RESISTOR COLOR CODE) ]</span>
-Gợi ý lớn nhất nằm ở chữ "resist" trong mô tả (resistor - điện trở). Trong điện tử, điện trở được đánh giá bằng các vành màu:
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="signal-extraction">Signal Extraction: Separating Bands from Noise</h2>
 
-<span class="cmd">0:</span> Black  | <span class="cmd">1:</span> Brown   | <span class="cmd">2:</span> Red     | <span class="cmd">3:</span> Orange
-<span class="cmd">4:</span> Yellow | <span class="cmd">5:</span> Green   | <span class="cmd">6:</span> Blue    | <span class="cmd">7:</span> Violet
-<span class="cmd">8:</span> Gray   | <span class="cmd">9:</span> White
+<h3 id="visual-inspection">Visual Inspection</h3>
 
-Trong mã điện trở, 2 vành đầu tiên tạo thành một số 2 chữ số.
-Ví dụ: Vành Xanh dương (6) và Vàng (4) tạo thành số <span class="arg">64</span>.`,
-        decode: `<span class="info">[ QUY TRÌNH GIẢI MÃ ASCII ]</span>
-Bức ảnh sắp xếp các dải màu theo CẶP (pair). Mỗi cặp 2 màu tạo thành một số 2 chữ số, và số đó chính là mã ASCII thập phân của một ký tự!
+<p>Opening <code>glitch.png</code> in any image viewer reveals a chaotic scene: dozens of thin, flickering horizontal lines in random colors, interspersed with blocks of static noise that look like a detuned analog TV channel. The initial instinct is to apply a noise-reduction filter, convert to grayscale, or extract LSB planes &mdash; all standard steganography techniques. None of these approaches work because the hidden data is not embedded in pixel values at the bit level; it&rsquo;s encoded in the <em>colors of the bands themselves</em>.</p>
 
-Ví dụ cặp đầu tiên:
-1. Dải <span class="cmd">Blue (6)</span> tiếp giáp dải <span class="cmd">Gray (8)</span> -> Số 68
-2. Tra bảng ASCII: 68 = <span class="success">'D'</span>
+<p>The key observation is that not all horizontal stripes are created equal. The noise lines are thin (1-3 pixels tall), randomly colored, and inconsistent across the image width. The <strong>signal bands</strong>, by contrast, are thick (5-15 pixels tall), span the full width of the image, and have a single, consistent color. When you squint or apply a slight Gaussian blur, the thin noise lines blend into the background while the thick signal bands remain clearly visible as distinct horizontal stripes.</p>
 
-Ví dụ cặp thứ hai:
-1. Dải <span class="cmd">Green (5)</span> tiếp giáp dải <span class="cmd">Brown (1)</span> -> Số 51
-2. Tra bảng ASCII: 51 = <span class="success">'3'</span>
+<h3 id="downsampling-technique">Downsampling Technique</h3>
 
-Tiếp tục đọc các cặp màu từ trên xuống dưới, ta thu được chuỗi: <span class="success">D3S1GN+TECH_:)</span>
-Bọc trong tjctf{} ta có flag!`,
-        code: `<span class="info">[ EXPLOIT SOURCE CODE ]</span>
-<div class="code-block">#!/usr/bin/env python3
+<p>A practical way to isolate the signal is to resize the image to a fraction of its original resolution. Averaging adjacent pixels during downsampling smooths out the thin noise lines while preserving the broad color bands:</p>
 
-# Bảng ánh xạ màu điện trở sang chữ số
-COLOR_TO_DIGIT = {
-    "black": "0", "brown": "1", "red": "2", "orange": "3",
-    "yellow": "4", "green": "5", "blue": "6", "violet": "7",
-    "gray": "8", "white": "9"
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python">from PIL import Image
+
+img = Image.open("glitch.png")
+# Downsample to ~5% of original size — noise fades, bands remain
+small = img.resize((img.width // 20, img.height // 20), Image.LANCZOS)
+small.save("glitch_downsampled.png")</code></pre>
+</div>
+
+<p>In the downsampled image, the signal bands become immediately apparent as a sequence of solid-colored horizontal stripes, ordered from top to bottom. The colors are not random &mdash; they repeat in a pattern that corresponds to the resistor color code, with adjacent bands forming pairs.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Info &mdash; Why Noise Exists</div>
+  <p>The noise serves a dual purpose: it makes the band boundaries harder to identify visually, and it discourages automated color-sampling tools that might pick up noise pixels instead of the true band color. The challenge designer is banking on the fact that most CTF players will try bit-level steganography before considering a higher-level visual encoding. Patience and careful observation beat automated tools in this case.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="resistor-code">The Resistor Color Code</h2>
+
+<h3 id="color-mapping">Standard Color-to-Digit Mapping</h3>
+
+<p>The electronic resistor color code is a universal standard in electrical engineering. Each color corresponds to a single decimal digit (0-9). On a physical resistor, the first two colored bands represent the first two significant digits of the resistance value, the third band is the multiplier (power of 10), and the fourth band indicates tolerance. For this challenge, we only need the digit mapping:</p>
+
+<table class="resistor-table">
+  <tr><th>Color</th><th>Digit</th><th>Swatch</th></tr>
+  <tr><td>Black</td><td>0</td><td><span class="color-swatch" style="background:#000"></span></td></tr>
+  <tr><td>Brown</td><td>1</td><td><span class="color-swatch" style="background:#8B4513"></span></td></tr>
+  <tr><td>Red</td><td>2</td><td><span class="color-swatch" style="background:#ef4444"></span></td></tr>
+  <tr><td>Orange</td><td>3</td><td><span class="color-swatch" style="background:#fb923c"></span></td></tr>
+  <tr><td>Yellow</td><td>4</td><td><span class="color-swatch" style="background:#fbbf24"></span></td></tr>
+  <tr><td>Green</td><td>5</td><td><span class="color-swatch" style="background:#22c55e"></span></td></tr>
+  <tr><td>Blue</td><td>6</td><td><span class="color-swatch" style="background:#3b82f6"></span></td></tr>
+  <tr><td>Violet</td><td>7</td><td><span class="color-swatch" style="background:#8b5cf6"></span></td></tr>
+  <tr><td>Gray</td><td>8</td><td><span class="color-swatch" style="background:#6b7280"></span></td></tr>
+  <tr><td>White</td><td>9</td><td><span class="color-swatch" style="background:#f9fafb"></span></td></tr>
+</table>
+
+<p>Once you recognize the encoding, the image transforms from an unintelligible mess into a straightforward lookup table. Each horizontal band maps to exactly one digit. Two adjacent bands form a two-digit number. That number is the decimal ASCII code of a character in the hidden message.</p>
+
+<h3 id="pair-reading">Reading Band Pairs</h3>
+
+<p>The image organizes its color bands in pairs from top to bottom. The first band in each pair provides the tens digit and the second provides the units digit. For example, if the topmost two bands are Blue and Gray, the two-digit number is 68. Looking up decimal 68 in the ASCII table yields the character <code>'D'</code>. The second pair might be Green and Brown, giving 51, which is <code>'3'</code> in ASCII. This pattern continues through all fourteen band pairs, producing the complete hidden string.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Warning &mdash; Color Perception Traps</div>
+  <p>The glitch noise can shift the apparent color of band edges, making a blue band look slightly purple or a green band appear yellowish at its boundary. Always sample the <em>center</em> of each band, not the edges where noise bleed occurs. Using a color picker tool on the downsampled image (which has already averaged out edge noise) is the most reliable approach.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="decoding">ASCII Decoding: Band Pairs to Plaintext</h2>
+
+<h3 id="full-decode">Complete Decoding Table</h3>
+
+<p>After extracting the color bands from the downsampled image and mapping each to its corresponding digit, we obtain the following sequence of ASCII characters:</p>
+
+<table>
+  <tr><th>Pair #</th><th>Band 1</th><th>Digit 1</th><th>Band 2</th><th>Digit 2</th><th>Decimal</th><th>ASCII</th></tr>
+  <tr><td>1</td><td><span class="color-swatch" style="background:#3b82f6"></span>Blue</td><td>6</td><td><span class="color-swatch" style="background:#6b7280"></span>Gray</td><td>8</td><td>68</td><td><strong>D</strong></td></tr>
+  <tr><td>2</td><td><span class="color-swatch" style="background:#22c55e"></span>Green</td><td>5</td><td><span class="color-swatch" style="background:#8B4513"></span>Brown</td><td>1</td><td>51</td><td><strong>3</strong></td></tr>
+  <tr><td>3</td><td><span class="color-swatch" style="background:#6b7280"></span>Gray</td><td>8</td><td><span class="color-swatch" style="background:#fb923c"></span>Orange</td><td>3</td><td>83</td><td><strong>S</strong></td></tr>
+  <tr><td>4</td><td><span class="color-swatch" style="background:#fbbf24"></span>Yellow</td><td>4</td><td><span class="color-swatch" style="background:#f9fafb"></span>White</td><td>9</td><td>49</td><td><strong>1</strong></td></tr>
+  <tr><td>5</td><td><span class="color-swatch" style="background:#8b5cf6"></span>Violet</td><td>7</td><td><span class="color-swatch" style="background:#8B4513"></span>Brown</td><td>1</td><td>71</td><td><strong>G</strong></td></tr>
+  <tr><td>6</td><td><span class="color-swatch" style="background:#8b5cf6"></span>Violet</td><td>7</td><td><span class="color-swatch" style="background:#6b7280"></span>Gray</td><td>8</td><td>78</td><td><strong>N</strong></td></tr>
+  <tr><td>7</td><td><span class="color-swatch" style="background:#fbbf24"></span>Yellow</td><td>4</td><td><span class="color-swatch" style="background:#fb923c"></span>Orange</td><td>3</td><td>43</td><td><strong>+</strong></td></tr>
+  <tr><td>8</td><td><span class="color-swatch" style="background:#6b7280"></span>Gray</td><td>8</td><td><span class="color-swatch" style="background:#fbbf24"></span>Yellow</td><td>4</td><td>84</td><td><strong>T</strong></td></tr>
+  <tr><td>9</td><td><span class="color-swatch" style="background:#3b82f6"></span>Blue</td><td>6</td><td><span class="color-swatch" style="background:#f9fafb"></span>White</td><td>9</td><td>69</td><td><strong>E</strong></td></tr>
+  <tr><td>10</td><td><span class="color-swatch" style="background:#3b82f6"></span>Blue</td><td>6</td><td><span class="color-swatch" style="background:#8b5cf6"></span>Violet</td><td>7</td><td>67</td><td><strong>C</strong></td></tr>
+  <tr><td>11</td><td><span class="color-swatch" style="background:#8b5cf6"></span>Violet</td><td>7</td><td><span class="color-swatch" style="background:#ef4444"></span>Red</td><td>2</td><td>72</td><td><strong>H</strong></td></tr>
+  <tr><td>12</td><td><span class="color-swatch" style="background:#f9fafb"></span>White</td><td>9</td><td><span class="color-swatch" style="background:#22c55e"></span>Green</td><td>5</td><td>95</td><td><strong>_</strong></td></tr>
+  <tr><td>13</td><td><span class="color-swatch" style="background:#22c55e"></span>Green</td><td>5</td><td><span class="color-swatch" style="background:#6b7280"></span>Gray</td><td>8</td><td>58</td><td><strong>:</strong></td></tr>
+  <tr><td>14</td><td><span class="color-swatch" style="background:#fbbf24"></span>Yellow</td><td>4</td><td><span class="color-swatch" style="background:#8B4513"></span>Brown</td><td>1</td><td>41</td><td><strong>)</strong></td></tr>
+</table>
+
+<p>Concatenating all decoded characters produces the hidden plaintext: <strong><code>D3S1GN+TECH_:)</code></strong>. Wrapping this in the TJCTF flag format gives the final answer.</p>
+
+<div class="callout callout-success">
+  <div class="callout-title">Flag</div>
+  <p><code>tjctf{D3S1GN+TECH_:)}</code></p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="exploit-code">Exploit Code</h2>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python">#!/usr/bin/env python3
+"""
+TJCTF 2026 - Glitch
+Resistor color code steganography decoder
+Author: QA210
+"""
+
+# Standard resistor color-to-digit lookup
+COLOR_MAP = {
+    "black":  0, "brown":  1, "red":    2, "orange": 3,
+    "yellow": 4, "green":  5, "blue":   6, "violet": 7,
+    "gray":   8, "white":  9,
 }
 
-# Dữ liệu trích xuất từ các dải màu trong ảnh (từ trên xuống dưới)
-BAND_PAIRS = [
-    ("blue", "gray"),      # 68 -> D
-    ("green", "brown"),    # 51 -> 3
-    ("gray", "orange"),    # 83 -> S
-    ("yellow", "white"),   # 49 -> 1
-    ("violet", "brown"),   # 71 -> G
-    ("violet", "gray"),    # 78 -> N
-    ("yellow", "orange"),  # 43 -> +
-    ("gray", "yellow"),    # 84 -> T
-    ("blue", "white"),     # 69 -> E
-    ("blue", "violet"),    # 67 -> C
-    ("violet", "red"),     # 72 -> H
-    ("white", "green"),    # 95 -> _
-    ("green", "gray"),     # 58 -> :
-    ("yellow", "brown"),   # 41 -> )
+# Color bands extracted from glitch.png (top to bottom, read as pairs)
+# Each pair of colors encodes one ASCII character as a two-digit decimal
+EXTRACTED_BANDS = [
+    ("blue",   "gray"),    # 6,8 -> 68 -> D
+    ("green",  "brown"),   # 5,1 -> 51 -> 3
+    ("gray",   "orange"),  # 8,3 -> 83 -> S
+    ("yellow", "white"),   # 4,9 -> 49 -> 1
+    ("violet", "brown"),   # 7,1 -> 71 -> G
+    ("violet", "gray"),    # 7,8 -> 78 -> N
+    ("yellow", "orange"),  # 4,3 -> 43 -> +
+    ("gray",   "yellow"),  # 8,4 -> 84 -> T
+    ("blue",   "white"),   # 6,9 -> 69 -> E
+    ("blue",   "violet"),  # 6,7 -> 67 -> C
+    ("violet", "red"),     # 7,2 -> 72 -> H
+    ("white",  "green"),   # 9,5 -> 95 -> _
+    ("green",  "gray"),    # 5,8 -> 58 -> :
+    ("yellow", "brown"),   # 4,1 -> 41 -> )
 ]
 
-def decode_bands(pairs):
-    message_chars = []
-    for color_a, color_b in pairs:
-        digit_str = COLOR_TO_DIGIT[color_a] + COLOR_TO_DIGIT[color_b]
-        ascii_val = int(digit_str)
-        message_chars.append(chr(ascii_val))
-    return "".join(message_chars)
+
+def bands_to_ascii(band_pairs):
+    """
+    Decode a list of (color_a, color_b) tuples into a string.
+    Each tuple maps to two digits via resistor color code,
+    forming a decimal ASCII value.
+    """
+    result = []
+    for primary, secondary in band_pairs:
+        tens = COLOR_MAP[primary]
+        units = COLOR_MAP[secondary]
+        char_code = tens * 10 + units
+        result.append(chr(char_code))
+    return "".join(result)
+
+
+def main():
+    plaintext = bands_to_ascii(EXTRACTED_BANDS)
+    print(f"Decoded plaintext: {plaintext}")
+    print(f"Flag: tjctf{{{plaintext}}}")
+
 
 if __name__ == "__main__":
-    hidden_text = decode_bands(BAND_PAIRS)
-    print(f"Decoded Text: {hidden_text}")
-    print(f"Flag: tjctf{{{hidden_text}}}")</div>`
-      },
-      en: {
-        help: `<span class="info">[ WRITEUP NAVIGATION ]</span>
-<span class="cmd">intro</span>       : Challenge Overview & The Glitch Phenomenon
-<span class="cmd">signal</span>      : Separating Signal from Noise (Bands)
-<span class="cmd">resistor</span>    : Mapping to Resistor Color Code
-<span class="cmd">decode</span>      : ASCII Decoding Process per Pair
-<span class="cmd">code</span>        : Exploit Source Code (Python)
-<span class="cmd">clear</span>       : Clear Terminal Screen`,
-        intro: `<span class="info">[ OVERVIEW: GLITCH ]</span>
-<span class="cmd">Category:</span> Steganography / Visual Cryptography
-<span class="cmd">Flag:</span> <span class="success">tjctf{D3S1GN+TECH_:)}</span>
+    main()</code></pre>
+</div>
 
-<span class="warning">Description:</span> "Do not resist the g̵͕̗͑̅l̶̢̂̚ḭ̶̐͗t̴͔̞̒͐c̸̭͈̄h̷̨̞͊͠."
+<h3 id="running-exploit">Running the Exploit</h3>
 
-<span class="cmd">Objective:</span> Recover the hidden message from the glitched image and wrap it in tjctf{}.
-<span class="cmd">File Provided:</span> glitch.png - An image that looks like a broken TV screen, full of noise and horizontal color bands.`,
-        signal: `<span class="info">[ SEPARATING SIGNAL FROM NOISE ]</span>
-When opening glitch.png, you see tons of horizontal color bands mixed with noisy pixels. The first instinct is to use noise-filtering tools, but that doesn't yield the flag.
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ python3 glitch_decode.py
+Decoded plaintext: D3S1GN+TECH_:)
+Flag: tjctf{D3S1GN+TECH_:)}</code></pre>
+</div>
 
-<span class="warning">Key Observation:</span> Ignore the flickering noise lines and focus on the thick, solid <span class="cmd">color bands</span> spanning horizontally. They are placed intentionally.
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2 id="automated-extraction">Automated Pixel Extraction (Advanced)</h2>
 
-When downsampling or slightly blurring the image, you realize these bands are ordered from top to bottom. This is the "signal" containing the hidden data.`,
-        resistor: `<span class="info">[ RESISTOR COLOR CODE MAPPING ]</span>
-The biggest hint is the word "resist" in the description (resistor). In electronics, resistor values are represented by color bands:
+<p>While the manual approach &mdash; downsample, identify bands by eye, look up colors &mdash; is sufficient for this challenge, a fully automated solution is also possible. The algorithm works by sampling a vertical column of pixels (avoiding edge noise) and clustering adjacent pixels with similar colors into bands:</p>
 
-<span class="cmd">0:</span> Black  | <span class="cmd">1:</span> Brown   | <span class="cmd">2:</span> Red     | <span class="cmd">3:</span> Orange
-<span class="cmd">4:</span> Yellow | <span class="cmd">5:</span> Green   | <span class="cmd">6:</span> Blue    | <span class="cmd">7:</span> Violet
-<span class="cmd">8:</span> Gray   | <span class="cmd">9:</span> White
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python">#!/usr/bin/env python3
+"""
+Automated band extraction from glitch.png
+Samples the center column, clusters by color proximity, maps to resistor codes.
+Author: QA210
+"""
+from PIL import Image
+import math
 
-In resistor codes, the first 2 bands form a 2-digit number.
-Example: Blue (6) and Yellow (4) bands form the number <span class="arg">64</span>.`,
-        decode: `<span class="info">[ ASCII DECODING PROCESS ]</span>
-The image arranges color bands in PAIRS. Each pair of 2 colors forms a 2-digit number, which is the decimal ASCII code of a character!
-
-Example of the first pair:
-1. <span class="cmd">Blue (6)</span> band next to <span class="cmd">Gray (8)</span> -> Number 68
-2. ASCII lookup: 68 = <span class="success">'D'</span>
-
-Example of the second pair:
-1. <span class="cmd">Green (5)</span> band next to <span class="cmd">Brown (1)</span> -> Number 51
-2. ASCII lookup: 51 = <span class="success">'3'</span>
-
-Continuing to read color pairs from top to bottom, we get the string: <span class="success">D3S1GN+TECH_:)</span>
-Wrapping it in tjctf{} gives the flag!`,
-        code: `<span class="info">[ EXPLOIT SOURCE CODE ]</span>
-<div class="code-block">#!/usr/bin/env python3
-
-# Mapping resistor colors to digits
-COLOR_TO_DIGIT = {
-    "black": "0", "brown": "1", "red": "2", "orange": "3",
-    "yellow": "4", "green": "5", "blue": "6", "violet": "7",
-    "gray": "8", "white": "9"
+# Reference colors for resistor code (RGB tuples)
+REFERENCE_COLORS = {
+    "black":  (0, 0, 0),
+    "brown":  (139, 69, 19),
+    "red":    (220, 50, 50),
+    "orange": (240, 140, 50),
+    "yellow": (240, 200, 50),
+    "green":  (50, 180, 80),
+    "blue":   (50, 120, 220),
+    "violet": (130, 80, 220),
+    "gray":   (130, 130, 140),
+    "white":  (240, 240, 245),
 }
 
-# Data extracted from the image color bands (top to bottom)
-BAND_PAIRS = [
-    ("blue", "gray"),      # 68 -> D
-    ("green", "brown"),    # 51 -> 3
-    ("gray", "orange"),    # 83 -> S
-    ("yellow", "white"),   # 49 -> 1
-    ("violet", "brown"),   # 71 -> G
-    ("violet", "gray"),    # 78 -> N
-    ("yellow", "orange"),  # 43 -> +
-    ("gray", "yellow"),    # 84 -> T
-    ("blue", "white"),     # 69 -> E
-    ("blue", "violet"),    # 67 -> C
-    ("violet", "red"),     # 72 -> H
-    ("white", "green"),    # 95 -> _
-    ("green", "gray"),     # 58 -> :
-    ("yellow", "brown"),   # 41 -> )
-]
+DIGIT_MAP = {name: idx for idx, name in enumerate(REFERENCE_COLORS)}
 
-def decode_bands(pairs):
-    message_chars = []
-    for color_a, color_b in pairs:
-        digit_str = COLOR_TO_DIGIT[color_a] + COLOR_TO_DIGIT[color_b]
-        ascii_val = int(digit_str)
-        message_chars.append(chr(ascii_val))
-    return "".join(message_chars)
+
+def color_distance(c1, c2):
+    """Euclidean distance between two RGB tuples."""
+    return math.sqrt(sum((a - b) ** 2 for a, b in zip(c1, c2)))
+
+
+def nearest_resistor_color(pixel_rgb):
+    """Find the closest resistor color name for a given RGB pixel."""
+    best_name = None
+    best_dist = float("inf")
+    for name, ref_rgb in REFERENCE_COLORS.items():
+        dist = color_distance(pixel_rgb, ref_rgb)
+        if dist < best_dist:
+            best_dist = dist
+            best_name = name
+    return best_name
+
+
+def extract_bands(image_path, sample_column_ratio=0.5, min_band_height=4):
+    """
+    Sample a vertical column from the image, group consecutive pixels
+    into bands based on color similarity, and return band color names.
+    """
+    img = Image.open(image_path).convert("RGB")
+    col_x = int(img.width * sample_column_ratio)
+
+    # Sample every pixel in the chosen column
+    column_pixels = [img.getpixel((col_x, y)) for y in range(img.height)]
+
+    # Group consecutive same-color pixels into bands
+    bands = []
+    current_color = nearest_resistor_color(column_pixels[0])
+    run_length = 1
+
+    for y in range(1, len(column_pixels)):
+        color_name = nearest_resistor_color(column_pixels[y])
+        if color_name == current_color:
+            run_length += 1
+        else:
+            if run_length >= min_band_height:
+                bands.append(current_color)
+            current_color = color_name
+            run_length = 1
+
+    if run_length >= min_band_height:
+        bands.append(current_color)
+
+    return bands
+
+
+def decode_bands(band_list):
+    """Convert a list of band color names to ASCII string."""
+    if len(band_list) % 2 != 0:
+        print(f"[!] Odd number of bands ({len(band_list)}), dropping last")
+        band_list = band_list[:-1]
+
+    chars = []
+    for i in range(0, len(band_list), 2):
+        tens = DIGIT_MAP[band_list[i]]
+        units = DIGIT_MAP[band_list[i + 1]]
+        chars.append(chr(tens * 10 + units))
+    return "".join(chars)
+
 
 if __name__ == "__main__":
-    hidden_text = decode_bands(BAND_PAIRS)
-    print(f"Decoded Text: {hidden_text}")
-    print(f"Flag: tjctf{{{hidden_text}}}")</div>`
+    bands = extract_bands("glitch.png")
+    print(f"[*] Detected {len(bands)} color bands")
+
+    plaintext = decode_bands(bands)
+    print(f"Decoded: {plaintext}")
+    print(f"Flag: tjctf{{{plaintext}}}")</code></pre>
+</div>
+
+<p>The automated approach is more robust against subjective color perception errors and can handle larger images with many more bands. The <code>min_band_height</code> parameter filters out noise lines (which are typically 1-3 pixels tall) while preserving signal bands (which are 5+ pixels tall). The <code>nearest_resistor_color</code> function uses Euclidean distance in RGB space to match each pixel to the closest reference color, accounting for the slight color variations introduced by the glitch noise.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Info &mdash; Manual vs. Automated</div>
+  <p>For this challenge, manual extraction is faster &mdash; there are only 28 bands (14 pairs), and the color palette is limited to 10 standard colors. However, if the challenge scaled to hundreds of band pairs or used more subtle color variations, the automated approach would become essential. Building both solutions is good practice for CTF competitions where time constraints demand quick adaptation.</p>
+</div>
+
+</main>
+</div>
+
+<footer class="site-footer">
+  <p>&copy; 2026 QA210 &mdash; TJCTF 2026 Writeups &nbsp;&middot;&nbsp; Glitch &mdash; Steganography</p>
+</footer>
+
+<script>
+// ── Three.js Background ──────────────────────
+(function(){
+  const c=document.getElementById('three-bg');
+  const r=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  r.setSize(window.innerWidth,window.innerHeight);
+  r.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  const s=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
+  cam.position.z=50;
+  // Icosahedron — "crystal/gem" feel for steganography/visual crypto challenge
+  const geo=new THREE.IcosahedronGeometry(20,0);
+  const mat=new THREE.MeshBasicMaterial({color:0xc084fc,wireframe:true,transparent:true,opacity:0.2});
+  const mesh=new THREE.Mesh(geo,mat);
+  s.add(mesh);
+  const pts=[];
+  for(let i=0;i<350;i++){
+    pts.push(new THREE.Vector3((Math.random()-0.5)*140,(Math.random()-0.5)*140,(Math.random()-0.5)*140));
+  }
+  const pgeo=new THREE.BufferGeometry().setFromPoints(pts);
+  const pmat=new THREE.PointsMaterial({color:0xd946ef,size:0.35,transparent:true,opacity:0.4});
+  const particles=new THREE.Points(pgeo,pmat);
+  s.add(particles);
+  function animate(){
+    requestAnimationFrame(animate);
+    mesh.rotation.x+=0.001;mesh.rotation.y+=0.0018;mesh.rotation.z+=0.0005;
+    particles.rotation.y+=0.0003;
+    r.render(s,cam);
+  }
+  animate();
+  window.addEventListener('resize',()=>{
+    cam.aspect=window.innerWidth/window.innerHeight;
+    cam.updateProjectionMatrix();
+    r.setSize(window.innerWidth,window.innerHeight);
+  });
+})();
+
+// ── Copy Button ──────────────────────────────
+function copyCode(btn){
+  const code=btn.closest('.code-block-wrapper').querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000);
+  });
+}
+
+// ── Build TOC ────────────────────────────────
+function buildToc(){
+  const headings=document.querySelectorAll('.main-content h2,.main-content h3');
+  const tocD=document.getElementById('tocDesktop');
+  const tocM=document.getElementById('tocMobile');
+  let html='';
+  headings.forEach(h=>{
+    if(!h.id)h.id=h.textContent.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    const cls=h.tagName==='H3'?'toc-h3':'';
+    html+=`<li><a href="#${h.id}" class="${cls}" data-target="${h.id}">${h.textContent}</a></li>`;
+  });
+  tocD.innerHTML=html;tocM.innerHTML=html;
+}
+buildToc();
+
+// ── Active Section Tracking ──────────────────
+function trackActiveSection(){
+  const links=document.querySelectorAll('#tocDesktop a,#tocMobile a');
+  const headings=document.querySelectorAll('.main-content h2,.main-content h3');
+  const observer=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        document.querySelectorAll(`[data-target="${entry.target.id}"]`).forEach(l=>l.classList.add('active'));
       }
-    };
-
-    function toggleLang() {
-      currentLang = currentLang === 'vi' ? 'en' : 'vi';
-      const btn = document.getElementById('lang-btn');
-      btn.textContent = currentLang === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt';
-      handleCommand('clear');
-      handleCommand('help');
-      playAudio('https://www.soundjay.com/buttons/button-1.mp3', 0.3);
-    }
-
-    const cmds = {
-      help: () => L[currentLang].help,
-      intro: () => L[currentLang].intro,
-      signal: () => L[currentLang].signal,
-      resistor: () => L[currentLang].resistor,
-      decode: () => L[currentLang].decode,
-      code: () => L[currentLang].code,
-      clear: () => { output.innerHTML = ''; return ''; },
-      banner: () => `<span class="info">
-   _____ _     _     _           
-  / ____| |   (_)   | |          
- | |  __| |__  _  __| | ___ _ __ 
- | | |_ | '_ \\| |/ _\` |/ _ \\ '__|
- | |__| | | | | | (_| |  __/ |   
-  \\_____|_| |_|_|\\__,_|\\___|_|</span>`
-    };
-
-    function handleCommand(cmd) {
-      const c = cmd.trim().toLowerCase();
-      if(!c) return;
-      print(`<span class="cmd">root@tjctf</span>:<span class="arg">~/glitch</span>$ ${cmd}`);
-      playAudio('https://www.soundjay.com/buttons/button-5.mp3', 0.15);
-      
-      if (cmds[c]) {
-        const res = cmds[c]();
-        if (res) print(res);
-      } else {
-        print(`<span class="error">Command not found: ${c}. Type 'help' for navigation.</span>`);
-      }
-      input.value = '';
-    }
-
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); handleCommand(input.value); }
-      else playAudio('https://www.soundjay.com/buttons/button-8.mp3', 0.02);
     });
+  },{rootMargin:'-80px 0px -70% 0px',threshold:0});
+  headings.forEach(h=>observer.observe(h));
+}
+trackActiveSection();
 
-    tBody.addEventListener('click', () => input.focus());
-
-    document.getElementById('start-button').addEventListener('click', () => {
-      userInteracted = true;
-      const ws = document.getElementById('welcome-screen');
-      ws.classList.add('hidden');
-      setTimeout(() => { handleCommand('banner'); handleCommand('help'); input.focus(); }, 800);
-      playAudio('https://www.soundjay.com/buttons/button-10.mp3', 0.4);
-    });
-  </script>
+// ── Mobile TOC Toggle ────────────────────────
+function toggleMobileToc(){
+  document.getElementById('tocOverlay').classList.toggle('show');
+  document.getElementById('tocMobilePanel').classList.toggle('show');
+}
+document.getElementById('tocMobile').addEventListener('click',e=>{
+  if(e.target.tagName==='A')toggleMobileToc();
+});
+</script>
 </body>
 </html>
