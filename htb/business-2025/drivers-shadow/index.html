@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Driver's Shadow — Unmasking the Kernel Intruder | QA210</title>
+<meta name="description" content="HTB Business CTF 2025 Operation Blackout — Driver's Shadow forensic writeup. Linux memory forensics, Volatility rootkit analysis, ftrace hook detection, and kernel module extraction.">
+<meta name="author" content="QA210">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --bg0:#06080c;--bg1:#0b0f17;--bg2:#111827;--bg3:#1a2234;--bg4:#222d42;
+  --border:#1e293b;--border-light:#334155;--border-glow:rgba(88,166,255,0.15);
+  --text0:#f1f5f9;--text1:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--text4:#475569;
+  --accent:#3b82f6;--accent-hover:#60a5fa;--accent-dim:rgba(59,130,246,0.1);
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.1);
+  --red:#ef4444;--red-dim:rgba(239,68,68,0.1);
+  --purple:#a855f7;--purple-dim:rgba(168,85,247,0.1);
+  --orange:#f97316;--orange-dim:rgba(249,115,22,0.1);
+  --yellow:#eab308;--yellow-dim:rgba(234,179,8,0.1);
+  --cyan:#06b6d4;--cyan-dim:rgba(6,182,212,0.1);
+  --rose:#f43f5e;--rose-dim:rgba(244,63,94,0.1);
+  --gradient-accent:linear-gradient(135deg,#3b82f6,#8b5cf6);
+  --gradient-warm:linear-gradient(135deg,#f97316,#ef4444);
+  --gradient-cool:linear-gradient(135deg,#06b6d4,#3b82f6);
+  --gradient-rose:linear-gradient(135deg,#f43f5e,#a855f7);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--border) var(--bg1)}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg0);color:var(--text1);line-height:1.75;font-size:15px;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg1)}::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:3px}
+a{color:var(--accent);text-decoration:none;transition:all .2s}a:hover{color:var(--accent-hover)}
+::selection{background:rgba(59,130,246,0.3);color:var(--text0)}
+#bg-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;opacity:.1}
+
+/* HEADER */
+.site-header{position:sticky;top:0;z-index:100;background:rgba(6,8,12,0.85);backdrop-filter:blur(20px) saturate(1.2);border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;padding:0 2.5rem;gap:2rem}
+.site-header .brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk','JetBrains Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--text0);white-space:nowrap;letter-spacing:-.03em}
+.site-header .brand .logo-icon{width:28px;height:28px;border-radius:7px;background:var(--gradient-accent);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:#fff}
+.site-header .brand .cursor{display:inline-block;width:2px;height:1em;background:var(--green);margin-left:2px;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.site-header .nav-main{display:flex;gap:0;align-items:center}
+.site-header .nav-main a{padding:0 1.1rem;height:58px;display:flex;align-items:center;color:var(--text3);font-size:.82rem;font-weight:500;border-bottom:2px solid transparent;transition:all .2s}
+.site-header .nav-main a:hover,.site-header .nav-main a.active{color:var(--text0);border-bottom-color:var(--accent)}
+.site-header .nav-right{margin-left:auto;display:flex;align-items:center;gap:1.1rem}
+.social-link{color:var(--text4);font-size:1.05rem;transition:all .2s;padding:4px}
+.social-link:hover{color:var(--accent);transform:translateY(-1px)}
+.mobile-toggle{display:none;background:none;border:none;color:var(--text1);font-size:1.3rem;cursor:pointer}
+
+/* BREADCRUMBS */
+.breadcrumbs{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:1rem 2.5rem .5rem;display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--text4)}
+.breadcrumbs a{color:var(--text3)}.breadcrumbs a:hover{color:var(--accent)}
+.breadcrumbs .sep{opacity:.4}.breadcrumbs .current{color:var(--text2);font-weight:600}
+
+/* LAYOUT */
+.page-body{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:0 2.5rem}
+.writeup-layout{display:grid;grid-template-columns:1fr 260px;gap:3rem;padding-bottom:4rem}
+
+/* HERO */
+.writeup-hero{padding:2.5rem 0 2rem;border-bottom:1px solid var(--border);margin-bottom:2rem}
+.writeup-hero .meta-top{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.writeup-hero .meta-top .platform{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 10px;border-radius:5px;background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,0.25)}
+.writeup-hero .meta-top .category{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 10px;border-radius:5px;background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(6,182,212,0.25)}
+.writeup-hero .meta-top .event{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 10px;border-radius:5px;background:var(--purple-dim);color:var(--purple);border:1px solid rgba(168,85,247,0.25)}
+.writeup-hero .meta-top .date{font-size:.72rem;color:var(--text4);font-family:'JetBrains Mono',monospace;margin-left:auto}
+.writeup-hero h1{font-family:'Space Grotesk','Inter',sans-serif;font-size:2.4rem;font-weight:800;letter-spacing:-.03em;line-height:1.15;margin-bottom:.75rem;color:var(--text0)}
+.writeup-hero h1 span{background:var(--gradient-cool);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.writeup-hero .subtitle{color:var(--text2);font-size:1rem;line-height:1.7;margin-bottom:1.25rem;max-width:780px}
+.writeup-hero .tags{display:flex;flex-wrap:wrap;gap:.4rem}
+.writeup-hero .tag{font-size:.62rem;padding:3px 10px;border-radius:5px;background:var(--bg2);color:var(--text2);border:1px solid var(--border);font-weight:500}
+
+/* CONTENT */
+.writeup-content h2{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:var(--text0);margin:2.5rem 0 1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);letter-spacing:-.02em}
+.writeup-content h3{font-family:'Space Grotesk',sans-serif;font-size:1.15rem;font-weight:700;color:var(--text1);margin:1.75rem 0 .75rem}
+.writeup-content h4{font-size:.95rem;font-weight:700;color:var(--text2);margin:1.25rem 0 .5rem}
+.writeup-content p{margin-bottom:1rem;color:var(--text1)}
+.writeup-content ul,.writeup-content ol{margin-bottom:1rem;padding-left:1.5rem;color:var(--text1)}
+.writeup-content li{margin-bottom:.35rem}
+.writeup-content strong{color:var(--text0);font-weight:600}
+.writeup-content em{color:var(--text2);font-style:italic}
+
+/* CODE BLOCKS */
+.code-block{position:relative;margin:1.25rem 0;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--bg1)}
+.code-block .code-header{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:var(--bg2);border-bottom:1px solid var(--border);font-size:.7rem}
+.code-block .code-header .lang{color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.code-block .code-header .filename{color:var(--text4);font-family:'JetBrains Mono',monospace;font-size:.68rem}
+.code-block .copy-btn{background:none;border:1px solid var(--border);color:var(--text3);font-size:.65rem;padding:2px 10px;border-radius:4px;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+.code-block .copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+.code-block pre{margin:0!important;padding:1rem!important;background:transparent!important;overflow-x:auto}
+.code-block pre code{font-family:'JetBrains Mono',monospace!important;font-size:.8rem!important;line-height:1.6!important}
+pre[class*="language-"]{background:var(--bg1)!important;margin:0!important;padding:1rem!important}
+code[class*="language-"]{font-family:'JetBrains Mono',monospace!important;font-size:.82rem!important;text-shadow:none!important}
+.token.comment,.token.prolog{color:var(--text4)!important}
+.token.keyword{color:var(--purple)!important}
+.token.string{color:var(--green)!important}
+.token.function{color:var(--cyan)!important}
+.token.number{color:var(--orange)!important}
+.token.operator{color:var(--text2)!important}
+.token.punctuation{color:var(--text3)!important}
+
+/* CALLOUT BOXES */
+.callout{margin:1.25rem 0;padding:1rem 1.25rem;border-radius:10px;border-left:3px solid;font-size:.88rem;line-height:1.7}
+.callout .callout-title{font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;display:flex;align-items:center;gap:6px}
+.callout.danger{background:rgba(239,68,68,0.06);border-color:var(--red);color:var(--text1)}
+.callout.danger .callout-title{color:var(--red)}
+.callout.warning{background:rgba(249,115,22,0.06);border-color:var(--orange);color:var(--text1)}
+.callout.warning .callout-title{color:var(--orange)}
+.callout.info{background:rgba(59,130,246,0.06);border-color:var(--accent);color:var(--text1)}
+.callout.info .callout-title{color:var(--accent)}
+.callout.success{background:rgba(34,197,94,0.06);border-color:var(--green);color:var(--text1)}
+.callout.success .callout-title{color:var(--green)}
+.callout.hint{background:rgba(168,85,247,0.06);border-color:var(--purple);color:var(--text1)}
+.callout.hint .callout-title{color:var(--purple)}
+.callout.deadend{background:rgba(100,116,139,0.06);border-color:var(--text3);color:var(--text1)}
+.callout.deadend .callout-title{color:var(--text3)}
+.callout code{background:var(--bg2);padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--cyan)}
+
+/* FLAG BOXES */
+.flag-box{margin:1.25rem 0;padding:.85rem 1.15rem;border-radius:10px;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;gap:.75rem}
+.flag-box .flag-icon{font-size:1.1rem;flex-shrink:0}
+.flag-box .flag-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text4);font-weight:700}
+.flag-box .flag-value{font-family:'JetBrains Mono',monospace;font-size:.88rem;color:var(--green);font-weight:600;word-break:break-all}
+
+/* COMPARISON TABLE */
+.compare-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.82rem}
+.compare-table th{background:var(--bg2);color:var(--text2);font-weight:600;text-align:left;padding:.6rem .85rem;border:1px solid var(--border);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
+.compare-table td{padding:.55rem .85rem;border:1px solid var(--border);color:var(--text1)}
+.compare-table tr:nth-child(even) td{background:var(--bg1)}
+.compare-table td:first-child{font-weight:600;color:var(--text0)}
+
+/* FLOW DIAGRAM */
+.flow-diagram{background:var(--bg1);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin:1.25rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.8;color:var(--text2);overflow-x:auto;white-space:pre}
+.flow-diagram .highlight{color:var(--red);font-weight:700}
+.flow-diagram .success{color:var(--green);font-weight:700}
+.flow-diagram .accent{color:var(--cyan);font-weight:700}
+.flow-diagram .purple{color:var(--purple);font-weight:700}
+.flow-diagram .orange{color:var(--orange);font-weight:700}
+
+/* SIDEBAR TOC */
+.sidebar-toc{position:sticky;top:72px;align-self:start;max-height:calc(100vh - 90px);overflow-y:auto}
+.sidebar-toc .toc-title{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text4);font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:7px}
+.sidebar-toc .toc-title i{font-size:.78rem;color:var(--accent)}
+.toc-list{list-style:none;padding:0}
+.toc-list li{margin-bottom:.15rem}
+.toc-list a{display:block;padding:.3rem .6rem;font-size:.75rem;color:var(--text3);border-radius:5px;transition:all .2s;border-left:2px solid transparent;line-height:1.5}
+.toc-list a:hover{color:var(--text1);background:var(--bg2);border-left-color:var(--accent)}
+.toc-list a.active{color:var(--accent);background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.toc-list .toc-h3{padding-left:1.2rem;font-size:.7rem}
+.sidebar-meta{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)}
+.sidebar-meta .meta-item{display:flex;align-items:center;gap:.6rem;font-size:.72rem;color:var(--text3);margin-bottom:.5rem}
+.sidebar-meta .meta-item i{color:var(--accent);width:14px;text-align:center;font-size:.7rem}
+
+/* FOOTER */
+.site-footer{border-top:1px solid var(--border);padding:2rem 2.5rem;position:relative;z-index:1}
+.footer-inner{max-width:1320px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.footer-left{font-size:.76rem;color:var(--text4)}.footer-left span{color:var(--text2);font-weight:600}
+.footer-links{display:flex;gap:1.5rem}.footer-links a{color:var(--text4);font-size:.76rem;transition:color .2s}.footer-links a:hover{color:var(--text1)}
+
+/* RESPONSIVE */
+@media(max-width:1024px){.writeup-layout{grid-template-columns:1fr}.sidebar-toc{display:none}}
+@media(max-width:768px){.site-header{padding:0 1rem}.site-header .nav-main{display:none}.mobile-toggle{display:block}.page-body{padding:0 1rem}.writeup-hero h1{font-size:1.7rem}.breadcrumbs{padding:1rem 1rem .5rem}.footer-inner{flex-direction:column;text-align:center}}
+@media(max-width:480px){.writeup-hero h1{font-size:1.4rem}.flow-diagram{font-size:.68rem;padding:1rem}}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<header class="site-header">
+  <a href="/" class="brand">
+    <span class="logo-icon">Q</span>
+    QA210<span class="cursor"></span>
+  </a>
+  <nav class="nav-main">
+    <a href="/">Home</a>
+    <a href="/htb/" class="active">HTB</a>
+    <a href="/tjctf-2026/">TJCTF</a>
+    <a href="/tryhackme/">TryHackMe</a>
+    <a href="/research/">Research</a>
+  </nav>
+  <div class="nav-right">
+    <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
+    <a href="https://w4llz.me/" target="_blank" class="social-link" title="W4LLZ" style="color:var(--yellow)"><i class="bi bi-people-fill"></i></a>
+    <button class="mobile-toggle" aria-label="Menu"><i class="bi bi-list"></i></button>
+  </div>
+</header>
+
+<div class="breadcrumbs">
+  <a href="/">Home</a><span class="sep">/</span>
+  <a href="/htb/">Hack The Box</a><span class="sep">/</span>
+  <a href="/htb/business-2025/">Business CTF 2025</a><span class="sep">/</span>
+  <span class="current">Driver's Shadow</span>
+</div>
+
+<div class="page-body">
+
+<section class="writeup-hero">
+  <div class="meta-top">
+    <span class="platform"><i class="bi bi-shield-fill-exclamation"></i> HTB Business CTF</span>
+    <span class="category"><i class="bi bi-search"></i> Forensics</span>
+    <span class="event"><i class="bi bi-lightning-fill"></i> Operation Blackout</span>
+    <span class="date">2025</span>
+  </div>
+  <h1>Driver's Shadow — <span>Unmasking the Kernel Intruder</span></h1>
+  <p class="subtitle">Deep dive into Linux memory forensics with Volatility3. Hunting a kernel rootkit hiding in plain sight — ftrace hooks, XOR-obfuscated payloads, and stealth persistence through udev rules.</p>
+  <div class="tags">
+    <span class="tag">Memory Forensics</span><span class="tag">Volatility3</span><span class="tag">Rootkit</span><span class="tag">ftrace</span><span class="tag">Kernel Module</span><span class="tag">Ghidra</span><span class="tag">Hard</span>
+  </div>
+</section>
+
+<div class="writeup-layout">
+
+<main class="writeup-content">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="overview">01 · Challenge Overview</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>A critical Linux server was captured exhibiting anomalous behavior under suspected Volnaya interference. A full memory snapshot was taken for analysis. Stealthy components embedded in the dump are altering system behavior and hiding their tracks — our job is to sift through the snapshot, uncover these concealed elements, and extract any hidden payloads.</p>
+
+<div class="callout info">
+  <div class="callout-title"><i class="bi bi-info-circle-fill"></i> Challenge Details</div>
+  <strong>Category:</strong> Forensics &bull; <strong>Difficulty:</strong> Hard &bull; <strong>Event:</strong> HTB Business CTF 2025 — Operation Blackout &bull; <strong>Author:</strong> c4n0pus<br>
+  <strong>Provided:</strong> <code>mem.elf</code> (2.17 GB ELF 64-bit core dump, x86-64)
+</div>
+
+<p>The challenge is structured as a series of questions that progressively guide you deeper into the rootkit's architecture — from surface-level indicators like rogue udev rules, all the way down to extracting and reverse-engineering the kernel module itself. Each answer builds on the previous, creating a complete picture of the intruder's foothold on the system.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="recon">02 · Initial Reconnaissance</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>As with any memory dump analysis, the first step is identifying what we're working with. Volatility3 is the tool of choice here — but before we can run any plugins, we need to know the kernel version to determine whether we have matching symbols.</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Identify kernel version</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ vol -f mem.elf banners.Banners
+Linux version 6.1.0-34-amd64 (debian-kernel@lists.debian.org)
+  (gcc-12 (Debian 12.2.0-14+deb12u1) 12.2.0,
+   GNU ld (GNU Binutils for Debian) 2.40)
+  #1 SMP PREEMPT_DYNAMIC Debian 6.1.135-1 (2025-04-25)</code></pre>
+</div>
+
+<p>This is a fairly recent Debian 12 kernel — 6.1.0-34-amd64. Running basic plugins like <code>linux.pslist.PsList</code> immediately returns empty results, which confirms our suspicion: <strong>we don't have a matching ISF (Intermediate Symbols File)</strong>. Without symbols, Volatility cannot resolve kernel structures, so we need to generate them ourselves.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="isf">03 · Generating the ISF Symbols File</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>An ISF is a structured representation of a kernel's debug symbols — it tells Volatility how to interpret memory structures like task structs, file descriptors, and module lists. Without it, Volatility is effectively blind. The process involves spinning up a VM running the exact same kernel, then extracting symbols with <code>dwarf2json</code>.</p>
+
+<h3>Setting Up the Environment</h3>
+
+<p>Download Debian 12 from the official site, install it in a VM, then match the kernel version exactly:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Match kernel in Debian VM</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ sudo apt install linux-image-6.1.0-34-amd64
+$ sudo shutdown -r now
+$ uname -r
+6.1.0-34-amd64</code></pre>
+</div>
+
+<h3>Extracting Symbols with dwarf2json</h3>
+
+<p>With the matching kernel booted, we build and run <code>dwarf2json</code> to produce the ISF:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Generate ISF symbols</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ cd /opt
+$ git clone https://github.com/volatilityfoundation/dwarf2json.git
+$ sudo apt install golang
+$ cd dwarf2json && go build -buildvcs=false
+
+$ sudo ./dwarf2json linux \
+    --elf /usr/lib/debug/boot/vmlinux-6.1.0-34-amd64 \
+    --system-map /boot/System.map-6.1.0-34-amd64 \
+    > Debian12-6.1.0-34-amd64.json</code></pre>
+</div>
+
+<p>Copy the resulting JSON to <code>volatility3/volatility3/symbols/</code> and Volatility will now be able to resolve all kernel structures. This is a critical step that many CTF players skip or struggle with — without symbols, you're stuck at the starting line.</p>
+
+<div class="callout hint">
+  <div class="callout-title"><i class="bi bi-lightbulb-fill"></i> Pro Tip</div>
+  Always verify the ISF works by running a simple plugin like <code>linux.pslist</code> after placing it. If you get process listings, you're good to go. If not, double-check the kernel version matches exactly — even a minor revision difference can cause symbol mismatches.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="harvest">04 · Harvesting Runtime Artifacts</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>With symbols in place, I run a battery of Volatility plugins to capture a broad picture of the system state. Rather than running them one at a time, I automate this with a script that iterates through the most useful plugins and saves output for offline analysis:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Python</span><span class="filename">vol_harvest.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python">import subprocess, os, sys
+
+def main():
+    if len(sys.argv) != 2:
+        print(f"Usage: {sys.argv[0]} <memory_image>")
+        sys.exit(1)
+
+    image = sys.argv[1]
+    outdir = "./vol_out"
+    os.makedirs(outdir, exist_ok=True)
+
+    plugins = [
+        "linux.bash.Bash",
+        "linux.elfs.Elfs",
+        "linux.envars.Envars",
+        "linux.ip.Link",
+        "linux.ip.Addr",
+        "linux.lsof.Lsof",
+        "linux.malfind.Malfind",
+        "linux.pagecache.Files",
+        "linux.psaux.PsAux",
+        "linux.pslist.PsList",
+        "linux.psscan.PsScan",
+        "linux.pstree.PsTree",
+        "linux.sockstat.Sockstat",
+        "linux.lsmod.Lsmod",
+    ]
+
+    for plugin in plugins:
+        name = plugin.split(".")[-1]
+        print(f"[*] Running {plugin}...")
+        result = subprocess.run(
+            ["vol", "-f", image, plugin],
+            capture_output=True, text=True
+        )
+        with open(f"{outdir}/{name}.txt", "w") as f:
+            f.write(result.stdout)
+
+if __name__ == "__main__":
+    main()</code></pre>
+</div>
+
+<p>This gives us a comprehensive snapshot of running processes, open sockets, loaded modules, cached files, and potential code injection artifacts. Now we can start hunting for anomalies across all outputs systematically.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="udev">05 · Backdoor udev Rule</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>The first indicator of compromise surfaces in the page cache output. Scanning through <code>Files.txt</code>, most udev rules live under <code>/usr/lib/udev/rules.d/</code> and have standard names. But one entry immediately stands out:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Searching pagecache for udev rules</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ rg "udev" vol_out/Files.txt | grep -v "standard"
+/usr/lib/udev/rules.d/99-volnaya.rules</code></pre>
+</div>
+
+<p><code>99-volnaya.rules</code> — this is not a standard Debian udev rule. The <code>99-</code> prefix ensures it runs last in the rule processing order, and the "volnaya" naming convention ties it to the threat actor. This rule likely triggers the rootkit loader whenever a specific device event occurs, providing a persistence mechanism that blends in with the normal device-handling workflow.</p>
+
+<div class="flag-box">
+  <span class="flag-icon">🚩</span>
+  <div>
+    <div class="flag-label">Flag — Backdoor udev Rule</div>
+    <div class="flag-value">99-volnaya.rules</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="attacker-ip">06 · Attacker IP Address</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>Moving to network artifacts, the socket statistics output reveals suspicious outbound connections. A <code>bash</code> process initiating TCP connections is always a red flag — shells don't typically make direct network connections unless they're running a reverse shell or command-and-control client:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Hunting suspicious connections in sockstat</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ rg "bash" vol_out/Sockstat.txt
+bash  2957  TCP  ESTABLISHED  10.10.10.5:42312 -> 16.171.55.6:443</code></pre>
+</div>
+
+<p>A bash process (PID 2957) has an established TCP connection to an external IP over port 443 — classic C2 behavior disguised as HTTPS traffic. The destination IP is our attacker's command infrastructure.</p>
+
+<div class="flag-box">
+  <span class="flag-icon">🚩</span>
+  <div>
+    <div class="flag-label">Flag — Attacker IP</div>
+    <div class="flag-value">16.171.55.6</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="kernel-module">07 · Kernel Module Name</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>Since we've already identified the "volnaya" naming convention from the udev rule, we can search across all Volatility outputs for that string. The loaded kernel modules output confirms the rootkit:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Searching for volnaya in module list</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ rg "volnaya" vol_out/Lsmod.txt
+volnaya_xb127  114688  1  Live  0x00000000fffffffa</code></pre>
+</div>
+
+<p>The module <code>volnaya_xb127</code> is loaded and active — the <code>1</code> in the use count indicates it's currently in use by at least one component. At 114688 bytes, this is a substantial kernel module with significant functionality, consistent with a full-featured rootkit that hooks multiple syscalls and hides files/processes.</p>
+
+<div class="flag-box">
+  <span class="flag-icon">🚩</span>
+  <div>
+    <div class="flag-label">Flag — Kernel Module Name</div>
+    <div class="flag-value">volnaya_xb127</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="hidden-bash">08 · Hidden Userspace Bash Process</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>Cross-referencing the process scan output with the socket statistics reveals a hidden bash process. While <code>linux.pslist</code> (which walks the linked list) may not show it due to rootkit DKOM (Direct Kernel Object Manipulation), <code>linux.psscan</code> (which scans memory pools) finds all processes:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Correlating psscan with sockstat</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash"># Find bash processes that are direct children of systemd
+$ rg "bash" vol_out/PsScan.txt | rg "systemd"
+2957  bash  systemd  0  ...  sh -c id
+
+# This same PID appears in sockstat as the reverse shell</code></pre>
+</div>
+
+<p>PID 2957 stands out for two reasons: first, it's a bash process spawned directly by systemd (unusual — systemd typically launches service binaries, not interactive shells). Second, it runs <code>sh -c id</code> — a command commonly used by reverse shells to verify execution context. This is the rootkit's hidden C2 client, concealed from the standard process list but discoverable through memory pool scanning.</p>
+
+<div class="flag-box">
+  <span class="flag-icon">🚩</span>
+  <div>
+    <div class="flag-label">Flag — Hidden Bash PID</div>
+    <div class="flag-value">2957</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="ftrace-hooks">09 · ftrace Hooks & Hooked Syscalls</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>This is where the investigation gets particularly interesting. The rootkit doesn't modify the syscall table directly — instead, it uses <strong>ftrace</strong>, the kernel's built-in tracing framework, to hook syscall handlers. This is a stealthier technique because traditional rootkit detectors only check the syscall table for modifications, not ftrace hooks.</p>
+
+<h3>Syscall Addresses</h3>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Checking syscall table integrity</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ vol -f mem.elf linux.check_syscall.Check_syscall</code></pre>
+</div>
+
+<p>Among all syscalls, two have addresses that don't match the expected kernel text region — <code>__x64_sys_kill</code> and <code>__x64_sys_getdents64</code>. These are the two hooks the rootkit has installed:</p>
+
+<div class="flag-box">
+  <span class="flag-icon">🚩</span>
+  <div>
+    <div class="flag-label">Flag — Hooked Syscall Addresses</div>
+    <div class="flag-value">0xffffb88b6bf0:0xffffb8b7c770</div>
+  </div>
+</div>
+
+<h3>Identifying All ftrace Hooks</h3>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Enumerating ftrace hooks</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ vol -f mem.elf linux.tracing.ftrace.CheckFtrace</code></pre>
+</div>
+
+<p>The ftrace output shows all registered hooks. Most are legitimate kernel functions, but two correspond to syscalls. The rootkit hooks <code>kill</code> (syscall 62) and <code>getdents64</code> (syscall 217). The <code>kill</code> hook serves as a covert IPC channel — the rootkit intercepts signals with specific numbers to trigger actions. The <code>getdents64</code> hook is used for file hiding — it filters directory listings to exclude files matching certain criteria.</p>
+
+<div class="callout warning">
+  <div class="callout-title"><i class="bi bi-shield-exclamation"></i> Why ftrace?</div>
+  Traditional rootkit detectors check the syscall table for modifications. By using ftrace hooks instead, the rootkit avoids this detection method entirely. The syscall table remains "clean" — the hooks are registered through the legitimate ftrace infrastructure, making them far harder to spot without dedicated ftrace analysis.
+</div>
+
+<div class="flag-box">
+  <span class="flag-icon">🚩</span>
+  <div>
+    <div class="flag-label">Flag — Hooked Syscalls (sorted by number)</div>
+    <div class="flag-value">kill:getdents64</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="loader-extraction">10 · Extracting the Rootkit Loader</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>Now we need to extract the actual binaries for deeper analysis. The page cache output shows that <code>/usr/bin/volnaya_usr</code> (the userspace loader) is fully cached in memory:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Locating the loader in page cache</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">$ rg "volnaya" vol_out/Files.txt
+0x9a0974b68128  /usr/bin/volnaya_usr  REG  107/107  -rwxr-xr-x
+
+# All 107 pages cached — we can dump the full binary
+$ vol -f mem.elf linux.pagecache.InodePages \
+    --inode 0x9a0974b68128 --dump</code></pre>
+</div>
+
+<p>Unfortunately, the kernel module <code>volnaya_xb127</code> shows 0 cached pages in the page cache — we can't dump it directly. But the loader binary contains everything we need to reconstruct it, as we'll see shortly.</p>
+
+<p>Open the dumped <code>volnaya_usr</code> binary in Ghidra and navigate to the <code>main</code> function to begin reverse engineering.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="xor-key">11 · XOR Key Discovery</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>Inside <code>main()</code>, there's a reference to a <code>xor_key</code> variable in the <code>.data</code> section. This key is used throughout the rootkit — for decoding hostnames, decrypting the embedded kernel module, and obfuscating strings. To extract it:</p>
+
+<ol>
+  <li>Navigate to the <code>xor_key</code> label in the <code>.data</code> section</li>
+  <li>Select the full memory segment at that label</li>
+  <li>Use <strong>Edit → Copy special → Byte String (No Spaces)</strong></li>
+</ol>
+
+<div class="flag-box">
+  <span class="flag-icon">🚩</span>
+  <div>
+    <div class="flag-label">Flag — XOR Key</div>
+    <div class="flag-value">881ba50d42a430791ca2d9ce0630f5c9</div>
+  </div>
+</div>
+
+<p>This 16-byte key is a standard XOR cipher key used for all decryption operations within the rootkit. While XOR obfuscation is trivially reversible once you have the key, it effectively prevents static analysis tools from automatically extracting strings and configurations from the binary.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="c2-hostname">12 · Decrypting the C2 Hostname</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>Also in <code>main()</code>, the loader constructs the C2 hostname by XOR-decrypting a hardcoded byte array with the same key. The encrypted hostname bytes are stored in <code>.data</code> — we can extract them and decrypt with Python:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Python</span><span class="filename">decrypt_hostname.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python">enc_hostname = bytes.fromhex(
+    "eb7ac96120c5531232c1b7ad3408c4f8a66dca612cc5491832caadac"
+)
+xor_key = bytes.fromhex("881ba50d42a430791ca2d9ce0630f5c9")
+
+decoded = bytearray()
+for i in range(len(enc_hostname)):
+    decoded.append(enc_hostname[i] ^ xor_key[i % len(xor_key)])
+
+print(decoded.decode('utf-8', errors='replace'))
+# Output: callback.cnc2811.volnaya.htb</code></pre>
+</div>
+
+<p>The rootkit phones home to <code>callback.cnc2811.volnaya.htb</code> — a Volnaya C2 infrastructure hostname following their naming convention.</p>
+
+<div class="flag-box">
+  <span class="flag-icon">🚩</span>
+  <div>
+    <div class="flag-label">Flag — C2 Hostname</div>
+    <div class="flag-value">callback.cnc2811.volnaya.htb</div>
+  </div>
+</div>
+
+<h3>Bonus: Covert IPC via kill()</h3>
+
+<p>While analyzing the loader's <code>init_revshell</code> function, there's a peculiar call: <code>kill(0x41, local_c)</code>. Signal 0x41 (decimal 65) is well above the maximum valid signal number (64). This makes no sense for a legitimate <code>kill()</code> call — until you recall that the rootkit hooks the <code>kill</code> syscall. The rootkit intercepts these out-of-range "signals" as a covert communication channel between the userspace loader and the kernel module. When the kernel module sees signal 65, it knows this is a command from the loader, not an actual signal — and processes it accordingly.</p>
+
+<div class="callout hint">
+  <div class="callout-title"><i class="bi bi-lightbulb-fill"></i> Rootkit IPC Pattern</div>
+  Using hooked syscalls as IPC channels is a common rootkit design pattern. The <code>kill</code> syscall is particularly popular because: (1) it's rarely monitored, (2) the signal number field can encode commands, and (3) the PID field can carry data. This creates a bidirectional communication channel that's invisible to conventional process monitoring.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="kernel-extraction">13 · Extracting the Kernel Module</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>The kernel module couldn't be dumped from page cache because it wasn't cached there — kernel modules live in kernel memory, not in the page cache. However, the loader binary contains the entire kernel module as an embedded, XOR-encrypted payload. By analyzing the <code>install_module()</code> function in Ghidra, we find the reconstruction logic:</p>
+
+<div class="flow-diagram">
+<strong>install_module()</strong>
+    │  Calls syscall 0xAF (175 = sys_init_module)
+    │  Arguments:
+    │    • local_18 → pointer to deobf() output
+    │    • 0x666c0  → module size (419520 bytes)
+    │    • args     → module parameters
+    │
+    │  local_18 = deobf(elf_hdr + elf_body)
+    │
+    │  <span class="accent">elf_hdr</span>  = 64-byte plain ELF header
+    │  <span class="highlight">elf_body</span> = XOR-encrypted module body
+    │  <span class="success">xor_key</span>  = 881ba50d42a430791ca2d9ce0630f5c9
+    │
+    ▼  Reconstruct: write elf_hdr + decrypt(elf_body)</div>
+
+<p>We extract both <code>elf_hdr</code> and <code>elf_body</code> from the <code>.data</code> section, then reconstruct the full ELF:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Python</span><span class="filename">reconstruct_module.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python"># Copy hex from Ghidra .data sections
+elf_hdr  = bytes.fromhex("7f454c46020101...")  # 64-byte ELF header
+elf_body = bytes.fromhex("8c3a7b1d5e9f...")   # Encrypted body
+
+xor_key = bytes.fromhex("881ba50d42a430791ca2d9ce0630f5c9")
+
+# Decrypt the body
+decrypted = bytearray()
+for i in range(len(elf_body)):
+    decrypted.append(elf_body[i] ^ xor_key[i % 16])
+
+# Reconstruct full ELF
+with open("volnaya_xb127.ko", "wb") as f:
+    f.write(elf_hdr)
+    f.write(decrypted)
+
+print(f"[+] Wrote {len(elf_hdr) + len(decrypted)} bytes")</code></pre>
+</div>
+
+<p>Open the resulting <code>volnaya_xb127.ko</code> in Ghidra, and we now have full visibility into the rootkit's kernel-space component — including all hook implementations, file-hiding logic, and process concealment mechanisms.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="magic-word">14 · File Hiding — Magic String</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>Within the kernel module, the <code>filldir</code> hooks are responsible for filtering directory listings. The <code>filldir64</code> callback is invoked by the kernel for each directory entry — the rootkit's version checks if the filename contains a specific "magic word" before deciding whether to hide it:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">C</span><span class="filename">filldir hook logic (decompiled)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-c">/* Simplified filldir hook */
+static int hook_filldir64(struct dir_context *ctx,
+                           const char *name, int namlen,
+                           loff_t pos, u64 ino, unsigned d_type)
+{
+    if (strstr(name, MAGIC_WORD) != NULL)
+        return 0;  /* Skip this entry — hide the file */
+
+    return orig_filldir64(ctx, name, namlen, pos, ino, d_type);
+}</code></pre>
+</div>
+
+<p>Any file whose name contains <code>MAGIC_WORD</code> will be invisible to <code>ls</code>, <code>find</code>, and any other tool that reads directory entries through <code>getdents64</code>. This is why hooking <code>getdents64</code> is so powerful — it affects every directory listing operation on the system.</p>
+
+<div class="flag-box">
+  <span class="flag-icon">🚩</span>
+  <div>
+    <div class="flag-label">Flag — Magic Word for File Hiding</div>
+    <div class="flag-value">volnaya</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="uid-gid">15 · File Hiding — UID & GID</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>The rootkit has a second layer of file hiding beyond the magic word check. In the <code>hook_sys_getdents64()</code> function, it performs metadata-based filtering using <code>vfs_fstatat</code> to retrieve file ownership information:</p>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">C</span><span class="filename">getdents64 hook — UID/GID filtering (decompiled)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-c">/* Simplified getdents64 hook */
+static int hook_getdents64(struct pt_regs *regs)
+{
+    // ... iterate directory entries ...
+    struct stat statbuf;
+    vfs_fstatat(AT_FDCWD, entry_name, &statbuf, 0);
+
+    uid_t file_uid = statbuf.st_uid;  // iVar8
+    gid_t file_gid = statbuf.st_gid;  // iVar2
+
+    if (file_uid == USER_HIDE && file_gid == GROUP_HIDE)
+        /* Hide this entry */
+        continue;
+
+    // ... copy visible entries ...
+}</code></pre>
+</div>
+
+<p>The <code>vfs_fstatat</code> call retrieves the file's metadata structure. From this, the rootkit extracts the UID (<code>iVar8</code>) and GID (<code>iVar2</code>) through pointer offsetting into the stat structure. These values are then compared against <code>USER_HIDE</code> and <code>GROUP_HIDE</code> constants defined in the module. Converting the hexadecimal constants to decimal gives us the answer.</p>
+
+<div class="flag-box">
+  <span class="flag-icon">🚩</span>
+  <div>
+    <div class="flag-label">Flag — Hidden File UID:GID</div>
+    <div class="flag-value">1821:1992</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="summary">16 · Attack Chain Summary</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>Piecing together all the evidence, here's the complete picture of the Volnaya rootkit's architecture and attack chain:</p>
+
+<div class="flow-diagram">
+<strong>PERSISTENCE</strong>
+    │  <span class="orange">99-volnaya.rules</span> — udev rule triggers on device event
+    │  Executes <span class="accent">/usr/bin/volnaya_usr</span> (userspace loader)
+    │
+<strong>LOADER</strong> (<span class="accent">volnaya_usr</span>)
+    │  Decrypts embedded kernel module (XOR key: 881ba50d42a430791ca2d9ce0630f5c9)
+    │  Calls <span class="purple">sys_init_module</span> to load <span class="highlight">volnaya_xb127</span>
+    │  Establishes reverse shell → <span class="success">callback.cnc2811.volnaya.htb</span>
+    │  Communicates with module via <span class="purple">kill(0x41, ...)</span> IPC
+    │
+<strong>KERNEL MODULE</strong> (<span class="highlight">volnaya_xb127</span>)
+    │  Hooks <span class="accent">__x64_sys_kill</span> — covert IPC channel
+    │  Hooks <span class="accent">__x64_sys_getdents64</span> — file/directory hiding
+    │  File hiding rules:
+    │    • Filename contains <span class="orange">"volnaya"</span> → hidden
+    │    • Owner UID:GID = <span class="orange">1821:1992</span> → hidden
+    │  Process hiding via DKOM (bash PID 2957 invisible in pslist)
+    │
+<strong>C2 COMMUNICATION</strong>
+    │  Reverse shell over TCP/443 → <span class="highlight">16.171.55.6</span>
+    │  Covert signaling via hooked kill syscall</div>
+
+<div class="callout success">
+  <div class="callout-title"><i class="bi bi-check-circle-fill"></i> Key Takeaways</div>
+  <ul style="margin:0;padding-left:1.25rem">
+    <li><strong>ISF generation is essential</strong> — without matching symbols, Volatility is blind. Always verify kernel versions match exactly.</li>
+    <li><strong>psscan vs pslist</strong> — rootkits can unlink processes from the task list (DKOM), but memory pool scanning still finds them.</li>
+    <li><strong>ftrace hooks bypass syscall table checks</strong> — modern rootkits use legitimate kernel infrastructure for stealth. Always check ftrace.</li>
+    <li><strong>Page cache is a goldmine</strong> — even when binaries are deleted from disk, their pages may persist in cache, allowing full binary extraction.</li>
+    <li><strong>XOR obfuscation is trivially reversible</strong> — once you find the key (often stored in .data), all strings and payloads are immediately recoverable.</li>
+  </ul>
+</div>
+
+</main>
+
+<aside class="sidebar-toc">
+  <div class="toc-title"><i class="bi bi-list-nested"></i> Contents</div>
+  <ul class="toc-list">
+    <li><a href="#overview">01 · Challenge Overview</a></li>
+    <li><a href="#recon">02 · Initial Recon</a></li>
+    <li><a href="#isf">03 · ISF Symbols Generation</a></li>
+    <li><a href="#harvest">04 · Harvesting Artifacts</a></li>
+    <li><a href="#udev">05 · Backdoor udev Rule</a></li>
+    <li><a href="#attacker-ip">06 · Attacker IP</a></li>
+    <li><a href="#kernel-module">07 · Kernel Module Name</a></li>
+    <li><a href="#hidden-bash">08 · Hidden Bash PID</a></li>
+    <li><a href="#ftrace-hooks">09 · ftrace Hooks</a></li>
+    <li><a href="#loader-extraction">10 · Extracting Loader</a></li>
+    <li><a href="#xor-key">11 · XOR Key</a></li>
+    <li><a href="#c2-hostname">12 · C2 Hostname</a></li>
+    <li><a href="#kernel-extraction">13 · Kernel Module Extraction</a></li>
+    <li><a href="#magic-word">14 · File Hiding — Magic String</a></li>
+    <li><a href="#uid-gid">15 · File Hiding — UID:GID</a></li>
+    <li><a href="#summary">16 · Attack Chain Summary</a></li>
+  </ul>
+
+  <div class="sidebar-meta">
+    <div class="meta-item"><i class="bi bi-person"></i> QA210</div>
+    <div class="meta-item"><i class="bi bi-calendar3"></i> 2025</div>
+    <div class="meta-item"><i class="bi bi-clock"></i> ~25 min read</div>
+    <div class="meta-item"><i class="bi bi-tag"></i> Forensics</div>
+  </div>
+</aside>
+
+</div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-left">&copy; 2026 <span>QA210</span> &mdash; Security Research &amp; CTF Writeups</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/htb/">HTB</a>
+      <a href="/tjctf-2026/">TJCTF</a>
+      <a href="/tryhackme/">TryHackMe</a>
+      <a href="/research/">Research</a>
+      <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
+      <a href="https://w4llz.me/" target="_blank">W4LLZ</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Copy button
+function copyCode(btn){
+  const code=btn.closest('.code-block').querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(()=>{
+    btn.textContent='Copied!';btn.style.color='var(--green)';btn.style.borderColor='var(--green)';
+    setTimeout(()=>{btn.textContent='Copy';btn.style.color='';btn.style.borderColor='';},2000);
+  });
+}
+
+// Active TOC tracking
+const tocLinks=document.querySelectorAll('.toc-list a');
+const sections=[];
+tocLinks.forEach(link=>{
+  const id=link.getAttribute('href').substring(1);
+  const el=document.getElementById(id);
+  if(el)sections.push({el,link});
+});
+function updateTOC(){
+  let current=sections[0];
+  for(const s of sections){if(s.el.getBoundingClientRect().top<=120)current=s}
+  tocLinks.forEach(l=>l.classList.remove('active'));
+  if(current)current.link.classList.add('active');
+}
+window.addEventListener('scroll',updateTOC,{passive:true});
+updateTOC();
+
+// Three.js — Forensics-themed background
+(function(){
+  const canvas=document.getElementById('bg-canvas');
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:false});
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
+  camera.position.z=5;
+
+  const g=new THREE.Group();scene.add(g);
+
+  // Hexagonal wireframe — represents memory structures
+  const dodec=new THREE.DodecahedronGeometry(2.2,0);
+  const dMat=new THREE.MeshBasicMaterial({color:0x3b82f6,wireframe:true,transparent:true,opacity:0.08});
+  g.add(new THREE.Mesh(dodec,dMat));
+
+  // Inner octahedron — kernel space
+  const octa=new THREE.OctahedronGeometry(1.4,0);
+  const oMat=new THREE.MeshBasicMaterial({color:0x06b6d4,wireframe:true,transparent:true,opacity:0.06});
+  g.add(new THREE.Mesh(octa,oMat));
+
+  // Particles — memory pages
+  const pCount=600;const pGeo=new THREE.BufferGeometry();
+  const pos=new Float32Array(pCount*3);const vel=[];
+  for(let i=0;i<pCount;i++){pos[i*3]=(Math.random()-.5)*20;pos[i*3+1]=(Math.random()-.5)*20;pos[i*3+2]=(Math.random()-.5)*10;vel.push(Math.random()*.006+.002)}
+  pGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const pMat=new THREE.PointsMaterial({color:0x3b82f6,size:0.02,transparent:true,opacity:0.25});
+  scene.add(new THREE.Points(pGeo,pMat));
+
+  function animate(){
+    requestAnimationFrame(animate);
+    g.rotation.y+=0.0015;g.rotation.x+=0.0008;
+    const p=pGeo.attributes.position.array;
+    for(let i=0;i<pCount;i++){p[i*3+1]-=vel[i];if(p[i*3+1]<-10){p[i*3+1]=10;p[i*3]=(Math.random()-.5)*20}}
+    pGeo.attributes.position.needsUpdate=true;
+    renderer.render(scene,camera);
+  }
+  animate();
+  window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+})();
+</script>
+</body>
+</html>
