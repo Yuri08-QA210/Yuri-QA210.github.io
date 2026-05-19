@@ -3,18 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kernel Security — QA210 Research</title>
-<meta name="description" content="Linux Kernel security research by QA210 — LPE exploit analysis, page cache write primitives, COW bypass techniques, and defensive hardening for kernel vulnerabilities.">
+<title>DirtyDecrypt / DirtyCBC — Root Privilege Escalation via rxgk_decrypt_skb | QA210 Research</title>
+<meta name="description" content="Analysis of LPE vulnerability CVE-2026-31635 (DirtyDecrypt/DirtyCBC) in the Linux kernel rxgk module. Exploiting COW guard bypass to overwrite page cache and achieve full root access.">
 <meta name="author" content="QA210">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root{
   --bg0:#06080c;--bg1:#0b0f17;--bg2:#111827;--bg3:#1a2234;--bg4:#222d42;
-  --border:#1e293b;--border-light:#334155;--border-glow:rgba(239,68,68,0.15);
+  --border:#1e293b;--border-light:#334155;--border-glow:rgba(88,166,255,0.15);
   --text0:#f1f5f9;--text1:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--text4:#475569;
-  --accent:#ef4444;--accent-hover:#f87171;--accent-dim:rgba(239,68,68,0.1);
+  --accent:#3b82f6;--accent-hover:#60a5fa;--accent-dim:rgba(59,130,246,0.1);
   --green:#22c55e;--green-dim:rgba(34,197,94,0.1);
   --red:#ef4444;--red-dim:rgba(239,68,68,0.1);
   --purple:#a855f7;--purple-dim:rgba(168,85,247,0.1);
@@ -22,181 +27,145 @@
   --yellow:#eab308;--yellow-dim:rgba(234,179,8,0.1);
   --cyan:#06b6d4;--cyan-dim:rgba(6,182,212,0.1);
   --rose:#f43f5e;--rose-dim:rgba(244,63,94,0.1);
-  --gradient-accent:linear-gradient(135deg,#ef4444,#dc2626);
+  --gradient-accent:linear-gradient(135deg,#3b82f6,#8b5cf6);
   --gradient-warm:linear-gradient(135deg,#f97316,#ef4444);
-  --gradient-kernel:linear-gradient(135deg,#ef4444,#f97316);
-  --gradient-cool:linear-gradient(135deg,#6366f1,#06b6d4);
+  --gradient-cool:linear-gradient(135deg,#06b6d4,#3b82f6);
+  --gradient-rose:linear-gradient(135deg,#f43f5e,#a855f7);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--border) var(--bg1)}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg0);color:var(--text1);line-height:1.65;font-size:15px;overflow-x:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg1)}::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--text4)}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg0);color:var(--text1);line-height:1.75;font-size:15px;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg1)}::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:3px}
 a{color:var(--accent);text-decoration:none;transition:all .2s}a:hover{color:var(--accent-hover)}
-img{max-width:100%;display:block}
-::selection{background:rgba(239,68,68,0.3);color:var(--text0)}
-
+::selection{background:rgba(59,130,246,0.3);color:var(--text0)}
 #bg-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;opacity:.1}
 
-/* ═══ HEADER ═══ */
-.site-header{position:sticky;top:0;z-index:100;background:rgba(6,8,12,0.82);backdrop-filter:blur(20px) saturate(1.2);border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;padding:0 2.5rem;gap:2rem}
+/* HEADER */
+.site-header{position:sticky;top:0;z-index:100;background:rgba(6,8,12,0.85);backdrop-filter:blur(20px) saturate(1.2);border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;padding:0 2.5rem;gap:2rem}
 .site-header .brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk','JetBrains Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--text0);white-space:nowrap;letter-spacing:-.03em}
-.site-header .brand .logo-icon{width:28px;height:28px;border-radius:7px;background:var(--gradient-kernel);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:#fff}
+.site-header .brand .logo-icon{width:28px;height:28px;border-radius:7px;background:var(--gradient-accent);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:#fff}
 .site-header .brand .cursor{display:inline-block;width:2px;height:1em;background:var(--green);margin-left:2px;animation:blink 1s step-end infinite}
 @keyframes blink{50%{opacity:0}}
 .site-header .nav-main{display:flex;gap:0;align-items:center}
 .site-header .nav-main a{padding:0 1.1rem;height:58px;display:flex;align-items:center;color:var(--text3);font-size:.82rem;font-weight:500;border-bottom:2px solid transparent;transition:all .2s}
 .site-header .nav-main a:hover,.site-header .nav-main a.active{color:var(--text0);border-bottom-color:var(--accent)}
 .site-header .nav-right{margin-left:auto;display:flex;align-items:center;gap:1.1rem}
-.search-box{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:0 12px;height:34px;gap:7px;transition:all .2s}
-.search-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
-.search-box i{color:var(--text4);font-size:.8rem}
-.search-box input{background:none;border:none;outline:none;color:var(--text1);font-size:.8rem;font-family:'Inter',sans-serif;width:170px}
-.search-box input::placeholder{color:var(--text4)}
 .social-link{color:var(--text4);font-size:1.05rem;transition:all .2s;padding:4px}
 .social-link:hover{color:var(--accent);transform:translateY(-1px)}
 .mobile-toggle{display:none;background:none;border:none;color:var(--text1);font-size:1.3rem;cursor:pointer}
 
-/* ═══ BREADCRUMBS ═══ */
-.breadcrumbs{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:.75rem 2.5rem 0;display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--text4)}
+/* BREADCRUMBS */
+.breadcrumbs{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:1rem 2.5rem .5rem;display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--text4)}
 .breadcrumbs a{color:var(--text3)}.breadcrumbs a:hover{color:var(--accent)}
 .breadcrumbs .sep{opacity:.4}.breadcrumbs .current{color:var(--text2);font-weight:600}
 
-/* ═══ LAYOUT ═══ */
+/* LAYOUT */
 .page-body{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:0 2.5rem}
+.writeup-layout{display:grid;grid-template-columns:1fr 260px;gap:3rem;padding-bottom:4rem}
 
-/* ═══ HERO ═══ */
-.hero-section{padding:3rem 0 2.5rem;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 340px;gap:3.5rem;align-items:center}
-.hero-text .greeting{font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--red);font-weight:600;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
-.hero-text .greeting::before{content:'';display:inline-block;width:24px;height:1px;background:var(--red)}
-.hero-text h1{font-family:'Space Grotesk','Inter',sans-serif;font-size:2.6rem;font-weight:800;letter-spacing:-.04em;line-height:1.1;margin-bottom:1rem;color:var(--text0)}
-.hero-text h1 span{background:var(--gradient-kernel);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-text .tagline{color:var(--text2);font-size:.92rem;line-height:1.8;margin-bottom:1.5rem;max-width:580px}
-.hero-badges{display:flex;flex-wrap:wrap;gap:.6rem}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:.72rem;font-weight:600;border:1px solid;transition:all .2s;cursor:default}
-.hero-badge:hover{transform:translateY(-1px)}
-.hero-badge.lpe{background:var(--red-dim);border-color:rgba(239,68,68,0.25);color:var(--red)}
-.hero-badge.page-cache{background:var(--orange-dim);border-color:rgba(249,115,22,0.25);color:var(--orange)}
-.hero-badge.cow-bypass{background:var(--purple-dim);border-color:rgba(168,85,247,0.25);color:var(--purple)}
-.hero-badge.hardening{background:var(--green-dim);border-color:rgba(34,197,94,0.25);color:var(--green)}
-.hero-badge.detection{background:var(--cyan-dim);border-color:rgba(6,182,212,0.25);color:var(--cyan)}
-.hero-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.75rem;position:relative;overflow:hidden}
-.hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gradient-kernel)}
-.hero-card .card-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);font-weight:700;margin-bottom:1.1rem}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
-.stat-item .stat-val{font-family:'Space Grotesk','JetBrains Mono',monospace;font-size:1.6rem;font-weight:700;color:var(--text0)}
-.stat-item .stat-lbl{font-size:.68rem;color:var(--text4);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-top:3px}
-.stat-item.highlight .stat-val{background:var(--gradient-kernel);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+/* HERO */
+.writeup-hero{padding:2.5rem 0 2rem;border-bottom:1px solid var(--border);margin-bottom:2rem}
+.writeup-hero .meta-top{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.writeup-hero .meta-top .platform{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 10px;border-radius:5px;background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,0.25)}
+.writeup-hero .meta-top .category{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 10px;border-radius:5px;background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(6,182,212,0.25)}
+.writeup-hero .meta-top .date{font-size:.72rem;color:var(--text4);font-family:'JetBrains Mono',monospace;margin-left:auto}
+.writeup-hero h1{font-family:'Space Grotesk','Inter',sans-serif;font-size:2.4rem;font-weight:800;letter-spacing:-.03em;line-height:1.15;margin-bottom:.75rem;color:var(--text0)}
+.writeup-hero h1 span{background:var(--gradient-rose);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.writeup-hero .subtitle{color:var(--text2);font-size:1rem;line-height:1.7;margin-bottom:1.25rem;max-width:780px}
+.writeup-hero .tags{display:flex;flex-wrap:wrap;gap:.4rem}
+.writeup-hero .tag{font-size:.62rem;padding:3px 10px;border-radius:5px;background:var(--bg2);color:var(--text2);border:1px solid var(--border);font-weight:500}
 
-/* ═══ INFO STRIP ═══ */
-.info-strip{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:1.25rem;padding:2rem 0 2.25rem;border-bottom:1px solid var(--border)}
-.info-card{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.4rem;transition:border-color .2s}
-.info-card:hover{border-color:var(--border-light)}
-.info-card .ic-title{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text4);font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:7px}
-.info-card .ic-title i{font-size:.78rem;color:var(--red)}
+/* CONTENT */
+.writeup-content h2{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:var(--text0);margin:2.5rem 0 1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);letter-spacing:-.02em}
+.writeup-content h3{font-family:'Space Grotesk',sans-serif;font-size:1.15rem;font-weight:700;color:var(--text1);margin:1.75rem 0 .75rem}
+.writeup-content h4{font-size:.95rem;font-weight:700;color:var(--text2);margin:1.25rem 0 .5rem}
+.writeup-content p{margin-bottom:1rem;color:var(--text1)}
+.writeup-content ul,.writeup-content ol{margin-bottom:1rem;padding-left:1.5rem;color:var(--text1)}
+.writeup-content li{margin-bottom:.35rem}
+.writeup-content strong{color:var(--text0);font-weight:600}
+.writeup-content em{color:var(--text2);font-style:italic}
 
-.about-inline{display:flex;align-items:center;gap:1rem}
-.about-inline .avatar{width:52px;height:52px;border-radius:50%;border:2px solid var(--border);object-fit:cover;flex-shrink:0;transition:border-color .3s}
-.about-inline .avatar:hover{border-color:var(--red)}
-.about-inline .about-meta .author-name{font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:700;color:var(--text0)}
-.about-inline .about-meta .author-role{font-size:.7rem;color:var(--text3);margin-top:1px}
-.about-inline .about-meta .author-links{display:flex;gap:.6rem;margin-top:4px}
-.about-inline .about-meta .author-links a{color:var(--text4);font-size:.9rem;transition:all .2s}
-.about-inline .about-meta .author-links a:hover{color:var(--red)}
-.about-bio{font-size:.76rem;color:var(--text2);line-height:1.7;margin-top:.75rem}
-.about-quote{font-size:.7rem;color:var(--text3);font-style:italic;line-height:1.6;padding:.5rem .85rem;border-left:2px solid var(--red);margin-top:.6rem;background:var(--red-dim);border-radius:0 6px 6px 0}
+/* CODE BLOCKS */
+.code-block{position:relative;margin:1.25rem 0;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--bg1)}
+.code-block .code-header{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:var(--bg2);border-bottom:1px solid var(--border);font-size:.7rem}
+.code-block .code-header .lang{color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.code-block .code-header .filename{color:var(--text4);font-family:'JetBrains Mono',monospace;font-size:.68rem}
+.code-block .copy-btn{background:none;border:1px solid var(--border);color:var(--text3);font-size:.65rem;padding:2px 10px;border-radius:4px;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+.code-block .copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+.code-block pre{margin:0!important;padding:1rem!important;background:transparent!important;overflow-x:auto}
+.code-block pre code{font-family:'JetBrains Mono',monospace!important;font-size:.8rem!important;line-height:1.6!important}
+pre[class*="language-"]{background:var(--bg1)!important;margin:0!important;padding:1rem!important}
+code[class*="language-"]{font-family:'JetBrains Mono',monospace!important;font-size:.82rem!important;text-shadow:none!important}
+.token.comment,.token.prolog{color:var(--text4)!important}
+.token.keyword{color:var(--purple)!important}
+.token.string{color:var(--green)!important}
+.token.function{color:var(--cyan)!important}
+.token.number{color:var(--orange)!important}
+.token.operator{color:var(--text2)!important}
+.token.punctuation{color:var(--text3)!important}
+.token.attr-name{color:var(--cyan)!important}
+.token.attr-value{color:var(--green)!important}
+.token.tag{color:var(--red)!important}
 
-.tag-cloud{display:flex;flex-wrap:wrap;gap:.35rem}
-.tag-cloud .tc-tag{font-size:.66rem;padding:3px 10px;border-radius:6px;background:var(--bg2);color:var(--text2);border:1px solid var(--border);cursor:pointer;transition:all .2s;font-weight:500}
-.tag-cloud .tc-tag:hover{border-color:var(--red);color:var(--red);background:var(--red-dim)}
-.tc-tag.hot{background:var(--red-dim);border-color:rgba(239,68,68,0.2);color:var(--red)}
+/* CALLOUT BOXES */
+.callout{margin:1.25rem 0;padding:1rem 1.25rem;border-radius:10px;border-left:3px solid;font-size:.88rem;line-height:1.7}
+.callout .callout-title{font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;display:flex;align-items:center;gap:6px}
+.callout.danger{background:rgba(239,68,68,0.06);border-color:var(--red);color:var(--text1)}
+.callout.danger .callout-title{color:var(--red)}
+.callout.warning{background:rgba(249,115,22,0.06);border-color:var(--orange);color:var(--text1)}
+.callout.warning .callout-title{color:var(--orange)}
+.callout.info{background:rgba(59,130,246,0.06);border-color:var(--accent);color:var(--text1)}
+.callout.info .callout-title{color:var(--accent)}
+.callout.success{background:rgba(34,197,94,0.06);border-color:var(--green);color:var(--text1)}
+.callout.success .callout-title{color:var(--green)}
+.callout.hint{background:rgba(168,85,247,0.06);border-color:var(--purple);color:var(--text1)}
+.callout.hint .callout-title{color:var(--purple)}
+.callout code{background:var(--bg2);padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--cyan)}
 
-.technique-list{display:flex;flex-direction:column;gap:.45rem}
-.technique-item{display:flex;align-items:center;gap:.6rem;padding:.35rem 0;font-size:.76rem;color:var(--text2);transition:color .2s}
-.technique-item i{color:var(--red);font-size:.6rem;width:14px;text-align:center}
-.technique-item:hover{color:var(--text0)}
-.technique-item .tc{margin-left:auto;font-size:.6rem;color:var(--text4);font-family:'JetBrains Mono',monospace}
+/* COMPARISON TABLE */
+.compare-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.82rem}
+.compare-table th{background:var(--bg2);color:var(--text2);font-weight:600;text-align:left;padding:.6rem .85rem;border:1px solid var(--border);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
+.compare-table td{padding:.55rem .85rem;border:1px solid var(--border);color:var(--text1)}
+.compare-table tr:nth-child(even) td{background:var(--bg1)}
+.compare-table td:first-child{font-weight:600;color:var(--text0)}
 
-/* ═══ FILTER BAR ═══ */
-.filter-bar{padding:1.75rem 0 1.25rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
-.filter-bar .filter-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text4);font-weight:700;margin-right:.25rem}
-.filter-btn{padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg1);color:var(--text2);font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
-.filter-btn:hover{border-color:var(--border-light);color:var(--text1);background:var(--bg2)}
-.filter-btn.active{background:var(--red);border-color:var(--red);color:#fff;font-weight:600;box-shadow:0 2px 12px rgba(239,68,68,0.3)}
-.filter-btn .count{margin-left:5px;opacity:.5;font-size:.68rem}
+/* FLOW DIAGRAM */
+.flow-diagram{background:var(--bg1);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin:1.25rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.8;color:var(--text2);overflow-x:auto;white-space:pre}
+.flow-diagram .highlight{color:var(--red);font-weight:700}
+.flow-diagram .success{color:var(--green);font-weight:700}
+.flow-diagram .accent{color:var(--cyan);font-weight:700}
+.flow-diagram .purple{color:var(--purple);font-weight:700}
 
-/* ═══ POST CARDS ═══ */
-.posts-section .section-heading{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text4);font-weight:700;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem}
-.posts-section .section-heading::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
-.post-card{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:1.35rem 1.6rem;margin-bottom:1rem;transition:all .25s;position:relative;display:block;color:inherit}
-.post-card:hover{border-color:var(--border-light);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.4),0 0 0 1px var(--border-glow)}
-.post-card .post-top{display:flex;align-items:center;gap:.75rem;margin-bottom:.7rem}
-.post-card .platform-badge{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:5px;white-space:nowrap}
-.platform-badge.kernel{background:var(--red-dim);color:var(--red)}
-.platform-badge.lpe{background:var(--orange-dim);color:var(--orange)}
-.diff-badge{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:5px}
-.diff-badge.critical{background:var(--red-dim);color:var(--red)}
-.diff-badge.high{background:var(--orange-dim);color:var(--orange)}
-.diff-badge.medium{background:var(--yellow-dim);color:var(--yellow)}
-.post-card .post-date{margin-left:auto;font-size:.7rem;color:var(--text4);font-family:'JetBrains Mono',monospace}
-.post-card h3{font-size:1.08rem;font-weight:700;margin-bottom:.45rem;color:var(--text0);letter-spacing:-.01em;transition:color .2s}
-.post-card:hover h3{color:var(--red)}
-.post-card .post-excerpt{font-size:.82rem;color:var(--text2);line-height:1.65;margin-bottom:.85rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.post-card .post-tags{display:flex;flex-wrap:wrap;gap:.35rem}
-.post-card .tag{font-size:.62rem;padding:2px 9px;border-radius:5px;background:var(--bg3);color:var(--text3);border:1px solid var(--border);font-weight:500;transition:all .2s;letter-spacing:.02em}
-.post-card:hover .tag{border-color:var(--border-light);color:var(--text2)}
+/* SIDEBAR TOC */
+.sidebar-toc{position:sticky;top:72px;align-self:start;max-height:calc(100vh - 90px);overflow-y:auto}
+.sidebar-toc .toc-title{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text4);font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:7px}
+.sidebar-toc .toc-title i{font-size:.78rem;color:var(--accent)}
+.toc-list{list-style:none;padding:0}
+.toc-list li{margin-bottom:.15rem}
+.toc-list a{display:block;padding:.3rem .6rem;font-size:.75rem;color:var(--text3);border-radius:5px;transition:all .2s;border-left:2px solid transparent;line-height:1.5}
+.toc-list a:hover{color:var(--text1);background:var(--bg2);border-left-color:var(--accent)}
+.toc-list a.active{color:var(--accent);background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.toc-list .toc-h3{padding-left:1.2rem;font-size:.7rem}
+.sidebar-meta{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)}
+.sidebar-meta .meta-item{display:flex;align-items:center;gap:.6rem;font-size:.72rem;color:var(--text3);margin-bottom:.5rem}
+.sidebar-meta .meta-item i{color:var(--accent);width:14px;text-align:center;font-size:.7rem}
 
-/* PINNED */
-.post-card.pinned{border-color:rgba(239,68,68,0.25);background:linear-gradient(135deg,rgba(239,68,68,0.04),var(--bg1))}
-.post-card.pinned::after{content:'Featured';position:absolute;top:0;right:1.6rem;background:var(--gradient-kernel);color:#fff;font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 12px 5px;border-radius:0 0 6px 6px}
-
-/* ═══ FOOTER ═══ */
-.site-footer{border-top:1px solid var(--border);padding:2.5rem 2.5rem;position:relative;z-index:1}
+/* FOOTER */
+.site-footer{border-top:1px solid var(--border);padding:2rem 2.5rem;position:relative;z-index:1}
 .footer-inner{max-width:1320px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
-.footer-left{font-size:.76rem;color:var(--text4)}
-.footer-left span{color:var(--text2);font-weight:600}
-.footer-links{display:flex;gap:1.5rem}
-.footer-links a{color:var(--text4);font-size:.76rem;transition:color .2s}
-.footer-links a:hover{color:var(--text1)}
+.footer-left{font-size:.76rem;color:var(--text4)}.footer-left span{color:var(--text2);font-weight:600}
+.footer-links{display:flex;gap:1.5rem}.footer-links a{color:var(--text4);font-size:.76rem;transition:color .2s}.footer-links a:hover{color:var(--text1)}
 
-/* ═══ MOBILE NAV ═══ */
-.mobile-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;backdrop-filter:blur(4px)}
-.mobile-nav-overlay.show{display:block}
-.mobile-nav-panel{display:none;position:fixed;right:0;top:0;bottom:0;width:300px;background:var(--bg1);border-left:1px solid var(--border);z-index:201;padding:1.5rem;overflow-y:auto}
-.mobile-nav-panel.show{display:block}
-.mobile-nav-panel .mnp-close{background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer;float:right}
-.mobile-nav-panel nav{display:flex;flex-direction:column;gap:.5rem;clear:both;margin-top:1rem}
-.mobile-nav-panel nav a{padding:.75rem 0;border-bottom:1px solid var(--border);color:var(--text1);font-size:.9rem;font-weight:500}
-
-/* ═══ RESPONSIVE ═══ */
-@media(max-width:1024px){
-  .hero-section{grid-template-columns:1fr;gap:2rem}
-  .info-strip{grid-template-columns:1fr}
-}
-@media(max-width:768px){
-  .site-header{padding:0 1rem}
-  .site-header .nav-main{display:none}
-  .search-box{display:none}
-  .mobile-toggle{display:block}
-  .page-body{padding:0 1rem}
-  .breadcrumbs{padding:.75rem 1rem 0}
-  .hero-text h1{font-size:1.85rem}
-  .hero-card{order:-1}
-  .filter-bar{overflow-x:auto;flex-wrap:nowrap;padding-bottom:.5rem}
-  .footer-inner{flex-direction:column;text-align:center}
-}
-@media(max-width:480px){
-  .hero-text h1{font-size:1.5rem}
-  .stat-grid{grid-template-columns:1fr 1fr}
-  .post-card{padding:1rem 1.25rem}
-  .about-inline{flex-direction:column;text-align:center}
-}
+/* RESPONSIVE */
+@media(max-width:1024px){.writeup-layout{grid-template-columns:1fr}.sidebar-toc{display:none}}
+@media(max-width:768px){.site-header{padding:0 1rem}.site-header .nav-main{display:none}.mobile-toggle{display:block}.page-body{padding:0 1rem}.writeup-hero h1{font-size:1.7rem}.breadcrumbs{padding:1rem 1rem .5rem}.footer-inner{flex-direction:column;text-align:center}}
+@media(max-width:480px){.writeup-hero h1{font-size:1.4rem}.flow-diagram{font-size:.68rem;padding:1rem}}
 </style>
 </head>
 <body>
 
 <canvas id="bg-canvas"></canvas>
 
-<!-- ═══════════ HEADER ═══════════ -->
 <header class="site-header">
   <a href="/" class="brand">
     <span class="logo-icon">Q</span>
@@ -204,176 +173,366 @@ img{max-width:100%;display:block}
   </a>
   <nav class="nav-main">
     <a href="/">Home</a>
-    <a href="/htb/">Hack The Box</a>
+    <a href="/htb/">HTB</a>
     <a href="/tjctf-2026/">TJCTF</a>
     <a href="/tryhackme/">TryHackMe</a>
     <a href="/research/" class="active">Research</a>
   </nav>
   <div class="nav-right">
-    <div class="search-box">
-      <i class="bi bi-search"></i>
-      <input type="text" placeholder="Search kernel research..." id="searchInput" oninput="filterPosts()">
-    </div>
     <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
-    <a href="https://w4llz.me/" target="_blank" class="social-link" title="W4LLZ Team" style="color:var(--yellow)"><i class="bi bi-people-fill"></i></a>
-    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu"><i class="bi bi-list"></i></button>
+    <a href="https://w4llz.me/" target="_blank" class="social-link" title="W4LLZ" style="color:var(--yellow)"><i class="bi bi-people-fill"></i></a>
+    <button class="mobile-toggle" aria-label="Menu"><i class="bi bi-list"></i></button>
   </div>
 </header>
 
-<!-- Mobile Nav -->
-<div class="mobile-nav-overlay" id="mobileOverlay" onclick="toggleMobileNav()"></div>
-<div class="mobile-nav-panel" id="mobilePanel">
-  <button class="mnp-close" onclick="toggleMobileNav()"><i class="bi bi-x-lg"></i></button>
-  <nav>
-    <a href="/">Home</a>
-    <a href="/htb/">Hack The Box</a>
-    <a href="/tjctf-2026/">TJCTF</a>
-    <a href="/tryhackme/">TryHackMe</a>
-    <a href="/research/">Research</a>
-    <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
-    <a href="https://w4llz.me/" target="_blank">W4LLZ Team</a>
-  </nav>
-</div>
-
-<!-- ═══ BREADCRUMBS ═══ -->
 <div class="breadcrumbs">
   <a href="/">Home</a><span class="sep">/</span>
   <a href="/research/">Research</a><span class="sep">/</span>
-  <span class="current">Kernel</span>
+  <a href="/research/kernel/">Kernel</a><span class="sep">/</span>
+  <span class="current">DirtyDecrypt</span>
 </div>
 
-<!-- ═══════════ MAIN ═══════════ -->
 <div class="page-body">
 
-<!-- ═══ HERO ═══ -->
-<section class="hero-section">
-  <div class="hero-text">
-    <div class="greeting">Kernel Security</div>
-    <h1>Linux Kernel &<br><span>Exploit Research</span></h1>
-    <p class="tagline">Nghiên cứu bảo mật nhân Linux — phân tích lỗ hổng LPE, page cache write primitives, và defensive hardening. Phân tích kỹ thuật sâu về các lớp lỗ hổng Dirty* trong kernel.</p>
-    <div class="hero-badges">
-      <span class="hero-badge lpe"><i class="bi bi-arrow-up-circle-fill"></i> LPE</span>
-      <span class="hero-badge page-cache"><i class="bi bi-file-earmark-binary-fill"></i> Page Cache</span>
-      <span class="hero-badge cow-bypass"><i class="bi bi-shield-slash-fill"></i> COW Bypass</span>
-      <span class="hero-badge hardening"><i class="bi bi-shield-lock-fill"></i> Kernel Hardening</span>
-      <span class="hero-badge detection"><i class="bi bi-eye-fill"></i> Detection</span>
-    </div>
+<section class="writeup-hero">
+  <div class="meta-top">
+    <span class="platform"><i class="bi bi-shield-fill-exclamation"></i> Kernel Security</span>
+    <span class="category"><i class="bi bi-cpu-fill"></i> Linux Kernel</span>
+    <span class="date">May 2026</span>
   </div>
-  <div class="hero-card">
-    <div class="card-label">Kernel Vulnerability Stats</div>
-    <div class="stat-grid">
-      <div class="stat-item highlight">
-        <div class="stat-val">1</div>
-        <div class="stat-lbl">Papers</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-val">1</div>
-        <div class="stat-lbl">CVE Analyzed</div>
-      </div>
-      <div class="stat-item highlight">
-        <div class="stat-val">4</div>
-        <div class="stat-lbl">Related Vulns</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-val">5</div>
-        <div class="stat-lbl">Distro Affected</div>
-      </div>
-    </div>
+  <h1>DirtyDecrypt / DirtyCBC — <span>Root via rxgk_decrypt_skb</span></h1>
+  <p class="subtitle">Deep analysis of LPE vulnerability CVE-2026-31635 in the Linux kernel's rxgk module. Exploiting a missing COW guard to overwrite page cache contents and achieve full root privilege escalation without race conditions or special capabilities.</p>
+  <div class="tags">
+    <span class="tag">CVE-2026-31635</span><span class="tag">LPE</span><span class="tag">Linux Kernel</span><span class="tag">rxgk</span><span class="tag">Page Cache</span><span class="tag">Dirty Pipe</span><span class="tag">COW</span><span class="tag">Fedora</span><span class="tag">Arch</span>
   </div>
 </section>
 
-<!-- ═══ INFO STRIP ═══ -->
-<section class="info-strip">
+<div class="writeup-layout">
 
-  <!-- About -->
-  <div class="info-card">
-    <div class="ic-title"><i class="bi bi-person-circle"></i> About</div>
-    <div class="about-inline">
-      <img src="https://files.catbox.moe/755fgv.png" alt="QA210" class="avatar">
-      <div class="about-meta">
-        <div class="author-name">QA210</div>
-        <div class="author-role">10th Grade &bull; Vietnam</div>
-        <div class="author-links">
-          <a href="https://github.com/Yuri08-QA210" target="_blank" title="GitHub"><i class="bi bi-github"></i></a>
-          <a href="https://w4llz.me/" target="_blank" title="W4LLZ"><i class="bi bi-people-fill"></i></a>
-        </div>
-      </div>
-    </div>
-    <p class="about-bio">High school student from Vietnam passionate about offensive security, binary exploitation, and Active Directory attacks. Member of <a href="https://w4llz.me/" target="_blank" style="color:var(--yellow);font-weight:600">W4LLZ</a> CTF team.</p>
-    <div class="about-quote">&ldquo;Nothing is secure, everything has bugs, and humans are the biggest vulnerability.&rdquo;</div>
-  </div>
+<main class="writeup-content">
 
-  <!-- Kernel Tags -->
-  <div class="info-card">
-    <div class="ic-title"><i class="bi bi-tags"></i> Kernel Research Tags</div>
-    <div class="tag-cloud">
-      <span class="tc-tag hot">CVE-2026-31635</span>
-      <span class="tc-tag hot">LPE</span>
-      <span class="tc-tag hot">Page Cache</span>
-      <span class="tc-tag hot">Dirty Pipe</span>
-      <span class="tc-tag">COW</span>
-      <span class="tc-tag">rxgk</span>
-      <span class="tc-tag">SUID</span>
-      <span class="tc-tag">Fedora</span>
-      <span class="tc-tag">Arch</span>
-      <span class="tc-tag">openSUSE</span>
-      <span class="tc-tag">Kernel Hardening</span>
-    </div>
-  </div>
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="executive-summary">01 · Executive Summary</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
 
-  <!-- Key Techniques -->
-  <div class="info-card">
-    <div class="ic-title"><i class="bi bi-lightning-charge"></i> Exploit Techniques</div>
-    <div class="technique-list">
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> Page Cache Write Primitive <span class="tc">Primary</span></div>
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> COW Guard Bypass <span class="tc">Bypass</span></div>
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> SUID Binary Overwrite <span class="tc">Payload</span></div>
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> In-Memory Only <span class="tc">Stealth</span></div>
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> FIM Evasion <span class="tc">Evasion</span></div>
-    </div>
-  </div>
+<p>DirtyDecrypt (alias: DirtyCBC) is a Local Privilege Escalation (LPE) vulnerability in the <code>rxgk</code> module of the Linux kernel. An attacker running with regular user privileges can exploit this flaw to achieve full root access, taking complete control of the affected system.</p>
 
-</section>
+<p>The vulnerability was silently patched on April 25, 2026 (CVE-2026-31635), but the V12 Security research team independently discovered it and publicly disclosed it alongside a proof-of-concept exploit in May 2026, triggering a race between patchers and attackers across the ecosystem.</p>
 
-<!-- ═══ FILTER BAR ═══ -->
-<div class="filter-bar">
-  <span class="filter-label">Filter:</span>
-  <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All<span class="count">1</span></button>
-  <button class="filter-btn" data-filter="kernel" onclick="setFilter(this)">Kernel<span class="count">1</span></button>
-  <button class="filter-btn" data-filter="lpe" onclick="setFilter(this)">LPE<span class="count">1</span></button>
+<div class="callout danger">
+  <div class="callout-title"><i class="bi bi-exclamation-triangle-fill"></i> Severity: High</div>
+  Public PoC available, no special privileges required, no race condition needed. Exploitation can be performed by any unprivileged user on an affected system.
 </div>
 
-<!-- ═══ POSTS ═══ -->
-<div class="posts-section">
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="page-cache">02 · Technical Background — Page Cache</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
 
-  <!-- KERNEL RESEARCH -->
-  <div class="section-heading">Kernel Exploit Research</div>
+<p>To understand DirtyDecrypt, one must first grasp the Linux page cache: the kernel stores copies of on-disk files (including sensitive ones like <code>/etc/passwd</code> and <code>/usr/bin/su</code>) in RAM to improve performance. These cached copies are read-only for unprivileged users — this is a fundamental security invariant.</p>
 
-  <a href="/research/kernel/dirtydecrypt/" class="post-card pinned" data-platform="kernel" data-tags="kernel,lpe,cve-2026-31635,page-cache,cow,rxgk,fedora,arch,opensuse,detection,hardening">
-    <div class="post-top">
-      <span class="platform-badge kernel"><i class="bi bi-bug-fill"></i> Kernel Research</span>
-      <span class="platform-badge lpe"><i class="bi bi-arrow-up-circle-fill"></i> LPE</span>
-      <span class="diff-badge critical">Critical</span>
-      <span class="post-date">2026</span>
-    </div>
-    <h3>DirtyDecrypt / DirtyCBC — Leo quyền root qua rxgk_decrypt_skb</h3>
-    <p class="post-excerpt">Phân tích lỗ hổng LPE CVE-2026-31635 trong module rxgk của nhân Linux. Khai thác bỏ qua COW guard để ghi đè page cache, đạt quyền root hoàn toàn mà không cần race condition. Tương tự Dirty Pipe nhưng nguy hiểm hơn — không giới hạn pipe size, hoạt động in-memory only, bypass FIM và SELinux.</p>
-    <div class="post-tags">
-      <span class="tag">CVE-2026-31635</span><span class="tag">LPE</span><span class="tag">rxgk</span><span class="tag">Page Cache</span><span class="tag">COW</span><span class="tag">Fedora</span><span class="tag">Arch</span>
-    </div>
-  </a>
+<p>The entire Dirty* family of vulnerabilities (Dirty Pipe, Copy Fail, Dirty Frag, DirtyDecrypt) exploits the same core principle: <strong>tricking the kernel into writing to page cache without requiring write permissions on the actual file</strong>, thereby modifying sensitive file contents purely in memory.</p>
 
+<div class="code-block">
+  <div class="code-header"><span class="lang">Concept</span><span class="filename">Page Cache — Simplified Model</span></div>
+  <pre><code class="language-bash">User Process (unprivileged)
+    │  read("/usr/bin/su")
+    ▼
+┌──────────────────────────────┐
+│       Page Cache (RAM)       │  ← In-memory copy of file
+│  /usr/bin/su  [read-only]   │  ← Regular user CANNOT write
+│  /etc/passwd  [read-only]   │
+└──────────────────────────────┘
+    │           ▲
+    ▼           │  write() — DENIED without file permissions
+  Disk           │
+                 │
+    ╔════════════╧════════════╗
+    ║  Dirty* Vulnerability   ║
+    ║  → OVERWRITE page cache ║
+    ║    WITHOUT write perms  ║
+    ╚═════════════════════════╝</code></pre>
 </div>
 
-</div><!-- /page-body -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="root-cause">03 · Root Cause — Missing COW Guard</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
 
-<!-- ═══════════ FOOTER ═══════════ -->
+<p>The bug resides in the <code>rxgk_decrypt_skb()</code> function of the <code>rxgk</code> kernel module (RxGK — the security layer for the AFS client). When the kernel receives a packet through a socket, it needs to decrypt the data. This process has two possible paths:</p>
+
+<ul>
+  <li><strong>Safe path (with COW)</strong>: The kernel checks whether the socket buffer (skb) points into page cache. If it does, it calls <code>skb_cow_data()</code> to create a private copy, then decrypts into that copy — leaving the original page cache untouched.</li>
+  <li><strong>Vulnerable path (missing COW guard)</strong>: The <code>rxgk_decrypt_skb()</code> function lacks the <code>SKBFL_SHARED_FRAG</code> check. As a result, it decrypts in-place directly into the page that points into page cache — overwriting the cached file contents without any permission check.</li>
+</ul>
+
+<h3>Vulnerable Code</h3>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">C</span><span class="filename">net/rxrpc/rxgk.c (pre-patch)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-c">/* Simplified vulnerable state */
+static int rxgk_decrypt_skb(struct rxrpc_call *call, struct sk_buff *skb)
+{
+    /* MISSING CHECK: if (skb->data_len > 0 &&
+          skb_shinfo(skb)->flags & SKBFL_SHARED_FRAG)
+              return skb_cow_data(skb, 0, &trailer); */
+
+    /* In-place decryption — may write directly into page cache! */
+    crypto_skcipher_decrypt(req);  /* ← DANGER POINT */
+}</code></pre>
+</div>
+
+<h3>Patched Code</h3>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">C</span><span class="filename">net/rxrpc/rxgk.c (patch CVE-2026-31635)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-c">/* After patch (CVE-2026-31635) */
+static int rxgk_decrypt_skb(struct rxrpc_call *call, struct sk_buff *skb)
+{
+    /* Check for shared frags before decrypting */
+    if (skb->data_len > 0) {
+        err = skb_cow_data(skb, 0, &trailer);
+        if (err < 0)
+            goto error;
+    }
+    crypto_skcipher_decrypt(req);  /* ← Now safe */
+}</code></pre>
+</div>
+
+<p>The difference is merely a few lines of code — but the consequence is that the entire page cache can be overwritten by an unprivileged user.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="exploit-chain">04 · Exploitation Chain — Step by Step</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<div class="flow-diagram">
+<strong>[Step 1]</strong>  Prepare the environment
+           │  Attacker calls: add_key("rxrpc", ...)
+           │  Attacker calls: socket(AF_RXRPC, ...)
+           │  → Module rxgk is auto-loaded into the kernel
+           │  <span class="success">No root required</span>
+           │  <span class="success">No CAP_NET_ADMIN required</span>
+           │
+<strong>[Step 2]</strong>  Pin page cache into pipe
+           │  Use vmsplice() + splice()
+           │  → Create an sk_buff whose data fragment
+           │    points directly into the page cache of
+           │    the target file (e.g. /usr/bin/su)
+           │  → sk_buff frag → <span class="highlight">page cache page</span>
+           │
+<strong>[Step 3]</strong>  Trigger in-place decryption
+           │  Send a packet through the RxGK socket
+           │  → rxgk_decrypt_skb() skips the COW guard
+           │  → Decrypts directly into the shared frag
+           │  → <span class="highlight">OVERWRITES /usr/bin/su contents in memory</span>
+           │
+<strong>[Step 4]</strong>  Execute payload via SUID
+           │  Any subsequent process calling /usr/bin/su
+           │  will execute the modified binary
+           │  Since <span class="accent">su has the SUID bit set</span>
+           │  → Attacker gains a <span class="accent">root shell</span>
+           │
+<strong>[Step 5]</strong>  Full root access
+           │  Page cache modification is RAM-only
+           │  → <span class="purple">Nothing written to disk</span>
+           │  → FIM tools (AIDE, Tripwire) CANNOT detect
+           │  → <span class="success">★ ROOT ★</span></div>
+
+<div class="callout success">
+  <div class="callout-title"><i class="bi bi-check-circle-fill"></i> No Race Condition Required</div>
+  This is a <strong>deterministic logic bug</strong> — the exploit succeeds with near-100% reliability, independent of timing or CPU scheduling. Unlike traditional race-condition LPEs that require thousands of attempts, DirtyDecrypt works <strong>every single time</strong>.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="attack-surface">05 · Exploitation Conditions & Attack Surface</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>The kernel must have <code>CONFIG_RXGK=y</code> or <code>=m</code> enabled. This option enables the rxgk module providing RxGK security support for the AFS client — typically only enabled in distributions that closely follow upstream kernel configs.</p>
+
+<h3>Confirmed Affected Distributions</h3>
+
+<table class="compare-table">
+  <tr><th>Distribution</th><th>Status</th></tr>
+  <tr><td>Fedora</td><td>Confirmed — PoC tested successfully. Follows upstream kernel closely.</td></tr>
+  <tr><td>Arch Linux</td><td>Confirmed — Rolling release, typically runs latest mainline kernel.</td></tr>
+  <tr><td>openSUSE Tumbleweed</td><td>Confirmed — Rolling release tracking upstream.</td></tr>
+  <tr><td>Ubuntu / RHEL / Debian</td><td>Unconfirmed — Typically use custom kernels; CONFIG_RXGK often disabled. Verify manually.</td></tr>
+</table>
+
+<h3>Check Your System</h3>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Verify kernel config</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">grep CONFIG_RXGK /boot/config-$(uname -r)
+# If output shows "CONFIG_RXGK=y" or "CONFIG_RXGK=m" → VULNERABLE
+# If no output or "CONFIG_RXGK=n" → NOT AFFECTED</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="bug-class">06 · The Page Cache Vulnerability Family — Full Picture</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>DirtyDecrypt does not exist in isolation. It belongs to a family of page cache write-primitive vulnerabilities discovered throughout early 2026, all sharing the same underlying mechanism: tricking the kernel into writing to page cache without proper authorization.</p>
+
+<table class="compare-table">
+  <tr><th>Vulnerability</th><th>CVE</th><th>Status</th></tr>
+  <tr><td>Copy Fail</td><td>CVE-2026-31431</td><td>Exploited in the wild. CISA added to KEV on 01/05/2026. Federal agencies ordered to patch by 15/05.</td></tr>
+  <tr><td>Dirty Frag</td><td>CVE-2026-43284 + CVE-2026-43500</td><td>Chained via esp4/esp6 and rxrpc. No user namespace needed. Actively exploited.</td></tr>
+  <tr><td>Fragnesia</td><td>CVE-2026-46300</td><td>Dirty Frag variant via esp/xfrm. Public PoC available.</td></tr>
+  <tr><td>DirtyDecrypt</td><td>CVE-2026-31635</td><td>Via rxgk_decrypt_skb. Public PoC available. No known in-the-wild exploitation yet.</td></tr>
+</table>
+
+<div class="callout warning">
+  <div class="callout-title"><i class="bi bi-shield-exclamation"></i> Systemic Bug Class</div>
+  These are not isolated, random bugs — they represent a <strong>systemic bug class</strong> in how the Linux kernel handles in-place decryption on paged socket buffers. It is highly likely that additional variants remain undiscovered.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="timeline">07 · Disclosure Timeline</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<table class="compare-table">
+  <tr><th>Date</th><th>Event</th></tr>
+  <tr><td>April 25, 2026</td><td>Kernel patch for CVE-2026-31635 silently merged into mainline.</td></tr>
+  <tr><td>May 9, 2026</td><td>V12 Security Team independently discovers the vulnerability, reports to kernel maintainers → informed it is a duplicate of an already-patched issue.</td></tr>
+  <tr><td>May 18, 2026</td><td>V12 publicly discloses with PoC exploit (poc.c). BleepingComputer covers the story.</td></tr>
+  <tr><td>Present</td><td>Patch available. No confirmed in-the-wild exploitation. Immediate action recommended.</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="remediation">08 · Remediation & Mitigation</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<h3>Priority #1 — Update Kernel Immediately</h3>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Kernel update commands by distro</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">sudo dnf update kernel    # Fedora
+sudo pacman -Syu          # Arch Linux
+sudo zypper update kernel # openSUSE</code></pre>
+</div>
+
+<h3>Temporary Mitigation (Breaks IPsec VPN and AFS)</h3>
+
+<div class="callout warning">
+  <div class="callout-title"><i class="bi bi-exclamation-diamond-fill"></i> Warning</div>
+  The mitigation below will <strong>break IPsec and AFS connectivity</strong>. Only apply if these services are not in use on the affected system.
+</div>
+
+<div class="code-block">
+  <div class="code-header"><span class="lang">Bash</span><span class="filename">Blacklist vulnerable modules</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-bash">sh -c "printf 'install esp4 /bin/false\ninstall esp6 /bin/false\ninstall rxrpc /bin/false\n' \
+  > /etc/modprobe.d/dirtyfrag.conf; \
+  rmmod esp4 esp6 rxrpc 2>/dev/null; \
+  echo 3 > /proc/sys/vm/drop_caches; true"</code></pre>
+</div>
+
+<div class="callout info">
+  <div class="callout-title"><i class="bi bi-info-circle-fill"></i> Important Note</div>
+  If the system may have been compromised <strong>before</strong> applying the mitigation, blacklisting the module is <strong>not sufficient</strong> — the page cache is already corrupted and will only reset after a full reboot or <code>drop_caches</code>. File Integrity Monitoring tools like AIDE and Tripwire <strong>cannot detect</strong> in-memory modifications.
+</div>
+
+<h3>Post-Patch Verification</h3>
+
+<p>After updating the kernel, reboot the system to clear any potentially corrupted page cache entries. Alternatively, run <code>echo 3 > /proc/sys/vm/drop_caches</code> to flush the cache before rebooting. Verify the module is properly patched by checking the kernel version matches the fixed release.</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="red-team">09 · Red Team Perspective</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>From an attacker's standpoint, DirtyDecrypt is ideal for four key reasons:</p>
+
+<ol>
+  <li><strong>No race condition</strong> — this is a deterministic logic bug. Reliability is near 100%, with no dependency on timing or CPU scheduling.</li>
+  <li><strong>No user namespace or special capabilities required</strong> — any unprivileged user can call <code>add_key()</code> and <code>socket()</code> to load the rxgk module.</li>
+  <li><strong>Public exploit available</strong> — the PoC lowers the technical barrier for any attacker.</li>
+  <li><strong>Minimal forensic footprint</strong> — modifications exist only in RAM. Nothing is written to disk, making FIM-based detection ineffective.</li>
+</ol>
+
+<h3>Realistic Attack Scenario</h3>
+
+<div class="flow-diagram">
+<strong>Phase 1</strong>  Initial Access
+           │  Attacker obtains low-privilege shell
+           │  (phishing, supply chain, compromised service...)
+           │
+<strong>Phase 2</strong>  Privilege Escalation
+           │  Run DirtyDecrypt PoC
+           │  → <span class="accent">Root in seconds</span>
+           │
+<strong>Phase 3</strong>  Post-Exploitation
+           │  Lateral movement via SSH keys, credentials
+           │  Persistent backdoor (cron, systemd, kernel module)
+           │  Data exfiltration
+           │
+<strong>Outcome</strong>   <span class="highlight">Full system compromise</span>
+           Forensic footprint: minimal
+           FIM detection: <span class="success">NONE</span></div>
+
+<div class="callout warning">
+  <div class="callout-title"><i class="bi bi-shield-exclamation"></i> Red Team Advisory</div>
+  Although DirtyDecrypt has not yet been observed in-the-wild, <strong>Copy Fail</strong> (same bug class) is actively exploited. Attackers routinely repurpose techniques across the same vulnerability class — the time from public PoC to in-the-wild exploitation can be measured in weeks.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="conclusion">10 · Conclusion & Recommendations</h2>
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<p>DirtyDecrypt is a stark reminder that the Linux kernel still harbors unexplored vulnerability classes. This flaw is particularly dangerous because:</p>
+
+<ul>
+  <li>It requires no special conditions — only the rxgk module needs to be enabled</li>
+  <li>Exploitation is deterministic, with no timing dependencies</li>
+  <li>Forensic footprint is minimal — modifications exist only in RAM</li>
+  <li>It belongs to a broader bug class — additional variants likely remain undiscovered</li>
+</ul>
+
+<h3>Priority Actions</h3>
+
+<ol>
+  <li><strong>Check CONFIG_RXGK</strong> — run <code>grep CONFIG_RXGK /boot/config-$(uname -r)</code> on all Linux systems</li>
+  <li><strong>Update kernel immediately</strong> — the patch is available in mainline and most distribution kernels</li>
+  <li><strong>Monitor distro advisories</strong> — Fedora, Arch, and openSUSE have released patched kernels</li>
+  <li><strong>Consider blacklisting the module</strong> — if AFS/IPsec is not in use, disable <code>rxrpc</code>, <code>esp4</code>, and <code>esp6</code> via modprobe blacklist</li>
+</ol>
+
+<div class="callout hint">
+  <div class="callout-title"><i class="bi bi-lightbulb-fill"></i> Forward-Looking Guidance</div>
+  The page cache write-primitive class (Dirty Pipe → Copy Fail → Dirty Frag → DirtyDecrypt) represents an <strong>ongoing research frontier</strong>. The way the Linux kernel handles in-place decryption on paged socket buffers still contains blind spots. Organizations should closely track new CVEs in this bug class and consider deploying deeper defenses such as <strong>kernel lockdown mode</strong>, <strong>signed kernel modules</strong>, and a <strong>trusted boot chain</strong> to mitigate the risk from future variants.
+</div>
+
+</main>
+
+<aside class="sidebar-toc">
+  <div class="toc-title"><i class="bi bi-list-nested"></i> Contents</div>
+  <ul class="toc-list">
+    <li><a href="#executive-summary">01 · Executive Summary</a></li>
+    <li><a href="#page-cache">02 · Technical Background — Page Cache</a></li>
+    <li><a href="#root-cause">03 · Root Cause — Missing COW Guard</a></li>
+    <li><a href="#exploit-chain">04 · Exploitation Chain</a></li>
+    <li><a href="#attack-surface">05 · Attack Surface & Conditions</a></li>
+    <li><a href="#bug-class">06 · Page Cache Vulnerability Family</a></li>
+    <li><a href="#timeline">07 · Disclosure Timeline</a></li>
+    <li><a href="#remediation">08 · Remediation & Mitigation</a></li>
+    <li><a href="#red-team">09 · Red Team Perspective</a></li>
+    <li><a href="#conclusion">10 · Conclusion & Recommendations</a></li>
+  </ul>
+
+  <div class="sidebar-meta">
+    <div class="meta-item"><i class="bi bi-person"></i> QA210</div>
+    <div class="meta-item"><i class="bi bi-calendar3"></i> May 2026</div>
+    <div class="meta-item"><i class="bi bi-clock"></i> ~20 min read</div>
+    <div class="meta-item"><i class="bi bi-tag"></i> Kernel Security</div>
+  </div>
+</aside>
+
+</div>
+</div>
+
 <footer class="site-footer">
   <div class="footer-inner">
-    <div class="footer-left">&copy; 2026 <span>QA210</span> &mdash; Security Research & CTF Writeups</div>
+    <div class="footer-left">&copy; 2026 <span>QA210</span> &mdash; Security Research &amp; CTF Writeups</div>
     <div class="footer-links">
       <a href="/">Home</a>
-      <a href="/htb/">Hack The Box</a>
+      <a href="/htb/">HTB</a>
       <a href="/tjctf-2026/">TJCTF</a>
       <a href="/tryhackme/">TryHackMe</a>
       <a href="/research/">Research</a>
@@ -384,44 +543,33 @@ img{max-width:100%;display:block}
 </footer>
 
 <script>
-function toggleMobileNav(){
-  document.getElementById('mobileOverlay').classList.toggle('show');
-  document.getElementById('mobilePanel').classList.toggle('show');
-}
-
-function setFilter(btn){
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  const f=btn.dataset.filter;
-  document.querySelectorAll('.post-card').forEach(c=>{
-    if(f==='all'){c.style.display='';return}
-    const tags=(c.dataset.tags||'').toLowerCase();
-    c.style.display=tags.includes(f)?'':'none';
-  });
-  document.querySelectorAll('.section-heading').forEach(h=>{
-    let el=h.nextElementSibling;let hasVisible=false;
-    while(el&&!el.classList.contains('section-heading')){
-      if(el.classList.contains('post-card')&&el.style.display!=='none')hasVisible=true;
-      el=el.nextElementSibling;
-    }
-    h.style.display=hasVisible?'':'none';
+// Copy button
+function copyCode(btn){
+  const code=btn.closest('.code-block').querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(()=>{
+    btn.textContent='Copied!';btn.style.color='var(--green)';btn.style.borderColor='var(--green)';
+    setTimeout(()=>{btn.textContent='Copy';btn.style.color='';btn.style.borderColor='';},2000);
   });
 }
 
-function filterPosts(){
-  const q=document.getElementById('searchInput').value.toLowerCase().trim();
-  if(!q){document.querySelectorAll('.post-card').forEach(c=>c.style.display='');document.querySelectorAll('.section-heading').forEach(h=>h.style.display='');return}
-  document.querySelectorAll('.post-card').forEach(card=>{
-    const txt=(card.textContent||'').toLowerCase();
-    const tags=(card.dataset.tags||'').toLowerCase();
-    card.style.display=(txt.includes(q)||tags.includes(q))?'':'none';
-  });
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
-  document.querySelectorAll('.section-heading').forEach(h=>h.style.display='');
+// Active TOC tracking
+const tocLinks=document.querySelectorAll('.toc-list a');
+const sections=[];
+tocLinks.forEach(link=>{
+  const id=link.getAttribute('href').substring(1);
+  const el=document.getElementById(id);
+  if(el)sections.push({el,link});
+});
+function updateTOC(){
+  let current=sections[0];
+  for(const s of sections){if(s.el.getBoundingClientRect().top<=120)current=s}
+  tocLinks.forEach(l=>l.classList.remove('active'));
+  if(current)current.link.classList.add('active');
 }
+window.addEventListener('scroll',updateTOC,{passive:true});
+updateTOC();
 
-// Three.js — Kernel exploit visualization
+// Three.js — Neural network background for research
 (function(){
   const canvas=document.getElementById('bg-canvas');
   const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:false});
@@ -431,76 +579,36 @@ function filterPosts(){
   const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
   camera.position.z=5;
 
-  const group=new THREE.Group();scene.add(group);
+  const g=new THREE.Group();scene.add(g);
 
-  // Icosahedron — represents kernel attack surface
-  const geo=new THREE.IcosahedronGeometry(2,2);
-  const mat=new THREE.MeshBasicMaterial({color:0xef4444,wireframe:true,transparent:true,opacity:0.1});
-  group.add(new THREE.Mesh(geo,mat));
+  // Dodecahedron wireframe
+  const dodec=new THREE.DodecahedronGeometry(2.2,0);
+  const dMat=new THREE.MeshBasicMaterial({color:0xa855f7,wireframe:true,transparent:true,opacity:0.08});
+  g.add(new THREE.Mesh(dodec,dMat));
 
-  // Tetrahedron — represents privilege escalation layers
-  const geo2=new THREE.TetrahedronGeometry(3,1);
-  const mat2=new THREE.MeshBasicMaterial({color:0xf97316,wireframe:true,transparent:true,opacity:0.04});
-  group.add(new THREE.Mesh(geo2,mat2));
+  // Inner icosahedron
+  const ico=new THREE.IcosahedronGeometry(1.4,0);
+  const iMat=new THREE.MeshBasicMaterial({color:0xf43f5e,wireframe:true,transparent:true,opacity:0.06});
+  g.add(new THREE.Mesh(ico,iMat));
 
-  // Particles — representing memory pages
-  const pCount=700;
-  const pGeo=new THREE.BufferGeometry();
-  const pos=new Float32Array(pCount*3);
-  const vel=[];
-  for(let i=0;i<pCount;i++){
-    pos[i*3]=(Math.random()-.5)*22;
-    pos[i*3+1]=(Math.random()-.5)*22;
-    pos[i*3+2]=(Math.random()-.5)*10;
-    vel.push(Math.random()*.007+.002);
-  }
+  // Particles
+  const pCount=600;const pGeo=new THREE.BufferGeometry();
+  const pos=new Float32Array(pCount*3);const vel=[];
+  for(let i=0;i<pCount;i++){pos[i*3]=(Math.random()-.5)*20;pos[i*3+1]=(Math.random()-.5)*20;pos[i*3+2]=(Math.random()-.5)*10;vel.push(Math.random()*.006+.002)}
   pGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  const pMat=new THREE.PointsMaterial({color:0xef4444,size:0.028,transparent:true,opacity:0.35});
-  const pts=new THREE.Points(pGeo,pMat);
-  scene.add(pts);
-
-  // Connection lines — COW bypass paths
-  const lineCount=60;
-  const linePositions=new Float32Array(lineCount*6);
-  for(let i=0;i<lineCount;i++){
-    const idx1=Math.floor(Math.random()*pCount);
-    const idx2=Math.floor(Math.random()*pCount);
-    linePositions[i*6]=pos[idx1*3];
-    linePositions[i*6+1]=pos[idx1*3+1];
-    linePositions[i*6+2]=pos[idx1*3+2];
-    linePositions[i*6+3]=pos[idx2*3];
-    linePositions[i*6+4]=pos[idx2*3+1];
-    linePositions[i*6+5]=pos[idx2*3+2];
-  }
-  const lineGeo=new THREE.BufferGeometry();
-  lineGeo.setAttribute('position',new THREE.BufferAttribute(linePositions,3));
-  const lineMat=new THREE.LineBasicMaterial({color:0xef4444,transparent:true,opacity:0.025});
-  scene.add(new THREE.LineSegments(lineGeo,lineMat));
-
-  let mx=0,my=0;
-  document.addEventListener('mousemove',e=>{mx=(e.clientX/innerWidth-.5)*2;my=(e.clientY/innerHeight-.5)*2});
+  const pMat=new THREE.PointsMaterial({color:0xa855f7,size:0.02,transparent:true,opacity:0.25});
+  scene.add(new THREE.Points(pGeo,pMat));
 
   function animate(){
     requestAnimationFrame(animate);
-    group.rotation.y+=0.0018;
-    group.rotation.x+=0.0006;
-    const p=pts.geometry.attributes.position.array;
-    for(let i=0;i<pCount;i++){
-      p[i*3+1]-=vel[i];
-      if(p[i*3+1]<-11){p[i*3+1]=11;p[i*3]=(Math.random()-.5)*22}
-    }
-    pts.geometry.attributes.position.needsUpdate=true;
-    camera.rotation.y+=(mx*.03-camera.rotation.y)*.005;
-    camera.rotation.x+=(my*.03-camera.rotation.x)*.005;
+    g.rotation.y+=0.0015;g.rotation.x+=0.0008;
+    const p=pGeo.attributes.position.array;
+    for(let i=0;i<pCount;i++){p[i*3+1]-=vel[i];if(p[i*3+1]<-10){p[i*3+1]=10;p[i*3]=(Math.random()-.5)*20}}
+    pGeo.attributes.position.needsUpdate=true;
     renderer.render(scene,camera);
   }
   animate();
-
-  window.addEventListener('resize',()=>{
-    camera.aspect=innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,innerHeight);
-  });
+  window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 })();
 </script>
 </body>
