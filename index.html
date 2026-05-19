@@ -136,6 +136,7 @@ img{max-width:100%;display:block}
 .platform-badge.endgame{background:var(--purple-dim);color:var(--purple)}
 .platform-badge.sherlock{background:var(--cyan-dim);color:var(--cyan)}
 .platform-badge.aptlab{background:var(--rose-dim);color:var(--rose)}
+.platform-badge.research{background:var(--purple-dim);color:var(--purple)}
 .post-card .diff-badge{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:5px;background:var(--red-dim);color:var(--red)}
 .diff-badge.easy{background:var(--green-dim);color:var(--green)}
 .diff-badge.medium{background:var(--yellow-dim);color:var(--yellow)}
@@ -209,8 +210,8 @@ img{max-width:100%;display:block}
     <a href="/" class="active">Home</a>
     <a href="/htb/">Hack The Box</a>
     <a href="/tjctf/">TJCTF</a>
-    <a href="/thm/">TryHackMe</a>
-    <a href="/research/">researchs</a>
+    <a href="/tryhackme/">TryHackMe</a>
+    <a href="/research/">Research</a>
   </nav>
   <div class="nav-right">
     <div class="search-box">
@@ -230,8 +231,9 @@ img{max-width:100%;display:block}
   <nav>
     <a href="/">Home</a>
     <a href="/htb/">Hack The Box</a>
-    <a href="/tjctf-2026/">TJCTF</a>
+    <a href="/tjctf/">TJCTF</a>
     <a href="/tryhackme/">TryHackMe</a>
+    <a href="/research/">Research</a>
     <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
     <a href="https://w4llz.me/" target="_blank">W4LLZ Team</a>
   </nav>
@@ -258,7 +260,7 @@ img{max-width:100%;display:block}
     <div class="card-label">Quick Stats</div>
     <div class="stat-grid">
       <div class="stat-item highlight">
-        <div class="stat-val">26</div>
+        <div class="stat-val">29</div>
         <div class="stat-lbl">Writeups</div>
       </div>
       <div class="stat-item">
@@ -266,7 +268,7 @@ img{max-width:100%;display:block}
         <div class="stat-lbl">Insane Boxes</div>
       </div>
       <div class="stat-item highlight">
-        <div class="stat-val">4</div>
+        <div class="stat-val">5</div>
         <div class="stat-lbl">Pro Labs</div>
       </div>
       <div class="stat-item">
@@ -345,13 +347,15 @@ img{max-width:100%;display:block}
 <!-- ═══ FILTER BAR ═══ -->
 <div class="filter-bar" id="writeups">
   <span class="filter-label">Filter:</span>
-  <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All<span class="count">26</span></button>
-  <button class="filter-btn" data-filter="htb" onclick="setFilter(this)">Hack The Box<span class="count">6</span></button>
-  <button class="filter-btn" data-filter="prolab" onclick="setFilter(this)">Pro Labs<span class="count">4</span></button>
+  <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All<span class="count">29</span></button>
+  <button class="filter-btn" data-filter="htb" onclick="setFilter(this)">Hack The Box<span class="count">8</span></button>
+  <button class="filter-btn" data-filter="prolab" onclick="setFilter(this)">Pro Labs<span class="count">5</span></button>
+  <button class="filter-btn" data-filter="aptlab" onclick="setFilter(this)">APT Labs<span class="count">1</span></button>
   <button class="filter-btn" data-filter="tjctf" onclick="setFilter(this)">TJCTF<span class="count">13</span></button>
   <button class="filter-btn" data-filter="thm" onclick="setFilter(this)">TryHackMe<span class="count">5</span></button>
   <button class="filter-btn" data-filter="ad" onclick="setFilter(this)">AD<span class="count">5</span></button>
   <button class="filter-btn" data-filter="pwn" onclick="setFilter(this)">Pwn<span class="count">3</span></button>
+  <button class="filter-btn" data-filter="research" onclick="setFilter(this)">Research<span class="count">2</span></button>
 </div>
 
 <!-- ═══ POSTS ═══ -->
@@ -400,13 +404,27 @@ img{max-width:100%;display:block}
     </div>
   </a>
 
-  <a href="/htb/prolabs/aptlabs/" class="post-card" data-platform="aptlab" data-tags="apt-labs,red-team,ad,pivoting,credential-harvesting">
+  <a href="/htb/prolabs/rastalabs/" class="post-card" data-platform="prolab" data-tags="red-team,opsec,c2,ad,lateral-movement">
     <div class="post-top">
-      <span class="platform-badge aptlab">APT Lab</span>
+      <span class="platform-badge prolab">Pro Lab</span>
       <span class="diff-badge insane">Insane</span>
       <span class="post-date">2026</span>
     </div>
-    <h3>HTB Pro Lab: APTLabs</h3>
+    <h3>HTB Pro Lab: RastaLabs</h3>
+    <p class="post-excerpt">Red Team Operator Level II with OPSEC emphasis. Phishing initial access, C2 infrastructure, credential harvesting, lateral movement, and domain dominance. 14 machines, 27 flags.</p>
+    <div class="post-tags">
+      <span class="tag">OPSEC</span><span class="tag">C2</span><span class="tag">AD</span><span class="tag">Lateral Movement</span><span class="tag">27 Flags</span>
+    </div>
+  </a>
+
+  <!-- APT LABS -->
+  <a href="/htb/prolabs/aptlabs/" class="post-card" data-platform="aptlab" data-tags="apt-labs,red-team,ad,pivoting,credential-harvesting">
+    <div class="post-top">
+      <span class="platform-badge aptlab">Pro Lab</span>
+      <span class="diff-badge insane">Insane</span>
+      <span class="post-date">2026</span>
+    </div>
+    <h3>HTB Pro Labs: APTLabs</h3>
     <p class="post-excerpt">Advanced Persistent Threat simulation environment. Realistic enterprise AD attack scenarios involving credential harvesting, lateral movement, C2 infrastructure, and full domain compromise across hardened networks.</p>
     <div class="post-tags">
       <span class="tag">APT</span><span class="tag">Red Team</span><span class="tag">AD</span><span class="tag">Pivoting</span><span class="tag">Credential Harvest</span>
@@ -504,6 +522,19 @@ img{max-width:100%;display:block}
     <p class="post-excerpt">Memory forensics investigation of an APT intrusion. Rootkit analysis, process reconstruction, and indicator extraction from a compromised Windows memory dump.</p>
     <div class="post-tags">
       <span class="tag">Rootkit</span><span class="tag">Memory Forensics</span><span class="tag">Malware Analysis</span>
+    </div>
+  </a>
+
+  <a href="/htb/sherlock/salinebreeze-1/" class="post-card" data-platform="htb" data-tags="threat-intel,apt,salt-typhoon,ghostemperor,mitre-attck">
+    <div class="post-top">
+      <span class="platform-badge sherlock">Sherlock</span>
+      <span class="diff-badge medium">Medium</span>
+      <span class="post-date">2025</span>
+    </div>
+    <h3>SalineBreeze-1</h3>
+    <p class="post-excerpt">Threat intelligence deep dive into Salt Typhoon's network-device espionage toolkit and GhostEmperor's kernel-mode Demodex rootkit. MITRE ATT&CK mapping, CVE analysis, and APT profiling.</p>
+    <div class="post-tags">
+      <span class="tag">Threat Intel</span><span class="tag">APT</span><span class="tag">MITRE ATT&CK</span><span class="tag">Salt Typhoon</span><span class="tag">GhostEmperor</span>
     </div>
   </a>
 
@@ -678,6 +709,31 @@ img{max-width:100%;display:block}
     <div class="post-tags"><span class="tag">Forensics</span><span class="tag">Rev</span><span class="tag">Crypto</span><span class="tag">PCAP</span></div>
   </a>
 
+  <!-- ═══ RESEARCH ═══ -->
+  <div class="section-heading" id="research-section" style="margin-top:.5rem">Research</div>
+
+  <a href="/research/kernel/dirtydecrypt/" class="post-card" data-platform="research" data-tags="kernel,lpe,page-cache,cow-bypass,rxgk,dirtydecrypt,cve-2026-31635,red-team,detection,hardening">
+    <div class="post-top">
+      <span class="platform-badge research"><i class="bi bi-journal-code"></i> Research</span>
+      <span class="diff-badge insane">Critical</span>
+      <span class="post-date">May 2026</span>
+    </div>
+    <h3>DirtyDecrypt / DirtyCBC — CVE-2026-31635</h3>
+    <p class="post-excerpt">Local privilege escalation to root via rxgk_decrypt_skb — a missing COW guard vulnerability in the Linux kernel rxgk module that allows bypassing Copy-On-Write protection and writing directly into the page cache. Deterministic exploit, no race condition, public PoC available.</p>
+    <div class="post-tags"><span class="tag">CVE-2026-31635</span><span class="tag">LPE</span><span class="tag">Kernel</span><span class="tag">Page Cache</span><span class="tag">COW Bypass</span><span class="tag">Red Team</span><span class="tag">Fedora</span></div>
+  </a>
+
+  <a href="/research/gpo/shadowpolicy/" class="post-card" data-platform="research" data-tags="gpo,scheduled-tasks,sysvol,sacl,dsc,blue-team,lolbin,ad,detection,hardening">
+    <div class="post-top">
+      <span class="platform-badge research"><i class="bi bi-journal-code"></i> Research</span>
+      <span class="diff-badge insane">Critical</span>
+      <span class="post-date">2026</span>
+    </div>
+    <h3>ShadowPolicy — GPO Preference State-Injection</h3>
+    <p class="post-excerpt">Advanced detection and auditing framework for the ShadowPolicy threat model: GPO Preference Scheduled Task XML injection via SYSVOL state modification in Windows Server 2022 / Active Directory. Full defensive architecture with DSC hardening, SACL auditing, and SIEM detection rules.</p>
+    <div class="post-tags"><span class="tag">GPO Abuse</span><span class="tag">SYSVOL</span><span class="tag">Blue Team</span><span class="tag">DSC</span><span class="tag">SACL</span><span class="tag">SIEM</span><span class="tag">AD</span></div>
+  </a>
+
 </div>
 
 </div><!-- /page-body -->
@@ -689,9 +745,9 @@ img{max-width:100%;display:block}
     <div class="footer-links">
       <a href="/">Home</a>
       <a href="/htb/">Hack The Box</a>
-      <a href="/tjctf-2026/">TJCTF</a>
+      <a href="/tjctf/">TJCTF</a>
       <a href="/tryhackme/">TryHackMe</a>
-      <a href="/research/">researchs</a>
+      <a href="/research/">Research</a>
       <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
       <a href="https://w4llz.me/" target="_blank">W4LLZ</a>
     </div>
