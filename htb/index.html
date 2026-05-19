@@ -130,6 +130,7 @@ img{max-width:100%;display:block}
 .platform-badge.endgame{background:var(--purple-dim);color:var(--purple)}
 .platform-badge.sherlock{background:var(--cyan-dim);color:var(--cyan)}
 .platform-badge.aptlab{background:var(--rose-dim);color:var(--rose)}
+.platform-badge.ctf{background:var(--yellow-dim);color:var(--yellow)}
 .diff-badge{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:5px}
 .diff-badge.easy{background:var(--green-dim);color:var(--green)}
 .diff-badge.medium{background:var(--yellow-dim);color:var(--yellow)}
@@ -203,7 +204,7 @@ img{max-width:100%;display:block}
     <a href="/htb/" class="active">Hack The Box</a>
     <a href="/tjctf-2026/">TJCTF</a>
     <a href="/tryhackme/">TryHackMe</a>
-    <a href="/research/">researchs</a>
+    <a href="/research/">Research</a>
   </nav>
   <div class="nav-right">
     <div class="search-box">
@@ -223,8 +224,9 @@ img{max-width:100%;display:block}
   <nav>
     <a href="/">Home</a>
     <a href="/htb/">Hack The Box</a>
-    <a href="/tjctf/">TJCTF</a>
-    <a href="/thm/">TryHackMe</a>
+    <a href="/tjctf-2026/">TJCTF</a>
+    <a href="/tryhackme/">TryHackMe</a>
+    <a href="/research/">Research</a>
     <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
     <a href="https://w4llz.me/" target="_blank">W4LLZ Team</a>
   </nav>
@@ -245,13 +247,14 @@ img{max-width:100%;display:block}
       <span class="hero-badge aptlab"><i class="bi bi-shield-lock"></i> APT Labs</span>
       <span class="hero-badge insane"><i class="bi bi-fire"></i> Insane Boxes</span>
       <span class="hero-badge sherlock"><i class="bi bi-search"></i> Sherlocks</span>
+      <span class="hero-badge" style="background:var(--yellow-dim);border-color:rgba(234,179,8,0.25);color:var(--yellow)"><i class="bi bi-trophy-fill"></i> Business CTF</span>
     </div>
   </div>
   <div class="hero-card">
     <div class="card-label">Quick Stats</div>
     <div class="stat-grid">
       <div class="stat-item highlight">
-        <div class="stat-val">11</div>
+        <div class="stat-val">14</div>
         <div class="stat-lbl">Writeups</div>
       </div>
       <div class="stat-item">
@@ -259,12 +262,12 @@ img{max-width:100%;display:block}
         <div class="stat-lbl">Insane</div>
       </div>
       <div class="stat-item highlight">
-        <div class="stat-val">3</div>
+        <div class="stat-val">5</div>
         <div class="stat-lbl">Pro Labs</div>
       </div>
       <div class="stat-item">
-        <div class="stat-val">1</div>
-        <div class="stat-lbl">APT Labs</div>
+        <div class="stat-val">2</div>
+        <div class="stat-lbl">Sherlocks</div>
       </div>
     </div>
   </div>
@@ -311,6 +314,9 @@ img{max-width:100%;display:block}
       <span class="tc-tag">Citrix</span>
       <span class="tc-tag">Forest Trust</span>
       <span class="tc-tag">Memory Forensics</span>
+      <span class="tc-tag hot">Threat Intel</span>
+      <span class="tc-tag hot">OPSEC</span>
+      <span class="tc-tag">C2 Infrastructure</span>
     </div>
   </div>
 
@@ -323,7 +329,9 @@ img{max-width:100%;display:block}
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Binary Exploitation <span class="tc">3 posts</span></div>
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Container Escapes <span class="tc">2 posts</span></div>
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Network Pivoting <span class="tc">3 posts</span></div>
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> Memory Forensics <span class="tc">1 post</span></div>
+      <div class="technique-item"><i class="bi bi-arrow-right"></i> Memory Forensics <span class="tc">2 posts</span></div>
+      <div class="technique-item"><i class="bi bi-arrow-right"></i> Threat Intelligence <span class="tc">1 post</span></div>
+      <div class="technique-item"><i class="bi bi-arrow-right"></i> C2 & OPSEC <span class="tc">1 post</span></div>
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Credential Harvesting <span class="tc">2 posts</span></div>
     </div>
   </div>
@@ -333,10 +341,12 @@ img{max-width:100%;display:block}
 <!-- ═══ FILTER BAR ═══ -->
 <div class="filter-bar">
   <span class="filter-label">Filter:</span>
-  <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All<span class="count">11</span></button>
-  <button class="filter-btn" data-filter="prolab" onclick="setFilter(this)">Pro Labs<span class="count">4</span></button>
+  <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All<span class="count">14</span></button>
+  <button class="filter-btn" data-filter="ctf" onclick="setFilter(this)">Business CTF<span class="count">1</span></button>
+  <button class="filter-btn" data-filter="prolab" onclick="setFilter(this)">Pro Labs<span class="count">5</span></button>
+  <button class="filter-btn" data-filter="aptlab" onclick="setFilter(this)">APT Labs<span class="count">1</span></button>
   <button class="filter-btn" data-filter="htb" onclick="setFilter(this)">Insane<span class="count">6</span></button>
-  <button class="filter-btn" data-filter="sherlock" onclick="setFilter(this)">Sherlock<span class="count">1</span></button>
+  <button class="filter-btn" data-filter="sherlock" onclick="setFilter(this)">Sherlock<span class="count">2</span></button>
 </div>
 
 <!-- ═══ POSTS ═══ -->
@@ -384,13 +394,26 @@ img{max-width:100%;display:block}
     </div>
   </a>
 
+  <a href="/htb/prolabs/rastalabs/" class="post-card" data-platform="prolab" data-tags="red-team,opsec,c2,ad,lateral-movement,credential-harvesting">
+    <div class="post-top">
+      <span class="platform-badge prolab">Pro Lab</span>
+      <span class="diff-badge insane">Insane</span>
+      <span class="post-date">2026</span>
+    </div>
+    <h3>HTB Pro Lab: RastaLabs</h3>
+    <p class="post-excerpt">Red Team Operator Level II with OPSEC emphasis. Realistic enterprise AD attack chain from phishing initial access through C2 infrastructure, credential harvesting, lateral movement, and domain dominance. 14 machines, 27 flags.</p>
+    <div class="post-tags">
+      <span class="tag">OPSEC</span><span class="tag">C2</span><span class="tag">AD</span><span class="tag">Lateral Movement</span><span class="tag">27 Flags</span>
+    </div>
+  </a>
+
   <a href="/htb/prolabs/aptlabs/" class="post-card" data-platform="aptlab" data-tags="apt-labs,red-team,ad,pivoting,credential-harvesting">
     <div class="post-top">
       <span class="platform-badge aptlab">APT Lab</span>
       <span class="diff-badge insane">Insane</span>
       <span class="post-date">2026</span>
     </div>
-    <h3>HTB Pro Lab:APTLabs</h3>
+    <h3>HTB APT Labs</h3>
     <p class="post-excerpt">Advanced Persistent Threat simulation environment. Realistic enterprise AD attack scenarios involving credential harvesting, lateral movement, C2 infrastructure, and full domain compromise across hardened networks.</p>
     <div class="post-tags">
       <span class="tag">APT</span><span class="tag">Red Team</span><span class="tag">AD</span><span class="tag">Pivoting</span><span class="tag">Credential Harvest</span>
@@ -478,18 +501,49 @@ img{max-width:100%;display:block}
     </div>
   </a>
 
+  <!-- BUSINESS CTF -->
+  <div class="section-heading">Business CTF 2025 — Operation Blackout</div>
+
+  <a href="/htb/business-2025/drivers-shadow/" class="post-card pinned" data-platform="ctf" data-tags="forensics,rootkit,memory-forensics,volatility,ftrace,kernel-module,ghidra">
+    <div class="post-top">
+      <span class="platform-badge ctf"><i class="bi bi-trophy-fill"></i> Business CTF</span>
+      <span class="platform-badge htb"><i class="bi bi-shield-fill-exclamation"></i> Forensics</span>
+      <span class="diff-badge hard">Hard</span>
+      <span class="post-date">2025</span>
+    </div>
+    <h3>Driver's Shadow — Unmasking the Kernel Intruder</h3>
+    <p class="post-excerpt">Linux memory forensics deep dive with Volatility3. Hunting a kernel rootkit that uses ftrace hooks for syscall interception, XOR-obfuscated payloads, udev persistence, and covert IPC via the kill syscall. Full chain from ISF generation to kernel module extraction and reverse engineering.</p>
+    <div class="post-tags">
+      <span class="tag">Memory Forensics</span><span class="tag">Volatility3</span><span class="tag">Rootkit</span><span class="tag">ftrace</span><span class="tag">Kernel Module</span><span class="tag">Ghidra</span>
+    </div>
+  </a>
+
   <!-- SHERLOCKS -->
   <div class="section-heading">Sherlocks</div>
 
   <a href="/htb/sherlock/aptnightmare2/" class="post-card" data-platform="sherlock" data-tags="forensics,rootkit,memory-forensics,malware">
     <div class="post-top">
       <span class="platform-badge sherlock">Sherlock</span>
+      <span class="diff-badge medium">Medium</span>
       <span class="post-date">2026</span>
     </div>
     <h3>APTNightmare2</h3>
     <p class="post-excerpt">Memory forensics investigation of an APT intrusion. Rootkit analysis, process reconstruction, and indicator extraction from a compromised Windows memory dump.</p>
     <div class="post-tags">
       <span class="tag">Rootkit</span><span class="tag">Memory Forensics</span><span class="tag">Malware Analysis</span>
+    </div>
+  </a>
+
+  <a href="/htb/sherlock/salinebreeze-1/" class="post-card" data-platform="sherlock" data-tags="threat-intel,apt,salt-typhoon,ghostemperor,mitre-attck,cve">
+    <div class="post-top">
+      <span class="platform-badge sherlock">Sherlock</span>
+      <span class="diff-badge medium">Medium</span>
+      <span class="post-date">2025</span>
+    </div>
+    <h3>SalineBreeze-1</h3>
+    <p class="post-excerpt">Threat intelligence deep dive into Salt Typhoon's network-device espionage toolkit (JumbledPath, Crowdoor, GhostSpider) and GhostEmperor's kernel-mode Demodex rootkit. MITRE ATT&CK mapping, CVE analysis, and APT profiling.</p>
+    <div class="post-tags">
+      <span class="tag">Threat Intel</span><span class="tag">APT</span><span class="tag">MITRE ATT&CK</span><span class="tag">Salt Typhoon</span><span class="tag">GhostEmperor</span>
     </div>
   </a>
 
@@ -506,7 +560,7 @@ img{max-width:100%;display:block}
       <a href="/htb/">Hack The Box</a>
       <a href="/tjctf-2026/">TJCTF</a>
       <a href="/tryhackme/">TryHackMe</a>
-      <a href="/research/">researchs</a>
+      <a href="/research/">Research</a>
       <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
       <a href="https://w4llz.me/" target="_blank">W4LLZ</a>
     </div>
