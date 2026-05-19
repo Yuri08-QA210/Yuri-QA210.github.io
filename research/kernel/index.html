@@ -250,7 +250,7 @@ img{max-width:100%;display:block}
   <div class="hero-text">
     <div class="greeting">Kernel Security</div>
     <h1>Linux Kernel &<br><span>Exploit Research</span></h1>
-    <p class="tagline">Nghiên cứu bảo mật nhân Linux — phân tích lỗ hổng LPE, page cache write primitives, và defensive hardening. Phân tích kỹ thuật sâu về các lớp lỗ hổng Dirty* trong kernel.</p>
+    <p class="tagline">Linux kernel security research — LPE vulnerability analysis, page cache write primitives, and defensive hardening. Deep technical analysis of the Dirty* vulnerability class in the kernel.</p>
     <div class="hero-badges">
       <span class="hero-badge lpe"><i class="bi bi-arrow-up-circle-fill"></i> LPE</span>
       <span class="hero-badge page-cache"><i class="bi bi-file-earmark-binary-fill"></i> Page Cache</span>
@@ -356,8 +356,8 @@ img{max-width:100%;display:block}
       <span class="diff-badge critical">Critical</span>
       <span class="post-date">2026</span>
     </div>
-    <h3>DirtyDecrypt / DirtyCBC — Leo quyền root qua rxgk_decrypt_skb</h3>
-    <p class="post-excerpt">Phân tích lỗ hổng LPE CVE-2026-31635 trong module rxgk của nhân Linux. Khai thác bỏ qua COW guard để ghi đè page cache, đạt quyền root hoàn toàn mà không cần race condition. Tương tự Dirty Pipe nhưng nguy hiểm hơn — không giới hạn pipe size, hoạt động in-memory only, bypass FIM và SELinux.</p>
+    <h3>DirtyDecrypt / DirtyCBC — Root Privilege Escalation via rxgk_decrypt_skb</h3>
+    <p class="post-excerpt">Analysis of LPE vulnerability CVE-2026-31635 in the Linux kernel rxgk module. Exploiting a missing COW guard to overwrite page cache and achieve full root access without race conditions. Similar to Dirty Pipe but more dangerous — no pipe size limitation, operates in-memory only, bypasses FIM and SELinux.</p>
     <div class="post-tags">
       <span class="tag">CVE-2026-31635</span><span class="tag">LPE</span><span class="tag">rxgk</span><span class="tag">Page Cache</span><span class="tag">COW</span><span class="tag">Fedora</span><span class="tag">Arch</span>
     </div>
