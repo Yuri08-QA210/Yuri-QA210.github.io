@@ -23,6 +23,7 @@
   --cyan:#06b6d4;--cyan-dim:rgba(6,182,212,0.1);
   --rose:#f43f5e;--rose-dim:rgba(244,63,94,0.1);
   --teal:#14b8a6;
+  --emerald:#10b981;--emerald-dim:rgba(16,185,129,0.1);
   --gradient-accent:linear-gradient(135deg,#3b82f6,#8b5cf6);
   --gradient-warm:linear-gradient(135deg,#f97316,#ef4444);
   --gradient-cool:linear-gradient(135deg,#06b6d4,#3b82f6);
@@ -74,6 +75,7 @@ img{max-width:100%;display:block}
 .hero-badge.pwn{background:var(--purple-dim);border-color:rgba(168,85,247,0.25);color:var(--purple)}
 .hero-badge.ad{background:var(--cyan-dim);border-color:rgba(6,182,212,0.25);color:var(--cyan)}
 .hero-badge.aptlab{background:var(--rose-dim);border-color:rgba(244,63,94,0.25);color:var(--rose)}
+.hero-badge.maldev{background:var(--emerald-dim);border-color:rgba(16,185,129,0.25);color:var(--emerald)}
 .hero-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.75rem;position:relative;overflow:hidden}
 .hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gradient-accent)}
 .hero-card .card-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);font-weight:700;margin-bottom:1.1rem}
@@ -92,7 +94,6 @@ img{max-width:100%;display:block}
 .about-inline{display:flex;align-items:center;gap:1rem}
 .about-inline .avatar{width:52px;height:52px;border-radius:50%;border:2px solid var(--border);object-fit:cover;flex-shrink:0;transition:border-color .3s}
 .about-inline .avatar:hover{border-color:var(--accent)}
-/* FIX: restored .avatar.logo class */
 .about-inline .avatar.logo{border-color:var(--accent);box-shadow:0 0 12px rgba(59,130,246,0.25)}
 .about-inline .about-meta .author-name{font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:700;color:var(--text0)}
 .about-inline .about-meta .author-role{font-size:.7rem;color:var(--text3);margin-top:1px}
@@ -136,11 +137,13 @@ img{max-width:100%;display:block}
 .platform-badge.sherlock{background:var(--cyan-dim);color:var(--cyan)}
 .platform-badge.aptlab{background:var(--rose-dim);color:var(--rose)}
 .platform-badge.research{background:var(--purple-dim);color:var(--purple)}
+.platform-badge.maldev{background:var(--emerald-dim);color:var(--emerald)}
 .post-card .diff-badge{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:5px;background:var(--red-dim);color:var(--red)}
 .diff-badge.easy{background:var(--green-dim);color:var(--green)}
 .diff-badge.medium{background:var(--yellow-dim);color:var(--yellow)}
 .diff-badge.hard{background:var(--orange-dim);color:var(--orange)}
 .diff-badge.insane{background:var(--red-dim);color:var(--red)}
+.diff-badge.beginner{background:var(--green-dim);color:var(--green)}
 .post-card .post-date{margin-left:auto;font-size:.7rem;color:var(--text4);font-family:'JetBrains Mono',monospace}
 .post-card h3{font-size:1.08rem;font-weight:700;margin-bottom:.45rem;color:var(--text0);letter-spacing:-.01em;transition:color .2s}
 .post-card:hover h3{color:var(--accent)}
@@ -207,7 +210,6 @@ img{max-width:100%;display:block}
   <nav class="nav-main">
     <a href="/" class="active">Home</a>
     <a href="/htb/">Hack The Box</a>
-    <!-- FIX: unified TJCTF nav link to /tjctf-2026/ -->
     <a href="/tjctf-2026/">TJCTF</a>
     <a href="/tryhackme/">TryHackMe</a>
     <a href="/research/">Research</a>
@@ -232,7 +234,6 @@ img{max-width:100%;display:block}
   <nav>
     <a href="/">Home</a>
     <a href="/htb/">Hack The Box</a>
-    <!-- FIX: unified TJCTF mobile nav link -->
     <a href="/tjctf-2026/">TJCTF</a>
     <a href="/tryhackme/">TryHackMe</a>
     <a href="/research/">Research</a>
@@ -251,20 +252,21 @@ img{max-width:100%;display:block}
   <div class="hero-text">
     <div class="greeting">Security Research & CTF Writeups</div>
     <h1>Offensive Security<br><span>Notes & Walkthroughs</span></h1>
-    <p class="tagline">Detailed writeups for Hack The Box machines, Pro Labs, APT Labs, Endgames, and CTF challenges. Focused on Active Directory, binary exploitation, and red team operations.</p>
+    <p class="tagline">Detailed writeups for Hack The Box machines, Pro Labs, APT Labs, Endgames, and CTF challenges. Focused on Active Directory, binary exploitation, malware development, and red team operations.</p>
     <div class="hero-badges">
       <span class="hero-badge hackthebox"><i class="bi bi-skull"></i> Hack The Box</span>
       <span class="hero-badge team"><i class="bi bi-people-fill"></i> W4LLZ</span>
       <span class="hero-badge pwn"><i class="bi bi-bug-fill"></i> Pwn / RE</span>
       <span class="hero-badge ad"><i class="bi bi-diagram-3-fill"></i> Active Directory</span>
       <span class="hero-badge aptlab"><i class="bi bi-shield-lock-fill"></i> APT Labs</span>
+      <span class="hero-badge maldev"><i class="bi bi-cpu"></i> Malware Dev</span>
     </div>
   </div>
   <div class="hero-card">
     <div class="card-label">Quick Stats</div>
     <div class="stat-grid">
       <div class="stat-item highlight">
-        <div class="stat-val">29</div>
+        <div class="stat-val">30</div>
         <div class="stat-lbl">Writeups</div>
       </div>
       <div class="stat-item">
@@ -272,7 +274,7 @@ img{max-width:100%;display:block}
         <div class="stat-lbl">Insane Boxes</div>
       </div>
       <div class="stat-item highlight">
-        <div class="stat-val">5</div>
+        <div class="stat-val">7</div>
         <div class="stat-lbl">Pro Labs</div>
       </div>
       <div class="stat-item">
@@ -319,8 +321,8 @@ img{max-width:100%;display:block}
       <span class="tc-tag">RSA</span>
       <span class="tc-tag">Pivoting</span>
       <span class="tc-tag">SeBackupPriv</span>
-      <span class="tc-tag">Linux</span>
-      <span class="tc-tag">Windows</span>
+      <span class="tc-tag">Shellcode</span>
+      <span class="tc-tag">Windows API</span>
       <span class="tc-tag">Stego</span>
       <span class="tc-tag">Reverse</span>
       <span class="tc-tag">Kernel</span>
@@ -335,14 +337,14 @@ img{max-width:100%;display:block}
   <div class="info-card">
     <div class="ic-title"><i class="bi bi-lightning-charge"></i> Key Techniques</div>
     <div class="technique-list">
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> AD Chain Attacks <span class="tc">4 posts</span></div>
+      <div class="technique-item"><i class="bi bi-arrow-right"></i> AD Chain Attacks <span class="tc">5 posts</span></div>
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Kerberos Exploitation <span class="tc">3 posts</span></div>
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Binary Exploitation <span class="tc">3 posts</span></div>
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Container Escapes <span class="tc">2 posts</span></div>
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Cryptographic Attacks <span class="tc">2 posts</span></div>
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> Network Pivoting <span class="tc">3 posts</span></div>
+      <div class="technique-item"><i class="bi bi-arrow-right"></i> Network Pivoting <span class="tc">4 posts</span></div>
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Forensics & RE <span class="tc">6 posts</span></div>
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> Web Exploitation <span class="tc">3 posts</span></div>
+      <div class="technique-item"><i class="bi bi-arrow-right"></i> Malware Development <span class="tc">1 post</span></div>
     </div>
   </div>
 
@@ -351,15 +353,14 @@ img{max-width:100%;display:block}
 <!-- ═══ FILTER BAR ═══ -->
 <div class="filter-bar" id="writeups">
   <span class="filter-label">Filter:</span>
-  <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All<span class="count">29</span></button>
-  <!-- FIX: HTB filter now matches htb + sherlock platforms (count corrected to 10) -->
+  <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All<span class="count">30</span></button>
   <button class="filter-btn" data-filter="htb" onclick="setFilter(this)">Hack The Box<span class="count">10</span></button>
-  <button class="filter-btn" data-filter="prolab" onclick="setFilter(this)">Pro Labs<span class="count">4</span></button>
+  <button class="filter-btn" data-filter="prolab" onclick="setFilter(this)">Pro Labs<span class="count">7</span></button>
   <button class="filter-btn" data-filter="aptlab" onclick="setFilter(this)">APT Labs<span class="count">1</span></button>
   <button class="filter-btn" data-filter="tjctf" onclick="setFilter(this)">TJCTF<span class="count">13</span></button>
-  <!-- FIX: TryHackMe count corrected to 2 (actual posts with data-platform="thm") -->
   <button class="filter-btn" data-filter="thm" onclick="setFilter(this)">TryHackMe<span class="count">2</span></button>
-  <button class="filter-btn" data-filter="ad" onclick="setFilter(this)">AD<span class="count">5</span></button>
+  <button class="filter-btn" data-filter="maldev" onclick="setFilter(this)">Malware Dev<span class="count">1</span></button>
+  <button class="filter-btn" data-filter="ad" onclick="setFilter(this)">AD<span class="count">6</span></button>
   <button class="filter-btn" data-filter="pwn" onclick="setFilter(this)">Pwn<span class="count">3</span></button>
   <button class="filter-btn" data-filter="research" onclick="setFilter(this)">Research<span class="count">2</span></button>
 </div>
@@ -370,7 +371,7 @@ img{max-width:100%;display:block}
   <!-- HTB SECTION -->
   <div class="section-heading" id="htb-section">Hack The Box</div>
 
-  <!-- PRO LABS -->
+  <!-- PRO LABS & ENDGAMES -->
   <a href="/htb/prolabs/xen/" class="post-card pinned" data-platform="prolab" data-tags="endgame,citrix,kerberoast,ad,password-spray,sebackupprivilege">
     <div class="post-top">
       <span class="platform-badge endgame">Endgame</span>
@@ -397,6 +398,32 @@ img{max-width:100%;display:block}
     </div>
   </a>
 
+  <a href="/htb/prolabs/zephyr/" class="post-card" data-platform="prolab" data-tags="red-team,ad,assumed-breach,kerberoast,delegation,dcsync,lateral-movement">
+    <div class="post-top">
+      <span class="platform-badge prolab">Pro Lab</span>
+      <span class="diff-badge hard">Hard</span>
+      <span class="post-date">2026</span>
+    </div>
+    <h3>HTB Pro Lab: Zephyr</h3>
+    <p class="post-excerpt">Red Team Operator Level I. Assumed breach Active Directory environment starting with a standard domain user. Escalate through Kerberoasting, delegation abuse, constrained delegation, ACL attacks, and DCSync to achieve full Domain Admin compromise across a hardened enterprise network.</p>
+    <div class="post-tags">
+      <span class="tag">Assumed Breach</span><span class="tag">Kerberoast</span><span class="tag">Delegation</span><span class="tag">DCSync</span><span class="tag">Lateral Movement</span><span class="tag">AD</span>
+    </div>
+  </a>
+
+  <a href="/htb/prolabs/offshore/" class="post-card" data-platform="prolab" data-tags="red-team,pivoting,ad,web-exploitation,grafana,privilege-escalation,tunneling">
+    <div class="post-top">
+      <span class="platform-badge prolab">Pro Lab</span>
+      <span class="diff-badge insane">Insane</span>
+      <span class="post-date">2026</span>
+    </div>
+    <h3>HTB Pro Lab: Offshore</h3>
+    <p class="post-excerpt">Red Team Operator Level II. Advanced corporate network penetration testing requiring deep pivoting across multiple subnets, exploiting web vulnerabilities, Grafana exploitation, complex privilege escalation paths, and tunneling deep into the internal AD environment to compromise the domain.</p>
+    <div class="post-tags">
+      <span class="tag">Pivoting</span><span class="tag">Web Exploit</span><span class="tag">Grafana</span><span class="tag">AD</span><span class="tag">Tunneling</span><span class="tag">Privesc</span>
+    </div>
+  </a>
+
   <a href="/htb/prolabs/cybernetics/" class="post-card" data-platform="prolab" data-tags="red-team,ad,5-domains,kerberos,gpo">
     <div class="post-top">
       <span class="platform-badge prolab">Pro Lab</span>
@@ -410,30 +437,30 @@ img{max-width:100%;display:block}
     </div>
   </a>
 
-  <a href="/htb/prolabs/rastalabs/" class="post-card" data-platform="prolab" data-tags="red-team,opsec,c2,ad,lateral-movement">
+  <a href="/htb/prolabs/rastalabs/" class="post-card" data-platform="prolab" data-tags="red-team,opsec,c2,ad,lateral-movement,credential-harvesting">
     <div class="post-top">
       <span class="platform-badge prolab">Pro Lab</span>
       <span class="diff-badge insane">Insane</span>
       <span class="post-date">2026</span>
     </div>
     <h3>HTB Pro Lab: RastaLabs</h3>
-    <p class="post-excerpt">Red Team Operator Level II with OPSEC emphasis. Phishing initial access, C2 infrastructure, credential harvesting, lateral movement, and domain dominance. 14 machines, 27 flags.</p>
+    <p class="post-excerpt">Red Team Operator Level III. The most advanced HTB Pro Lab featuring realistic APT-style operations — Cobalt Strike C2 infrastructure, Citrix VDI exploitation, network pivoting through multiple trust boundaries, and full enterprise domain takeover with 30+ flags.</p>
     <div class="post-tags">
-      <span class="tag">OPSEC</span><span class="tag">C2</span><span class="tag">AD</span><span class="tag">Lateral Movement</span><span class="tag">27 Flags</span>
+      <span class="tag">OPSEC</span><span class="tag">C2</span><span class="tag">Cobalt Strike</span><span class="tag">Citrix</span><span class="tag">Credential Harvest</span><span class="tag">AD</span>
     </div>
   </a>
 
   <!-- APT LABS -->
-  <a href="/htb/prolabs/aptlabs/" class="post-card" data-platform="aptlab" data-tags="apt-labs,red-team,ad,pivoting,credential-harvesting">
+  <a href="/htb/prolabs/aptlabs/" class="post-card" data-platform="aptlab" data-tags="apt-labs,red-team,ad,pivoting,credential-harvesting,forest-trust,phishing">
     <div class="post-top">
-      <span class="platform-badge aptlab">Pro Labs</span>
+      <span class="platform-badge aptlab">APT Lab</span>
       <span class="diff-badge insane">Insane</span>
       <span class="post-date">2026</span>
     </div>
-    <h3>HTB Pro Labs: APTLabs</h3>
-    <p class="post-excerpt">Advanced Persistent Threat simulation environment. Realistic enterprise AD attack scenarios involving credential harvesting, lateral movement, C2 infrastructure, and full domain compromise across hardened networks.</p>
+    <h3>HTB APT Labs</h3>
+    <p class="post-excerpt">Advanced Persistent Threat simulation environment. 18 machines across 3 AD forests — phishing initial access, Kerberoasting, RBCD, DCSync, Golden Tickets, cross-forest trust exploitation, and full domain compromise. 20 flags, 24h daily reset.</p>
     <div class="post-tags">
-      <span class="tag">APT</span><span class="tag">Red Team</span><span class="tag">AD</span><span class="tag">Pivoting</span><span class="tag">Credential Harvest</span>
+      <span class="tag">APT</span><span class="tag">Red Team</span><span class="tag">3 Forests</span><span class="tag">Phishing</span><span class="tag">RBCD</span><span class="tag">Forest Trust</span>
     </div>
   </a>
 
@@ -518,8 +545,7 @@ img{max-width:100%;display:block}
     </div>
   </a>
 
-  <!-- SHERLOCK -->
-  <!-- FIX: added data-platform="htb" so these appear under the HTB filter -->
+  <!-- SHERLOCKS -->
   <a href="/htb/sherlock/aptnightmare2/" class="post-card" data-platform="htb" data-tags="forensics,rootkit,memory-forensics,malware,sherlock">
     <div class="post-top">
       <span class="platform-badge sherlock">Sherlock</span>
@@ -542,6 +568,22 @@ img{max-width:100%;display:block}
     <p class="post-excerpt">Threat intelligence deep dive into Salt Typhoon's network-device espionage toolkit and GhostEmperor's kernel-mode Demodex rootkit. MITRE ATT&CK mapping, CVE analysis, and APT profiling.</p>
     <div class="post-tags">
       <span class="tag">Threat Intel</span><span class="tag">APT</span><span class="tag">MITRE ATT&CK</span><span class="tag">Salt Typhoon</span><span class="tag">GhostEmperor</span>
+    </div>
+  </a>
+
+  <!-- ═══ MALWARE DEV ═══ -->
+  <div class="section-heading" id="maldev-section" style="margin-top:.5rem">Malware Development</div>
+
+  <a href="/mal-dev/basic/" class="post-card" data-platform="maldev" data-tags="windows-api,shellcode,virtualalloc,createthread,msfvenom,injection,basic">
+    <div class="post-top">
+      <span class="platform-badge maldev"><i class="bi bi-cpu"></i> Malware Dev</span>
+      <span class="diff-badge beginner">Beginner</span>
+      <span class="post-date">2026</span>
+    </div>
+    <h3>Basic Shellcode Injection — Windows API Fundamentals</h3>
+    <p class="post-excerpt">Introduction to malware development on Windows. Understanding the VirtualAlloc → WriteProcessMemory → CreateThread execution flow, generating position-independent shellcode, and injecting it into a remote process.</p>
+    <div class="post-tags">
+      <span class="tag">Windows API</span><span class="tag">VirtualAlloc</span><span class="tag">CreateThread</span><span class="tag">msfvenom</span><span class="tag">Shellcode</span><span class="tag">Injection</span>
     </div>
   </a>
 
@@ -752,7 +794,6 @@ img{max-width:100%;display:block}
     <div class="footer-links">
       <a href="/">Home</a>
       <a href="/htb/">Hack The Box</a>
-      <!-- FIX: footer TJCTF link unified with header -->
       <a href="/tjctf-2026/">TJCTF</a>
       <a href="/tryhackme/">TryHackMe</a>
       <a href="/research/">Research</a>
