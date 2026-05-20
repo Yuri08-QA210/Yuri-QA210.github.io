@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOC Analyst Roadmap: Zero to Senior L3 — How to Learn What Nobody Teaches You | QA210</title>
+<meta name="description" content="Super detailed, deeply technical, opinionated guide about becoming a SOC Analyst from zero to Senior L3. Written by QA210 — blunt, practical, no-nonsense, real-world focused.">
+<meta name="author" content="QA210">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>Q</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root {
+  --bg0:#06080c;--bg:#0a0e17;--bg2:#111827;--card:#151d2e;--border:#1e293b;--border-light:#334155;
+  --fg:#f1f5f9;--text1:#e2e8f0;--muted:#94a3b8;--text3:#64748b;--text4:#475569;
+  --accent:#3b82f6;--accent-hover:#60a5fa;--accent-dim:rgba(59,130,246,0.1);
+  --accent2:#818cf8;--accent2-dim:rgba(129,140,248,0.1);
+  --red:#ef4444;--red-dim:rgba(239,68,68,0.1);
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.1);
+  --yellow:#eab308;--yellow-dim:rgba(234,179,8,0.1);
+  --orange:#f97316;--orange-dim:rgba(249,115,22,0.1);
+  --purple:#a855f7;--purple-dim:rgba(168,85,247,0.1);
+  --cyan:#06b6d4;--cyan-dim:rgba(6,182,212,0.1);
+  --rose:#f43f5e;--rose-dim:rgba(244,63,94,0.1);
+  --gradient-accent:linear-gradient(135deg,#22c55e,#3b82f6);
+  --gradient-warm:linear-gradient(135deg,#f97316,#ef4444);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--border) var(--bg)}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg0);color:var(--text1);line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:3px}
+a{color:var(--accent);text-decoration:none;transition:all .2s}a:hover{color:var(--accent-hover)}
+::selection{background:rgba(34,197,94,0.3);color:var(--fg)}
+#particles-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.1}
+
+/* ═══ HEADER ═══ */
+.site-header{position:sticky;top:0;z-index:100;background:rgba(6,8,12,0.85);backdrop-filter:blur(20px) saturate(1.2);border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;padding:0 2.5rem;gap:2rem}
+.site-header .brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk','JetBrains Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--fg);white-space:nowrap;letter-spacing:-.03em;text-decoration:none}
+.site-header .brand .logo-icon{width:28px;height:28px;border-radius:7px;background:var(--gradient-accent);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:#fff}
+.site-header .brand .cursor{display:inline-block;width:2px;height:1em;background:var(--green);margin-left:2px;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.nav-main{display:flex;gap:0;align-items:center}
+.nav-main a{padding:0 1.1rem;height:58px;display:flex;align-items:center;color:var(--text3);font-size:.82rem;font-weight:500;border-bottom:2px solid transparent;transition:all .2s}
+.nav-main a:hover,.nav-main a.active{color:var(--fg);border-bottom-color:var(--accent)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:1.1rem}
+.social-link{color:var(--text4);font-size:1.05rem;transition:all .2s;padding:4px}
+.social-link:hover{color:var(--accent);transform:translateY(-1px)}
+.mobile-toggle{display:none;background:none;border:none;color:var(--text1);font-size:1.3rem;cursor:pointer}
+
+/* ═══ BREADCRUMB ═══ */
+.breadcrumb{position:relative;z-index:1;padding:80px 2rem 0;max-width:1400px;margin:0 auto}
+.breadcrumb-inner{display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:var(--text3)}
+.breadcrumb-inner a{color:var(--text3);text-decoration:none;transition:color .2s}
+.breadcrumb-inner a:hover{color:var(--accent)}
+.breadcrumb-sep{opacity:.4}
+.breadcrumb-current{color:var(--text1);font-weight:600}
+
+/* ═══ HERO ═══ */
+.hero{position:relative;z-index:1;padding:2rem 2rem 1rem;max-width:1400px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem 1rem;background:var(--green-dim);border:1px solid rgba(34,197,94,0.25);border-radius:999px;font-size:.75rem;font-weight:600;color:var(--green);margin-bottom:1rem}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse-dot 1.5s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.2}}
+.hero h1{font-family:'Space Grotesk','Inter',sans-serif;font-size:2.75rem;font-weight:800;letter-spacing:-1.5px;margin-bottom:.5rem;background:linear-gradient(135deg,var(--fg),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-subtitle{font-size:1.05rem;color:var(--muted);max-width:720px;margin-bottom:1.5rem;line-height:1.8}
+.hero-meta{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem}
+.hero-tag{padding:.3rem .75rem;border-radius:6px;font-size:.75rem;font-weight:600;font-family:'JetBrains Mono',monospace}
+.tag-date{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(234,179,8,0.25)}
+.tag-scope{background:var(--accent2-dim);color:var(--accent2);border:1px solid rgba(129,140,248,0.25)}
+.tag-crit{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,0.25)}
+.tag-thr{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,0.25)}
+.tag-vec{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(249,115,22,0.25)}
+
+/* ═══ AUTHOR CARD ═══ */
+.author-card{display:flex;align-items:center;gap:1rem;margin:1.5rem 0;padding:1rem 1.25rem;background:var(--card);border:1px solid var(--border);border-radius:10px}
+.author-avatar{width:48px;height:48px;border-radius:50%;background:var(--gradient-accent);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;color:#fff;flex-shrink:0}
+.author-info{flex:1}
+.author-name{font-weight:700;color:var(--fg);font-size:.9375rem}
+.author-bio{font-size:.8125rem;color:var(--muted);line-height:1.5}
+.author-date{font-size:.75rem;color:var(--text3);margin-top:.2rem}
+
+/* ═══ MAIN LAYOUT ═══ */
+.main-layout{position:relative;z-index:1;display:flex;max-width:1400px;margin:0 auto;padding:1rem 2rem 4rem;gap:2rem}
+
+/* ═══ TOC SIDEBAR ═══ */
+.toc-sidebar{position:sticky;top:80px;width:260px;flex-shrink:0;height:fit-content;max-height:calc(100vh - 100px);overflow-y:auto}
+.toc-sidebar::-webkit-scrollbar{width:3px}
+.toc-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.toc-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:1rem}
+.toc-list{list-style:none}
+.toc-list li{margin-bottom:.25rem}
+.toc-list a{display:flex;align-items:center;gap:.5rem;padding:.4rem .75rem;border-radius:6px;color:var(--muted);text-decoration:none;font-size:.8125rem;font-weight:500;transition:all .2s;border-left:2px solid transparent}
+.toc-list a:hover{color:var(--text1);background:rgba(255,255,255,0.03)}
+.toc-list a.active{color:var(--green);background:var(--green-dim);border-left-color:var(--green)}
+.toc-num{font-family:'JetBrains Mono',monospace;font-size:.6875rem;font-weight:700;color:var(--accent2);min-width:18px}
+
+/* ═══ CONTENT ═══ */
+.content-area{flex:1;min-width:0;max-width:880px}
+.chapter{margin-bottom:3rem;scroll-margin-top:80px}
+.chapter-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.chapter-num{font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:700;color:var(--green);background:var(--green-dim);padding:.35rem .7rem;border-radius:6px;border:1px solid rgba(34,197,94,0.2)}
+.chapter-title{font-size:1.5rem;font-weight:700;letter-spacing:-.5px;color:var(--fg)}
+.chapter p{margin-bottom:1rem;color:var(--muted);font-size:.9375rem;line-height:1.8}
+.chapter h3{font-size:1.1rem;font-weight:700;margin:1.75rem 0 .75rem;color:var(--fg)}
+.chapter h4{font-size:.9375rem;font-weight:600;margin:1.25rem 0 .5rem;color:var(--fg)}
+code.inline{font-family:'JetBrains Mono',monospace;font-size:.8125rem;background:var(--accent2-dim);color:var(--accent2);padding:.15rem .45rem;border-radius:4px;font-weight:500}
+
+/* ═══ CALLOUTS ═══ */
+.callout{border-radius:10px;padding:1rem 1.25rem;margin:1rem 0 1.5rem;font-size:.875rem;line-height:1.7;border:1px solid}
+.callout-title{font-weight:700;font-size:.8125rem;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.35rem;display:flex;align-items:center;gap:.5rem}
+.callout-crit{background:var(--red-dim);border-color:rgba(239,68,68,0.2);color:#fca5a5}
+.callout-crit .callout-title{color:var(--red)}
+.callout-info{background:var(--accent-dim);border-color:rgba(59,130,246,0.2);color:#bfdbfe}
+.callout-info .callout-title{color:var(--accent)}
+.callout-warn{background:var(--yellow-dim);border-color:rgba(234,179,8,0.2);color:#fde68a}
+.callout-warn .callout-title{color:var(--yellow)}
+.callout-key{background:var(--accent2-dim);border-color:rgba(129,140,248,0.2);color:#c7d2fe}
+.callout-key .callout-title{color:var(--accent2)}
+.callout-success{background:var(--green-dim);border-color:rgba(34,197,94,0.2);color:#bbf7d0}
+.callout-success .callout-title{color:var(--green)}
+
+/* ═══ TABLES ═══ */
+.info-table{width:100%;border-collapse:collapse;margin:1rem 0 1.5rem;font-size:.8125rem}
+.info-table th{text-align:left;padding:.6rem 1rem;background:rgba(0,0,0,0.3);color:var(--text3);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+.info-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);font-size:.8rem}
+.info-table tr:last-child td{border-bottom:none}
+.info-table .label{color:var(--muted)}
+.info-table .value{color:var(--fg);font-family:'JetBrains Mono',monospace}
+.info-table .on{color:var(--red);font-family:'JetBrains Mono',monospace}
+.info-table .hi{color:var(--yellow);font-family:'JetBrains Mono',monospace}
+.info-table .ok{color:var(--green);font-family:'JetBrains Mono',monospace}
+
+/* ═══ ATTACK DIAGRAM ═══ */
+.attack-diagram{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin:1rem 0 1.5rem;font-family:'JetBrains Mono',monospace;font-size:.8rem;overflow-x:auto}
+.atk-row{display:flex;align-items:flex-start;margin-bottom:4px;gap:.75rem}
+.atk-step{color:var(--accent2);min-width:28px;font-weight:700}
+.atk-label{color:var(--green);font-weight:600;min-width:180px}
+.atk-desc{color:var(--muted);flex:1}
+.atk-desc .hi{color:var(--yellow)}
+.atk-desc .gr{color:var(--green)}
+.atk-desc .re{color:var(--red)}
+.atk-sep{border-top:1px solid var(--border);margin:.75rem 0}
+
+/* ═══ STEP LIST ═══ */
+.step-list{list-style:none;margin:1rem 0 1.5rem;counter-reset:step}
+.step-list li{counter-increment:step;padding:.6rem 0 .6rem 2.5rem;position:relative;font-size:.9rem;color:var(--muted);line-height:1.7}
+.step-list li::before{content:counter(step);position:absolute;left:0;top:.65rem;width:22px;height:22px;border-radius:50%;background:var(--green-dim);color:var(--green);font-size:.6875rem;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace}
+.step-list li strong{color:var(--fg)}
+
+/* ═══ STAT GRID ═══ */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:1rem 0 1.5rem}
+.stat-cell{background:var(--bg2);padding:1.25rem 1rem;text-align:center}
+.stat-num{font-family:'Space Grotesk','JetBrains Mono',monospace;font-size:1.7rem;font-weight:700;display:block;line-height:1;margin-bottom:.35rem}
+.stat-label{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;display:block}
+.s-red{color:var(--red)}.s-yellow{color:var(--yellow)}.s-blue{color:var(--accent)}.s-green{color:var(--green)}.s-purple{color:var(--accent2)}
+
+/* ═══ TIMELINE ═══ */
+.timeline{margin:1rem 0 1.5rem}
+.tl-item{display:flex;gap:1.25rem;padding-bottom:1.25rem;position:relative}
+.tl-item:not(:last-child)::after{content:'';position:absolute;left:11px;top:24px;bottom:0;width:1px;background:var(--border)}
+.tl-dot{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.tl-dot-red{background:var(--red-dim);border:1px solid rgba(239,68,68,0.4)}
+.tl-dot-yellow{background:var(--yellow-dim);border:1px solid rgba(234,179,8,0.4)}
+.tl-dot-blue{background:var(--accent-dim);border:1px solid rgba(59,130,246,0.4)}
+.tl-dot-green{background:var(--green-dim);border:1px solid rgba(34,197,94,0.4)}
+.tl-dot-inner{width:8px;height:8px;border-radius:50%}
+.tl-dot-red .tl-dot-inner{background:var(--red)}
+.tl-dot-yellow .tl-dot-inner{background:var(--yellow)}
+.tl-dot-blue .tl-dot-inner{background:var(--accent)}
+.tl-dot-green .tl-dot-inner{background:var(--green)}
+.tl-content{flex:1}
+.tl-time{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text3);margin-bottom:.2rem}
+.tl-title{font-size:.875rem;font-weight:600;color:var(--fg);margin-bottom:.25rem}
+.tl-desc{font-size:.8125rem;color:var(--muted);line-height:1.6}
+
+/* ═══ CODE BLOCK ═══ */
+.code-block{position:relative;margin:1rem 0 1.5rem;border-radius:10px;border:1px solid var(--border);background:var(--bg2);overflow:hidden}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:rgba(0,0,0,0.3);border-bottom:1px solid var(--border);font-size:.75rem}
+.code-lang{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.5px}
+.code-dots{display:flex;gap:5px}
+.code-dots span{width:10px;height:10px;border-radius:50%}
+.code-dots .d1{background:#f87171}.code-dots .d2{background:#fbbf24}.code-dots .d3{background:#4ade80}
+pre{margin:0!important;padding:1rem 1.25rem!important;background:transparent!important;font-family:'JetBrains Mono',monospace!important;font-size:.8125rem!important;line-height:1.7!important;overflow-x:auto;color:var(--muted)}
+
+/* ═══ TLDR ═══ */
+.tldr-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem 2rem;margin:1.5rem 0}
+.tldr-box h3{color:var(--green);font-size:1rem;margin-bottom:.75rem}
+.tldr-box ul{list-style:none;padding:0}
+.tldr-box li{padding:.4rem 0;font-size:.875rem;color:var(--muted)}
+.tldr-box li strong{color:var(--fg)}
+.tldr-box li::before{content:'\25B8 ';color:var(--green)}
+
+/* ═══ COMMENT ═══ */
+.comment-section{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:2rem;margin-top:2rem}
+.comment-section h3{color:var(--fg);font-size:1.1rem;margin-bottom:1rem}
+.comment-form{display:flex;flex-direction:column;gap:1rem}
+.comment-form textarea{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem;color:var(--fg);font-family:'Inter',sans-serif;font-size:.9rem;resize:vertical;min-height:100px}
+.comment-form textarea:focus{outline:none;border-color:var(--green)}
+.comment-form button{align-self:flex-start;background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,0.3);padding:.6rem 1.5rem;border-radius:8px;font-family:inherit;font-weight:600;cursor:pointer;transition:all .2s}
+.comment-form button:hover{background:rgba(34,197,94,0.2)}
+
+/* ═══ FOOTER ═══ */
+.site-footer{position:relative;z-index:1;text-align:center;padding:2rem 2.5rem;border-top:1px solid var(--border);color:var(--text3);font-size:.75rem}
+.site-footer a{color:var(--accent);text-decoration:none}
+.footer-inner{max-width:1320px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.footer-left{font-size:.76rem;color:var(--text4)}
+.footer-left span{color:var(--text1);font-weight:600}
+.footer-links{display:flex;gap:1.5rem}
+.footer-links a{color:var(--text4);font-size:.76rem;transition:color .2s}
+.footer-links a:hover{color:var(--text1)}
+
+/* ═══ MOBILE NAV ═══ */
+.mobile-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;backdrop-filter:blur(4px)}
+.mobile-nav-overlay.show{display:block}
+.mobile-nav-panel{display:none;position:fixed;right:0;top:0;bottom:0;width:300px;background:var(--bg2);border-left:1px solid var(--border);z-index:201;padding:1.5rem;overflow-y:auto}
+.mobile-nav-panel.show{display:block}
+.mobile-nav-panel .mnp-close{background:none;border:none;color:var(--text1);font-size:1.2rem;cursor:pointer;float:right}
+.mobile-nav-panel nav{display:flex;flex-direction:column;gap:.5rem;clear:both;margin-top:1rem}
+.mobile-nav-panel nav a{padding:.75rem 0;border-bottom:1px solid var(--border);color:var(--text1);font-size:.9rem;font-weight:500}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:1024px){.toc-sidebar{display:none}.hero h1{font-size:2rem}}
+@media(max-width:768px){
+  .site-header{padding:0 1rem}
+  .nav-main{display:none}
+  .mobile-toggle{display:block}
+  .hero h1{font-size:1.5rem}
+  .main-layout{padding:1rem}
+  .footer-inner{flex-direction:column;text-align:center}
+  .author-card{flex-direction:column;text-align:center}
+}
+@media(max-width:480px){.hero h1{font-size:1.3rem}.stat-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<canvas id="particles-canvas"></canvas>
+
+<!-- ═══ HEADER ═══ -->
+<header class="site-header">
+  <a href="/" class="brand">
+    <span class="logo-icon">Q</span>
+    QA210<span class="cursor"></span>
+  </a>
+  <nav class="nav-main">
+    <a href="/">Home</a>
+    <a href="/writeup/">Write Up</a>
+    <a href="/research/" class="active">Research</a>
+    <a href="/mal-dev/">Malware Dev</a>
+  </nav>
+  <div class="nav-right">
+    <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu"><i class="bi bi-list"></i></button>
+  </div>
+</header>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav-overlay" id="mobileOverlay" onclick="toggleMobileNav()"></div>
+<div class="mobile-nav-panel" id="mobilePanel">
+  <button class="mnp-close" onclick="toggleMobileNav()"><i class="bi bi-x-lg"></i></button>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/writeup/">Write Up</a>
+    <a href="/research/">Research</a>
+    <a href="/mal-dev/">Malware Dev</a>
+    <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
+  </nav>
+</div>
+
+<!-- ═══ BREADCRUMB ═══ -->
+<div class="breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="/research/">Research</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="/research/blog/2026/">Blog 2026</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-current">SOC Analyst Roadmap</span>
+  </div>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Learning Roadmap &mdash; Hands-On
+  </div>
+  <h1>SOC Analyst: Zero &rarr; Senior L3</h1>
+  <p class="hero-subtitle">A 4-phase roadmap from complete beginner to Senior L3 — no dry theory, no fake courses. Every phase has specific exercises, real queries, scripts you can run right now. This is the battle map nobody teaches you.</p>
+  <div class="hero-meta">
+    <span class="hero-tag tag-date">2026</span>
+    <span class="hero-tag tag-scope">Roadmap</span>
+    <span class="hero-tag tag-thr">Blue Team</span>
+    <span class="hero-tag tag-vec">SIEM &middot; IR &middot; Threat Hunting</span>
+  </div>
+  <div class="author-card">
+    <div class="author-avatar">Q</div>
+    <div class="author-info">
+      <div class="author-name">QA210</div>
+      <div class="author-bio">Security Researcher &amp; Threat Analyst. No theory — only stuff that runs in production.</div>
+      <div class="author-date">Published: March 2026 &middot; 25 min read</div>
+    </div>
+  </div>
+</section>
+
+<div class="main-layout">
+
+<!-- ═══ TOC SIDEBAR ═══ -->
+<aside class="toc-sidebar">
+  <div class="toc-title">Contents</div>
+  <ul class="toc-list" id="toc-list">
+    <li><a href="#ch0" class="active"><span class="toc-num">TL</span> Quick Summary</a></li>
+    <li><a href="#ch1"><span class="toc-num">01</span> Why 90% of People Get Stuck</a></li>
+    <li><a href="#ch2"><span class="toc-num">02</span> Phase 1 &mdash; Newbie</a></li>
+    <li><a href="#ch3"><span class="toc-num">03</span> Phase 2 &mdash; Junior L1</a></li>
+    <li><a href="#ch4"><span class="toc-num">04</span> Phase 3 &mdash; Mid-Level L2</a></li>
+    <li><a href="#ch5"><span class="toc-num">05</span> Phase 4 &mdash; Senior L3</a></li>
+    <li><a href="#ch6"><span class="toc-num">06</span> Certification Table</a></li>
+    <li><a href="#ch7"><span class="toc-num">07</span> 5 Things to Do Today</a></li>
+  </ul>
+</aside>
+
+<main class="content-area">
+
+<!-- ═══ TL;DR ═══ -->
+<section class="chapter" id="ch0">
+  <div class="chapter-header">
+    <span class="chapter-num">TL;DR</span>
+    <h2 class="chapter-title">Quick Summary</h2>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-cell"><span class="stat-num s-green">4</span><span class="stat-label">Phases</span></div>
+    <div class="stat-cell"><span class="stat-num s-blue">6M</span><span class="stat-label">Newbie → L1</span></div>
+    <div class="stat-cell"><span class="stat-num s-yellow">2Y</span><span class="stat-label">L1 → L2</span></div>
+    <div class="stat-cell"><span class="stat-num s-purple">5+</span><span class="stat-label">Years to L3</span></div>
+  </div>
+  <div class="tldr-box">
+    <h3>Key Takeaways</h3>
+    <ul>
+      <li><strong>Phase 1 — Newbie (0–6 months):</strong> Build foundations with your hands. Wireshark, Event Viewer, Linux logs. Don't read theory — capture real packets, read real logs.</li>
+      <li><strong>Phase 2 — Junior L1 (6M–2 years):</strong> Write SPL/KQL like breathing. Read alerts like a book. SIEM queries, MITRE ATT&CK top 5, EDR triage workflow.</li>
+      <li><strong>Phase 3 — Mid-Level L2 (2–4 years):</strong> Solve real cases, not theory exams. Incident Response full playbook, Volatility3 memory forensics, static Malware Analysis, YARA rules.</li>
+      <li><strong>Phase 4 — Senior L3 (5+ years):</strong> Don't wait for alerts — hunt. Threat Hunting, Sigma rules, Python automation, SOAR playbooks, Threat Intelligence.</li>
+      <li><strong>Core philosophy:</strong> Hands BEFORE brain — touch real data before understanding the theory. Every skill is learned through hands-on labs, not through videos.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══ CH1: WHY 90% OF PEOPLE GET STUCK ═══ -->
+<section class="chapter" id="ch1">
+  <div class="chapter-header">
+    <span class="chapter-num">01</span>
+    <h2 class="chapter-title">Why 90% of People Learning Cyber Security Get Stuck at the Starting Line</h2>
+  </div>
+  <p>Honestly — do you know the biggest reason people learning Cyber Security get stuck? It's not because they lack resources. It's not because courses are expensive. It's because <strong style="color:var(--fg)">they learn in the wrong order</strong>.</p>
+  <p>Most beginners do exactly one thing: open a book, read theory, memorize, then take a certification. They memorize the 7-layer OSI model but can't read a single real packet. They know the definition of Brute Force but have never seen 1000 consecutive Event ID 4625 in one minute. They buy a $500 course then stand in front of a real SIEM not knowing what query to type.</p>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">Mistake #1 for Beginners</div>
+    Theory first, practice later. This is the guaranteed formula for spending 6 months learning and still not being able to do anything real. Courses teach you "what Brute Force is" — but not "what Brute Force looks like across 1000 log lines, and which query finds it." That difference is everything.
+  </div>
+
+  <p>This article is a <strong style="color:var(--fg)">battle map</strong>. Every phase, every skill, every specific technique. No room for "learn theory to understand, then practice" — because that approach has been proven to fail 90% of people.</p>
+
+  <div class="callout callout-key">
+    <div class="callout-title">QA210's Philosophy</div>
+    <strong>Hands BEFORE brain.</strong> Touch real data before understanding the theory. Open Wireshark — capture packets — then read about TCP handshake. Open Event Viewer — read 4625 — then understand what Brute Force is. Backwards from every traditional course, but exactly how real people learn in production. Theory comes <em>after</em> your hands already know what to do.
+  </div>
+</section>
+
+<!-- ═══ CH2: PHASE 1 — NEWBIE ═══ -->
+<section class="chapter" id="ch2">
+  <div class="chapter-header">
+    <span class="chapter-num">02</span>
+    <h2 class="chapter-title">Phase 1: NEWBIE (0–6 months) — Build Foundations With Your Hands, Not Your Brain</h2>
+  </div>
+
+  <h3>Exercise #1: Capture Packets — Don't Read About It</h3>
+  <p>Install Wireshark. Open it. Select your Wi-Fi interface. Capture packets on your home network right now. Don't read documentation — capture and watch simultaneously. Every packet tells a story. You just need to learn how to read it.</p>
+  <p>Type this filter into Wireshark's filter bar:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Wireshark Display Filters</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre># See every TCP connection being initiated (SYN packets)
+tcp.flags.syn == 1 and tcp.flags.ack == 0
+
+# See which domains your machine is querying
+dns.qry.name contains "."
+
+# Find DNS Exfiltration indicators — weird domain names
+dns.qry.name contains ".xyz"
+dns.qry.name contains ".top"</pre>
+  </div>
+
+  <p>When you type <code class="inline">tcp.flags.syn == 1 and tcp.flags.ack == 0</code>, you'll see <em>every</em> TCP connection your machine is initiating. Each line is an application connecting to some server. If you see your machine connecting to a domain like <code class="inline">a2b3c4d5.xyz</code> — that's a DNS Exfiltration indicator. Data is leaking out through DNS queries to random domains. This is a technique real APTs use.</p>
+
+  <div class="callout callout-info">
+    <div class="callout-title">Why Is This Exercise Important?</div>
+    Every packet tells a story. When you can read packets, you understand: who your machine is talking to, which application is sending data where, and whether there are any suspicious connections. This is the foundation of <em>every</em> SOC skill you'll build later. Wireshark isn't just a tool — Wireshark is a language.
+  </div>
+
+  <h3>Exercise #2: Open Event Viewer — Read What Windows Is Telling You</h3>
+  <p>Press <code class="inline">Win + R</code>, type <code class="inline">eventvwr.msc</code>, hit Enter. Navigate to Windows Logs → Security. This is where Windows records <em>everything</em> happening on your machine — who logged in, who failed, which process ran, which file was accessed. Start with these 3 Event IDs:</p>
+
+  <table class="info-table">
+    <thead><tr><th>Event ID</th><th>Meaning</th><th>When to Sound the Alarm</th></tr></thead>
+    <tbody>
+      <tr><td class="on">4625</td><td class="value">Failed logon</td><td>100 times/min from the same IP = <span class="on">Brute Force</span></td></tr>
+      <tr><td class="hi">4624 Type 10</td><td class="value">RDP logon (remote desktop)</td><td>3 AM from a foreign IP = <span class="on">Big Problem</span></td></tr>
+      <tr><td class="value">4688</td><td class="value">Process creation</td><td>Where attackers leave traces — must enable "Include Command Line" in Group Policy</td></tr>
+    </tbody>
+  </table>
+
+  <p>Hands-on exercise: filter for Event ID 4625 in the last 24 hours on your machine. How many failed logins do you see? From which IPs? If there are > 50 from the same IP — someone is brute forcing your machine.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">PowerShell</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre># Query Event ID 4625 (Failed Logon) in the last 24 hours
+Get-WinEvent -FilterHashtable @{
+    LogName = 'Security'
+    Id = 4625
+    StartTime = (Get-Date).AddHours(-24)
+} | Select-Object TimeCreated, 
+    @{N='TargetUser';E={$_.Properties[5].Value}},
+    @{N='SourceIP';E={$_.Properties[19].Value}} |
+    Format-Table -AutoSize
+
+# Count failed logons by source IP
+Get-WinEvent -FilterHashtable @{LogName='Security';Id=4625} |
+    Group-Object {$_.Properties[19].Value} |
+    Sort-Object Count -Descending |
+    Select-Object Count, Name -First 10</pre>
+  </div>
+
+  <h3>Windows Internals Deep Dive</h3>
+  <p>Once you're comfortable with Event Viewer, you need to understand <em>where attackers hide</em>. Windows has several persistence locations (running code on every startup) that every SOC analyst must know by heart:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Registry & Commands</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre># PERSISTENCE VECTORS — Where attackers hide auto-running code
+
+# 1. Registry Run keys (auto-run when user logs in)
+# Check:
+reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+reg query "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+
+# 2. Service creation (create hidden service)
+# Check:
+reg query "HKLM\SYSTEM\CurrentControlSet\Services" /s | findstr "ImagePath"
+
+# 3. Scheduled Tasks (tasks running on schedule)
+schtasks /query /fo LIST /v
+
+# 4. Group Policy audit
+gpresult /H report.html</pre>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">Critical Note About Event ID 4688</div>
+    By default, Event 4688 <strong>does not log the command line</strong> of the process. You must enable "Include Command Line in Process Creation Events" in Group Policy (Computer Configuration → Administrative Templates → System → Audit Process Creation). If you don't enable this = you see <code class="inline">powershell.exe</code> running but have no idea what command it executed. You're flying blind.
+  </div>
+
+  <h3>Linux Basics — You Don't Need to Learn Everything</h3>
+  <p>You don't need to become a Linux admin. You just need to be able to read Linux logs and know a few filter commands. Here are the log files you must know:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Bash — Log Analysis</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre># Read authentication log — find failed SSH logins
+sudo cat /var/log/auth.log | grep "Failed password"
+
+# Read syslog — system overview
+sudo tail -100 /var/log/syslog
+
+# Read Nginx access log — find web attacks
+sudo cat /var/log/nginx/access.log | grep "POST" | grep "200"
+
+# Use grep + awk + cut to filter
+grep "Failed password" /var/log/auth.log | \
+    awk '{print $(NF-3)}' | \
+    sort | uniq -c | sort -rn | head -20
+
+# Check crontab — persistence vector
+crontab -l
+sudo crontab -l
+
+# Check systemd services
+systemctl list-unit-files --state=enabled</pre>
+  </div>
+
+  <p>Hands-on exercise: write a Bash script to parse <code class="inline">auth.log</code> for failed SSH logins, count by IP, and output the top 10:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Bash — SSH Brute Force Detector</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre>#!/bin/bash
+# ssh_brute_detector.sh — Detect SSH brute force
+# Usage: ./ssh_brute_detector.sh [threshold]
+
+LOG="/var/log/auth.log"
+THRESHOLD=${1:-50}
+
+echo "=== SSH Brute Force Detector ==="
+echo "Threshold: $THRESHOLD attempts"
+echo "Log file: $LOG"
+echo ""
+
+# Count failed logins by IP
+echo "--- Top attacking IPs ---"
+grep "Failed password" "$LOG" | \
+    awk '{ 
+        for(i=1;i<=NF;i++) 
+            if($i=="from") print $(i+1) 
+    }' | \
+    sort | uniq -c | sort -rn | \
+    awk -v thresh="$THRESHOLD" '$1 >= thresh {print $1 " attempts → " $2 " ⚠️ BRUTE FORCE"}'
+
+echo ""
+echo "--- Targeted accounts ---"
+grep "Failed password" "$LOG" | \
+    awk '{
+        for(i=1;i<=NF;i++)
+            if($i=="for") print $(i+1)
+    }' | sort | uniq -c | sort -rn | head -10</pre>
+  </div>
+
+  <h3>Weekly Lab Roadmap</h3>
+  <table class="info-table">
+    <thead><tr><th>Week</th><th>Content</th><th>Tool/Platform</th></tr></thead>
+    <tbody>
+      <tr><td class="value">1–2</td><td class="value">TryHackMe Pre-Security path (free)</td><td class="ok">TryHackMe</td></tr>
+      <tr><td class="value">3–4</td><td class="value">Build Windows Server 2019 VM, enable audit policy, create users, test brute force, read logs</td><td class="ok">VirtualBox</td></tr>
+      <tr><td class="value">5–6</td><td class="value">Download PCAP samples from malware-traffic-analysis.net, analyze like a real investigation</td><td class="ok">Wireshark</td></tr>
+      <tr><td class="value">Month 2–3</td><td class="value">Linux — log analysis, crontab, systemd, bash scripting</td><td class="ok">Ubuntu VM</td></tr>
+      <tr><td class="value">Month 4–6</td><td class="value">CompTIA Security+ certification — solidify your foundation</td><td class="ok">Security+</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-success">
+    <div class="callout-title">Learning Method — Phase 1</div>
+    Open Wireshark — capture real packets — read every byte. Open Event Viewer — filter for 4625 — see who's brute forcing your machine. No theory can replace hands-on packet capture. No video can replace querying logs yourself and discovering anomalies on your own. Hands touch data first, brain understands later.
+  </div>
+</section>
+
+<!-- ═══ CH3: PHASE 2 — JUNIOR L1 ═══ -->
+<section class="chapter" id="ch3">
+  <div class="chapter-header">
+    <span class="chapter-num">03</span>
+    <h2 class="chapter-title">Phase 2: JUNIOR L1 (6 months – 2 years) — Write Queries Like Breathing, Read Alerts Like a Book</h2>
+  </div>
+
+  <h3>The Truth About L1 Work</h3>
+  <p>Sit staring at alerts for 8 hours a day. Most are false positives. But one is real. Find it. That's your job. And to do that, you have to write SIEM queries as fast as writing your native language — fast, accurate, no syntax errors. Every second of delay gives the attacker more time.</p>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">The Brutal Truth About L1</div>
+    You'll look at 500 alerts per day. 495 are false positives. 5 are real. Missing 1 of those 5 = incident. Your job isn't "processing alerts" — your job is <strong>finding a needle in a haystack</strong>, every day, without missing any. The most important skill isn't knowing a SIEM — it's knowing <em>which questions to ask</em>.
+  </div>
+
+  <h3>Splunk SPL — Learn It This Way or Stay Slow</h3>
+  <p>Don't learn syntax first. Start from <em>investigation questions</em>. Example: "Which accounts are being brute forced in the last 24 hours?" — translate that question into SPL:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Splunk SPL</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre># Brute Force Detection — Find accounts being brute forced
+index=windows_logs EventCode=4625
+| stats count by TargetUserName, Source_Network_Address
+| where count > 50
+| sort - count
+
+# Brute Force Success — Account brute forced then successfully logged in
+index=windows_logs (EventCode=4625 OR EventCode=4624)
+| stats count as attempts, 
+    count(eval(EventCode=4625)) as failed, 
+    count(eval(EventCode=4624)) as succeeded
+  by TargetUserName, Source_Network_Address
+| where failed > 10 AND succeeded > 0
+| sort - failed
+
+# Detect Impossible Travel — logins from 2 countries within 1 hour
+index=windows_logs EventCode=4624 Logon_Type=10
+| iplocation Source_Network_Address
+| stats values(Country) as countries, 
+    dc(Country) as country_count 
+  by TargetUserName
+| where country_count > 1</pre>
+  </div>
+
+  <p>Next challenge: "Which accounts successfully logged in after 10+ failed attempts?" — this is a sign of <strong>brute force success</strong>, the attacker guessed the right password. The second query above answers exactly that question.</p>
+
+  <div class="callout callout-key">
+    <div class="callout-title">SIEM Learning Method</div>
+    Translate <strong>investigation questions → queries</strong>, don't Google syntax then try to write. Start with "what do I want to find?" then figure out how to express it in SPL/KQL. Do 50 investigation questions = you write queries like breathing. You don't need to memorize syntax — memorize <em>questions</em>.
+  </div>
+
+  <h3>Elastic KQL — Your Phishing Hunting Weapon</h3>
+  <p>Phishing = the #1 attack vector. Signature tell: user opens Word/Excel → spawns PowerShell/CMD. The KQL query below detects that pattern:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Elastic KQL</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre># Phishing Detection — Office app spawns shell
+process.parent.name : ("winword.exe" OR "excel.exe" OR "outlook.exe")
+AND process.name : ("cmd.exe" OR "powershell.exe" OR "wscript.exe" OR "mshta.exe")
+
+# Why add outlook.exe and mshta.exe?
+# - outlook.exe: HTML attachment with macro/veil code
+# - mshta.exe: HTML Application (HTA) — attacker uses 
+#   it to run JScript/VBScript via mshta, bypassing many AV
+# Most original documentation SKIPS these 2 vectors!
+
+# Extended version — add suspicious child processes
+process.parent.name : ("winword.exe" OR "excel.exe" OR "outlook.exe" OR "powerpnt.exe")
+AND process.name : ("cmd.exe" OR "powershell.exe" OR "wscript.exe" OR "mshta.exe" 
+    OR "cscript.exe" OR "certutil.exe" OR "bitsadmin.exe")</pre>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title">Why Add outlook.exe and mshta.exe?</div>
+    Most phishing detection resources only mention Word/Excel → CMD/PowerShell. But attackers have shifted to HTML attachments sent through Outlook, using <code class="inline">mshta.exe</code> (HTML Application engine) to execute JScript/VBScript. This vector bypasses many AV products because mshta is a legitimate Windows binary. Missing it = missing a whole class of real-world attacks.
+  </div>
+
+  <h3>MITRE ATT&CK — Don't Get Overwhelmed</h3>
+  <p>MITRE ATT&CK has 400+ techniques. Don't try to learn all of them. Pick the <strong>top 5</strong> and go deep. These are the 5 techniques you'll see <em>every day</em> in the SOC:</p>
+
+  <table class="info-table">
+    <thead><tr><th>Technique</th><th>Name</th><th>Why You Must Know It</th></tr></thead>
+    <tbody>
+      <tr><td class="on">T1059</td><td class="value">Command & Scripting — PowerShell, CMD</td><td>Used daily. Every alert relates to this.</td></tr>
+      <tr><td class="on">T1003</td><td class="value">OS Credential Dumping — Mimikatz, LSASS</td><td>Seeing this = real attacker. Never a false positive.</td></tr>
+      <tr><td class="hi">T1053</td><td class="value">Scheduled Task — Persistence via Task Scheduler</td><td>Attackers create tasks to run code on every startup.</td></tr>
+      <tr><td class="value">T1021</td><td class="value">Remote Services — RDP, SMB lateral movement</td><td>Attackers move between machines. Look for unusual RDP.</td></tr>
+      <tr><td class="value">T1055</td><td class="value">Process Injection — Inject into legitimate process</td><td>Evasion technique — real process running fake code.</td></tr>
+    </tbody>
+  </table>
+
+  <p>For each technique: <strong style="color:var(--fg)">reproduce in your lab → see what it leaves in the logs → this is the only way to recognize it in production</strong>. No shortcuts. You have to create a malicious scheduled task yourself, watch Event 4698 appear, write a query to detect it. Then next time you see an alert — you'll recognize it instantly.</p>
+
+  <h3>EDR Tools — Reading the Process Tree</h3>
+  <p>CrowdStrike Falcon / Microsoft Defender for Endpoint — the two most common EDRs. The most important skill: reading the <strong>process tree</strong> (parent → child relationship). Every EDR alert shows you the process tree:</p>
+
+  <div class="attack-diagram">
+    <div style="color:var(--green);font-weight:700;margin-bottom:12px;font-size:.85rem;">&#9654; ALERT TRIAGE WORKFLOW — L1 SOC Analyst</div>
+    <div class="atk-row"><span class="atk-step">[1]</span><span class="atk-label">RECEIVE ALERT</span><span class="atk-desc">EDR/SIEM triggers alert. Read alert title, severity, affected host.</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[2]</span><span class="atk-label">CHECK CONTEXT</span><span class="atk-desc">Look at the <span class="hi">process tree</span> (parent → child). What's the parent? What command line was run? Which user? What time? Source/destination IP?</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[3]</span><span class="atk-label">TRUE/FALSE?</span><span class="atk-desc">Classify: <span class="gr">True Positive</span> (real attack) vs <span class="re">False Positive</span> (normal activity). Based on context — not just the alert title.</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[4]</span><span class="atk-label">ESCALATE/CLOSE</span><span class="atk-desc">True Positive → escalate to L2 immediately + isolate endpoint. False Positive → close with clear explanation + tune rule if needed.</span></div>
+  </div>
+
+  <p>Sample process tree that should set off alarms: <code class="inline">winword.exe → cmd.exe → powershell.exe → IEX (New-Object Net.WebClient).DownloadString(...)</code>. Word never spawns CMD. If you see this = phishing confirmed 99%.</p>
+
+  <div class="callout callout-success">
+    <div class="callout-title">Learning Method — Phase 2</div>
+    Set up an Elastic lab at home, inject fake logs yourself, write your own alerts, trigger them — then investigate like a real case. Build a Splunk free tier, ingest Windows Event Logs, write queries to find brute force. One investigation question per day. Do this for 3 months = you'll write SPL/KQL as naturally as writing your native language.
+  </div>
+</section>
+
+<!-- ═══ CH4: PHASE 3 — MID-LEVEL L2 ═══ -->
+<section class="chapter" id="ch4">
+  <div class="chapter-header">
+    <span class="chapter-num">04</span>
+    <h2 class="chapter-title">Phase 3: MID-LEVEL L2 (2–4 years) — Solve Real Cases, Not Theory Exams</h2>
+  </div>
+
+  <h3>Case Study: Web Shell — From Alert to Root Cause in 90 Minutes</h3>
+  <p>This is a real L2 investigation. Every step, every decision, every query. Follow the timeline:</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-red"><div class="tl-dot-inner"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">08:47 AM</div>
+        <div class="tl-title">SIEM Alert — Outbound Traffic Spike</div>
+        <div class="tl-desc">Web server 192.168.1.50 outbound traffic spike: 2GB of data outbound in 10 minutes. Alert triggered by data exfiltration detection rule.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-yellow"><div class="tl-dot-inner"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">08:50 AM</div>
+        <div class="tl-title">Verify Alert — Pull Nginx Logs</div>
+        <div class="tl-desc">Pull Nginx logs from Elastic. See HTTP POST to <code class="inline">/uploads/image.php</code> — a PHP file in the image upload directory? Clear anomaly. Upload directories should never execute PHP.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-red"><div class="tl-dot-inner"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">09:05 AM</div>
+        <div class="tl-title">Web Shell Confirmed</div>
+        <div class="tl-desc">Request content shows: <code class="inline">cmd=whoami</code>, <code class="inline">cmd=id</code>, <code class="inline">cmd=cat /etc/passwd</code>. Attacker is executing commands through a web shell. Web shell 100% confirmed.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-blue"><div class="tl-dot-inner"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">09:15 AM</div>
+        <div class="tl-title">Memory Forensics — Volatility3</div>
+        <div class="tl-desc">Run Volatility3 on the web server's memory dump. Find httpd process with outbound connection to 45.33.32.156:4444 — <strong>Reverse Shell</strong>. Port 4444 is Metasploit's default.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-green"><div class="tl-dot-inner"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">09:20 AM</div>
+        <div class="tl-title">Containment Actions</div>
+        <div class="tl-desc">Isolate endpoint via EDR. Preserve <code class="inline">image.php</code> (SHA256 hash for future correlation). Find the upload vulnerability in the code. Check for lateral movement — has the attacker moved to other machines?</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-green"><div class="tl-dot-inner"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">09:55 AM</div>
+        <div class="tl-title">IR Report — Root Cause & Remediation</div>
+        <div class="tl-desc">Root cause: file upload didn't validate extensions + PHP execution enabled in the upload directory. Remediation: disable PHP execution, add extension whitelist, deploy WAF rule blocking web shell patterns.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Volatility3 Commands</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre># List running processes
+python3 vol.py -f memory.dmp linux.pslist
+
+# Network connections — find reverse shells
+python3 vol.py -f memory.dmp linux.netstat
+
+# Find injected code in process memory
+python3 vol.py -f memory.dmp linux.malfind
+
+# DLL libraries loaded — find suspicious DLLs
+python3 vol.py -f memory.dmp linux.dlllist
+
+# Windows equivalents (if memory dump is Windows)
+python3 vol.py -f memory.dmp windows.pslist
+python3 vol.py -f memory.dmp windows.netstat
+python3 vol.py -f memory.dmp windows.malfind
+python3 vol.py -f memory.dmp windows.dlllist</pre>
+  </div>
+
+  <h3>Incident Response Framework</h3>
+  <p>L2 analysts must have an <strong>IR Playbook</strong> for each type of incident. Standard framework: <strong style="color:var(--fg)">Contain → Eradicate → Recover → Lessons Learned</strong>. Every step has a specific checklist, nothing is "improvised." Root cause analysis methodology: 5 Whys — ask "why?" 5 times to find the real root cause, not just the symptom.</p>
+
+  <div class="callout callout-key">
+    <div class="callout-title">Forensics Timeline Reconstruction</div>
+    Every L2 investigation must end with a timeline. When was the entry point? When did lateral movement occur? How long did data exfiltration take? What was the root cause? Is remediation sufficient? The timeline is the most important deliverable of L2 — not the alert closure.
+  </div>
+
+  <h3>Static Malware Analysis</h3>
+  <p>L2 doesn't need to know full reverse engineering. But you must know <strong>static malware analysis</strong> — reading a binary without running it:</p>
+
+  <p><strong style="color:var(--fg)">PE Header Reading</strong> — what does the binary say before it runs? Use <code class="inline">pestudio</code> or <code class="inline">die (Detect It Easy)</code> to read the PE header: which compiler, which sections are abnormal, which imports are suspicious (VirtualAlloc, WriteProcessMemory, CreateRemoteThread = process injection).</p>
+
+  <p><strong style="color:var(--fg)">Strings Extraction</strong> — use FLOSS (FireEye Labs Obfuscated String Solver) instead of regular <code class="inline">strings</code>, because FLOSS decodes obfuscated strings too:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">YARA Rule</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre>rule Suspicious_PowerShell_Download {
+  meta:
+    description = "Detects PowerShell download cradle patterns"
+    author = "QA210"
+    severity = "high"
+    date = "2026-03-01"
+  strings:
+    $s1 = "IEX" ascii wide
+    $s2 = "New-Object Net.WebClient" ascii wide
+    $s3 = "DownloadString" ascii wide
+    $s4 = "Invoke-Expression" ascii wide
+    $s5 = "FromBase64String" ascii wide
+    $s6 = "System.Net.Sockets" ascii wide
+  condition:
+    2 of ($s1, $s2, $s3, $s4, $s5, $s6)
+}</pre>
+  </div>
+
+  <p><strong style="color:var(--fg)">VirusTotal Deep Dive</strong> — don't just check the detection ratio. Read the behavioral analysis tab: what processes does it spawn, what files does it create, what registry keys does it modify, what network connections does it make. That's where you see the malware's real TTPs.</p>
+
+  <h3>L2 Hands-On Lab</h3>
+  <ol class="step-list">
+    <li><strong>Download FlareVM + REMnux</strong> — the two standard malware analysis VMs. FlareVM = Windows analysis, REMnux = Linux analysis. Set up both, network isolated.</li>
+    <li><strong>Get real samples from MalwareBazaar.abuse.ch</strong> — in a sandbox! Download samples, analyze with pestudio, FLOSS, strings, YARA. Never run on your real machine.</li>
+    <li><strong>Run Volatility3 on sample memory dumps</strong> — search GitHub for "volatility memory dump samples", download, analyze. Find injected processes, network connections, persistence mechanisms.</li>
+    <li><strong>Build a vulnerable Apache server</strong>, upload a web shell, investigate yourself, then patch. Investigating your own case = deepest understanding.</li>
+  </ol>
+
+  <div class="callout callout-success">
+    <div class="callout-title">Learning Method — Phase 3</div>
+    Download real malware samples (ANY.RUN, MalwareBazaar), set up FlareVM, analyze step by step like a detective. Run Volatility3 on real memory dumps. Build a vulnerable server lab, attack it yourself, investigate it yourself, patch it yourself. Every investigation is a case study. Do 20 cases = you'll investigate naturally.
+  </div>
+</section>
+
+<!-- ═══ CH5: PHASE 4 — SENIOR L3 ═══ -->
+<section class="chapter" id="ch5">
+  <div class="chapter-header">
+    <span class="chapter-num">05</span>
+    <h2 class="chapter-title">Phase 4: SENIOR L3 (5+ years) — Don't Wait for Alerts. Hunt.</h2>
+  </div>
+
+  <h3>The Biggest Mindset Shift</h3>
+  <p>L1/L2 <em>react</em> to alerts. Seniors <em>create</em> new detections for things that no alert covers. The question a Senior asks every week:</p>
+
+  <div class="callout callout-crit">
+    <div class="callout-title">The Senior L3 Question</div>
+    <strong>"If an APT has been in my system for 3 months without triggering a single alert — what are they doing and where do I find them?"</strong><br><br>
+    This is the question that separates L2 from L3. L2 asks "which alerts do I need to handle?" L3 asks "what's happening that I <em>can't see</em>?" Threat Hunting isn't a job — it's a mindset.
+  </div>
+
+  <h3>Threat Hunting — 4-Step Process</h3>
+
+  <div class="attack-diagram">
+    <div style="color:var(--green);font-weight:700;margin-bottom:12px;font-size:.85rem;">&#9654; THREAT HUNTING PROCESS — 4 Steps</div>
+    <div class="atk-row"><span class="atk-step">[1]</span><span class="atk-label">HYPOTHESIS</span><span class="atk-desc">Based on Threat Intel. Example: "APT41 uses DLL Sideloading. Are any DLLs loading from unusual directories?"</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[2]</span><span class="atk-label">HUNT QUERY</span><span class="atk-desc">Translate hypothesis into a query. Run across the entire environment, no time limits.</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[3]</span><span class="atk-label">ANALYZE</span><span class="atk-desc">Which process loaded the DLL? What's the parent process? When was it created? By whom? <span class="hi">Pivot</span> from 1 indicator → find more.</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[4]</span><span class="atk-label">DOCUMENT</span><span class="atk-desc">Found something → incident. Nothing found → document "<span class="gr">hunted technique X, clean</span>" so the team knows it's been checked.</span></div>
+  </div>
+
+  <p>Sample hunt query — find DLL Sideloading (DLL loading from unusual directories):</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Elastic KQL — Hunt Query</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre># DLL Sideloading Hunt — Find DLLs loading from unusual directories
+event.type: "library" AND
+dll.path: (* AND NOT "C:\\Windows\\*" AND NOT "C:\\Program Files\\*")
+AND process.name: ("svchost.exe" OR "lsass.exe" OR "explorer.exe")
+
+# Logic: svchost/lsass/explorer should only load DLLs 
+# from C:\Windows\ or C:\Program Files\
+# If loading DLL from AppData, Temp, Downloads → SIDESTEPPING</pre>
+  </div>
+
+  <h3>Sigma Rules — Write New Detections</h3>
+  <p>What is Sigma? A standard format for writing detection rules — <strong style="color:var(--fg)">vendor-agnostic</strong>. Write 1 Sigma rule → convert to Splunk SPL, Elastic KQL, Microsoft Sentinel KQL, QRadar AQL... All from 1 source. This is why Seniors must know how to write Sigma:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Sigma Rule — Credential Dumping Detection</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre>title: Potential Credential Dumping via LSASS Access
+id: a3a8c5e2-7f1b-4d9e-a6c3-8b2d1e4f5a7c
+status: production
+level: high
+author: QA210
+date: 2026/03/01
+description: >
+  Detects potential credential dumping by monitoring process access 
+  to lsass.exe with specific access patterns used by Mimikatz 
+  and similar tools.
+
+logsource:
+  category: process_access
+  product: windows
+
+detection:
+  selection:
+    TargetImage|endswith: '\lsass.exe'
+    GrantedAccess|contains:
+      - '0x1010'
+      - '0x1410'
+      - '0x143a'
+      - '0x1410'
+  condition: selection
+
+tags:
+  - attack.credential_access
+  - attack.t1003.001
+  - attack.credential_access
+  - car.2019-04-004</pre>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title">Why Is Sigma Important?</div>
+    Write 1 Sigma rule, run <code class="inline">sigmac -t splunk -o output.txt rule.yml</code> → get Splunk SPL instantly. Run <code class="inline">sigmac -t elasticsearch -o output.txt rule.yml</code> → get an Elastic query. 1 rule, multiple SIEMs. This is how large teams operate — they don't write separate queries for each platform.
+  </div>
+
+  <h3>Python Automation — Real Scripts, Not Hello World</h3>
+  <p>The script below enriches IOCs from the VirusTotal API — ready to run, processes 200 IPs per hour automatically. Add CSV export + Slack webhook = mini SOAR:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Python — VirusTotal IOC Enrichment</span>
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    </div>
+    <pre>#!/usr/bin/env python3
+"""
+VT IOC Enrichment Script — QA210
+Enrich IP addresses via VirusTotal API v3.
+Free tier: 4 requests/minute → ~200 IPs/hour.
+"""
+import requests
+import json
+import csv
+from time import sleep
+
+API_KEY = "YOUR_VT_API_KEY_HERE"
+VT_BASE = "https://www.virustotal.com/api/v3"
+
+def enrich_ip(ip: str, api_key: str) -> dict:
+    """Enrich single IP via VirusTotal."""
+    url = f"{VT_BASE}/ip_addresses/{ip}"
+    headers = {"x-apikey": api_key}
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code != 200:
+        return {"ip": ip, "error": response.status_code}
+    
+    data = response.json()
+    stats = data["data"]["attributes"]["last_analysis_stats"]
+    
+    return {
+        "ip": ip,
+        "malicious": stats.get("malicious", 0),
+        "suspicious": stats.get("suspicious", 0),
+        "undetected": stats.get("undetected", 0),
+        "country": data["data"]["attributes"].get("country", "Unknown"),
+        "owner": data["data"]["attributes"].get("as_owner", "Unknown"),
+        "reputation": data["data"]["attributes"].get("reputation", 0)
+    }
+
+def bulk_enrich(ip_list: list, api_key: str, output_csv: str = None):
+    """Bulk enrich IP list. Auto-throttle for VT free tier."""
+    results = []
+    
+    for i, ip in enumerate(ip_list):
+        result = enrich_ip(ip, api_key)
+        results.append(result)
+        
+        # Alert on high-risk IPs
+        if result.get("malicious", 0) > 3:
+            print(f"[HIGH RISK] {ip} — "
+                  f"{result['malicious']} vendors flagged malicious "
+                  f"| Owner: {result.get('owner', 'N/A')}")
+        
+        # VT free tier: 4 requests/minute
+        sleep(15)
+        
+        # Progress
+        if (i + 1) % 10 == 0:
+            print(f"[PROGRESS] {i+1}/{len(ip_list)} IPs processed")
+    
+    # Export to CSV if requested
+    if output_csv:
+        with open(output_csv, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=results[0].keys())
+            writer.writeheader()
+            writer.writerows(results)
+        print(f"[EXPORT] Results saved to {output_csv}")
+    
+    return results
+
+# === USAGE ===
+# suspicious_ips = ["45.33.32.156", "107.189.19.52", "91.234.99.42"]
+# results = bulk_enrich(suspicious_ips, API_KEY, output_csv="vt_results.csv")</pre>
+  </div>
+
+  <h3>SOAR Playbook — Automating Response</h3>
+  <p>Automated response playbook for malware detection — reduces MTTC from 20-45 minutes (manual) to under 2 minutes:</p>
+
+  <div class="attack-diagram">
+    <div style="color:var(--green);font-weight:700;margin-bottom:12px;font-size:.85rem;">&#9654; SOAR PLAYBOOK — Malware Detection Auto-Response</div>
+    <div class="atk-row"><span class="atk-step">[1]</span><span class="atk-label">TRIGGER</span><span class="atk-desc">EDR alert — malicious process detected on endpoint.</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[2]</span><span class="atk-label">AUTO: Query AD</span><span class="atk-desc">Get user info + manager. Who's logged in? Which department? Privilege level?</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[3]</span><span class="atk-label">AUTO: Isolate</span><span class="atk-desc">Isolate endpoint via EDR API. <span class="re">Cut network access immediately</span> — preserve forensic data.</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[4]</span><span class="atk-label">AUTO: Lock Account</span><span class="atk-desc">Temporarily lock AD account (15 minutes). Block credential reuse.</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[5]</span><span class="atk-label">AUTO: Jira Ticket</span><span class="atk-desc">Create Jira ticket with full context: host, user, process tree, hash, VT results.</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[6]</span><span class="atk-label">AUTO: Slack Alert</span><span class="atk-desc">Post alert to <span class="hi">#soc-incidents</span> channel. Team receives info immediately.</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[7]</span><span class="atk-label">HUMAN: L2 Review</span><span class="atk-desc">L2 analyst reviews within 15 minutes. Confirm or adjust response.</span></div>
+    <div class="atk-sep"></div>
+    <div class="atk-row"><span class="atk-step">[8]</span><span class="atk-label">HUMAN: Decision</span><span class="atk-desc">Extend isolation + full forensic OR remediate + unlock account.</span></div>
+  </div>
+
+  <div class="callout callout-key">
+    <div class="callout-title">MTTC: Under 2 Minutes vs 20-45 Minutes Manual</div>
+    Manual response: 20-45 minutes from detection to isolation. During that time, the attacker has already moved laterally, dumped credentials, exfiltrated data. SOAR playbook: under 2 minutes. Steps 1-6 run automatically in ~30 seconds. L2 just needs to review and decide. The difference between "stopping it in time" and "being one step behind" is automation.
+  </div>
+
+  <h3>Threat Intelligence</h3>
+  <p>L3 must know how to consume <em>and produce</em> threat intelligence. Tools: <strong>MISP / OpenCTI</strong> — feed management and correlation. Method:</p>
+
+  <ol class="step-list">
+    <li><strong>Feed Management</strong> — Subscribe to threat feeds (AlienVault OTX, Abuse.ch, MITRE ATT&CK). Ingest into MISP/OpenCTI. Auto-correlate with internal logs.</li>
+    <li><strong>APT Group Tracking</strong> — Track APT groups by region, sector, TTPs. Know which groups target your industry.</li>
+    <li><strong>TTP Mapping</strong> — Map every intel report to MITRE ATT&CK techniques. From technique → write detection rule → hunt query.</li>
+    <li><strong>Write Intel Reports</strong> — Actionable, not copy-paste. Format: TTP observed → IoC list → detection recommendations → hunting queries.</li>
+  </ol>
+
+  <h3>Lead & Mentor</h3>
+  <p>L3 isn't just technical — you have to build the team. Coaching L1/L2, reviewing detection rules, designing tabletop exercises, building security programs. This is the difference between "Senior technical" and "Senior leader":</p>
+
+  <ol class="step-list">
+    <li><strong>L1/L2 Coaching</strong> — Pair investigation. Sit next to a junior, guide them through each step, ask "why did you make that decision?" to develop their investigative thinking.</li>
+    <li><strong>Detection Rule Review</strong> — Review the team's Sigma/YARA rules. Is the logic correct? Where are the coverage gaps? What's the false positive rate?</li>
+    <li><strong>Tabletop Exercise Design</strong> — Create simulated attack scenarios, let the team practice response. Discover process gaps before a real incident happens.</li>
+    <li><strong>Security Program Building</strong> — Build a detection engineering pipeline, define SLAs for alert response, create metrics dashboards for SOC effectiveness.</li>
+  </ol>
+
+  <div class="callout callout-success">
+    <div class="callout-title">Learning Method — Phase 4</div>
+    Don't sit waiting for alerts. Build your own hypotheses, hunt on your own, write your own detections, measure your own coverage gaps. One hunt session per week. One new Sigma rule per month. One SOAR playbook per quarter. Seniors create detections for things that nobody's alerting on yet — that's the real value.
+  </div>
+</section>
+
+<!-- ═══ CH6: CERTIFICATION TABLE ═══ -->
+<section class="chapter" id="ch6">
+  <div class="chapter-header">
+    <span class="chapter-num">06</span>
+    <h2 class="chapter-title">Certification Roadmap</h2>
+  </div>
+  <p>Certifications don't replace skills. But they're checkpoints — proving you've learned enough breadth. And many companies use certifications as CV filters. Here's the certification table by phase:</p>
+
+  <table class="info-table">
+    <thead><tr><th>Level</th><th>Timeline</th><th>Focus Skills</th><th>Target Certifications</th></tr></thead>
+    <tbody>
+      <tr><td class="value">Newbie</td><td class="value">0–6 months</td><td class="label">Wireshark, Linux, Windows Event Log</td><td class="ok">Security+, Google Cyber</td></tr>
+      <tr><td class="value">Junior L1</td><td class="value">6M–2 years</td><td class="label">Splunk, Elastic, MITRE ATT&CK, EDR</td><td class="ok">CyberOps, CSA, BTL1</td></tr>
+      <tr><td class="value">Mid-Level L2</td><td class="value">2–4 years</td><td class="label">IR, Volatility, Static Malware Analysis</td><td class="ok">CySA+, GCIH, BTL2</td></tr>
+      <tr><td class="value">Senior L3</td><td class="value">5+ years</td><td class="label">Threat Hunting, Python, SOAR, Intel</td><td class="ok">CISSP, GCFA, GCTI, CISM</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">Certifications ≠ Skills</div>
+    Don't take certifications just to get a piece of paper. Take them to validate you've understood enough breadth. Security+ doesn't make you an analyst — but it ensures you're not missing foundational knowledge. CISSP doesn't make you a Senior — but it ensures you understand security holistically. Certifications are <em>checkpoints</em>, not <em>destinations</em>.
+  </div>
+</section>
+
+<!-- ═══ CH7: 5 THINGS TO DO TODAY ═══ -->
+<section class="chapter" id="ch7">
+  <div class="chapter-header">
+    <span class="chapter-num">07</span>
+    <h2 class="chapter-title">5 Things to Do Today — No Matter What Level You're At</h2>
+  </div>
+  <p>Reading this and doing nothing = wasted time. Here are 5 things you can do tonight:</p>
+
+  <ol class="step-list">
+    <li><strong>Install Wireshark + capture packets on your home network right now.</strong> Type <code class="inline">tcp.flags.syn==1 and tcp.flags.ack==0</code> — see what's connecting to what. You'll be surprised how many servers your machine talks to that you never knew about. Every connection is a question: "Why is my machine connecting to this IP?"</li>
+    <li><strong>Open TryHackMe — do the SOC Level 1 room tonight.</strong> Free, real labs, nothing to install. Sign up → choose "SOC Level 1" path → start. Your first hour in a SOC lab is worth more than 10 hours of watching videos.</li>
+    <li><strong>Set up Elastic Stack locally with Docker in 15 minutes.</strong> <code class="inline">docker-compose up</code> — you've got a real SIEM running on your machine. Ingest Windows Event Logs, write your first query. This is a safe environment to make mistakes — and making mistakes is how you learn fastest.</li>
+    <li><strong>Read 1 real APT report on MITRE ATT&CK or Mandiant.</strong> Understand what real attackers do. Not CTFs, not labs — real adversaries targeting real victims. Know the enemy = know what you need to detect.</li>
+    <li><strong>Write your first 20-line Python script to read Windows Event Logs.</strong> <code class="inline">import xml.etree.ElementTree</code> — read .evtx files, analyze them yourself. Your first script = your first step into automation. From here, every next script is easier than the last.</li>
+  </ol>
+
+  <div class="callout callout-success">
+    <div class="callout-title">Start Tonight</div>
+    No more prep needed. No $500 course required. No need to wait until you're "ready." You'll never be ready — but you can start. Open Wireshark. Capture packets. Ask questions. That's how every Senior started — nobody was born knowing how to read packets.
+  </div>
+</section>
+
+<!-- ═══ CLOSING ═══ -->
+<section class="chapter">
+  <div class="chapter-header">
+    <span class="chapter-num" style="background:var(--green-dim);color:var(--green);border-color:rgba(34,197,94,0.2);">END</span>
+    <h2 class="chapter-title">Closing</h2>
+  </div>
+  <p>Cyber Security doesn't lack learners. It lacks people who <strong style="color:var(--fg)">dare to do</strong>.</p>
+  <p>You read this article in 25 minutes. But doing every exercise across all 4 phases = <strong style="color:var(--fg)">5 years of real experience</strong>. No shortcuts, no hacks — just sitting down, opening the tools, and doing the work.</p>
+  <p>The difference between a Senior and a Newbie isn't time — it's <strong style="color:var(--fg)">the number of times you refused to give up debugging an alert until you found the root cause</strong>. Every time you don't quit halfway, you move one step forward. Every time you choose to read logs instead of closing the alert, you move one step forward.</p>
+  <p><strong style="color:var(--green)">Start tonight. Open Wireshark. Capture packets. Ask questions.</strong></p>
+
+  <div class="author-card" style="margin-top:2rem;">
+    <div class="author-avatar">Q</div>
+    <div class="author-info">
+      <div class="author-name">QA210</div>
+      <div class="author-bio">Security Researcher &amp; Threat Analyst. If you read this far — you're more serious than 90% of people. Keep that energy. Every Senior was once a Newbie who didn't know how to open Wireshark.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMMENT SECTION ═══ -->
+<div class="comment-section">
+  <h3><i class="bi bi-chat-left-text" style="margin-right:.5rem;"></i>Discussion</h3>
+  <div class="comment-form">
+    <textarea placeholder="Share your experience or ask questions about the SOC Analyst roadmap..."></textarea>
+    <button>Submit Comment</button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-left">&copy; 2026 <span>QA210</span> &mdash; Security Research &amp; Threat Analysis</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/writeup/">Writeup</a>
+      <a href="/research/">Research</a>
+      <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
+    </div>
+  </div>
+  <p style="margin-top:1rem;max-width:900px;margin-left:auto;margin-right:auto;">QA210 Cyber Security Blog &middot; Hands before brain &middot; No dry theory &middot; Every code sample runs in a lab environment</p>
+</footer>
+
+<script>
+// ═══ THREE.JS PARTICLES ═══
+(function(){
+  const canvas=document.getElementById('particles-canvas');
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:false});
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
+  camera.position.z=5;
+  const group=new THREE.Group();scene.add(group);
+  const geo=new THREE.IcosahedronGeometry(2.2,2);
+  const mat=new THREE.MeshBasicMaterial({color:0x22c55e,wireframe:true,transparent:true,opacity:0.08});
+  group.add(new THREE.Mesh(geo,mat));
+  const pCount=600;const pGeo=new THREE.BufferGeometry();
+  const pos=new Float32Array(pCount*3);const vel=[];
+  for(let i=0;i<pCount;i++){pos[i*3]=(Math.random()-.5)*20;pos[i*3+1]=(Math.random()-.5)*20;pos[i*3+2]=(Math.random()-.5)*10;vel.push(Math.random()*.006+.002)}
+  pGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const pMat=new THREE.PointsMaterial({color:0x22c55e,size:0.03,transparent:true,opacity:0.3});
+  const pts=new THREE.Points(pGeo,pMat);scene.add(pts);
+  let mx=0,my=0;
+  document.addEventListener('mousemove',e=>{mx=(e.clientX/innerWidth-.5)*2;my=(e.clientY/innerHeight-.5)*2});
+  function animate(){
+    requestAnimationFrame(animate);group.rotation.y+=0.001;group.rotation.x+=0.0005;
+    const p=pts.geometry.attributes.position.array;
+    for(let i=0;i<pCount;i++){p[i*3+1]-=vel[i];if(p[i*3+1]<-10){p[i*3+1]=10;p[i*3]=(Math.random()-.5)*20}}
+    pts.geometry.attributes.position.needsUpdate=true;
+    camera.rotation.y+=(mx*.02-camera.rotation.y)*.003;
+    camera.rotation.x+=(my*.02-camera.rotation.x)*.003;
+    renderer.render(scene,camera);
+  }
+  animate();
+  window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+})();
+
+// ═══ TOC ACTIVE TRACKING ═══
+const tocLinks=document.querySelectorAll('.toc-list a');
+const chapters=document.querySelectorAll('.chapter');
+function updateToc(){let current='';chapters.forEach(ch=>{if(window.scrollY>=ch.offsetTop-100)current=ch.id});tocLinks.forEach(a=>{a.classList.toggle('active',a.getAttribute('href')==='#'+current)})}
+window.addEventListener('scroll',updateToc);updateToc();
+
+// ═══ MOBILE NAV ═══
+function toggleMobileNav(){
+  document.getElementById('mobileOverlay').classList.toggle('show');
+  document.getElementById('mobilePanel').classList.toggle('show');
+}
+</script>
+</body>
+</html>
