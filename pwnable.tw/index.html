@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pwnable.tw — QA210</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{--bg:#0a0e17;--bg2:#111827;--card:#151d2e;--border:#1e293b;--fg:#e2e8f0;--muted:#94a3b8;--accent:#38bdf8;--accent2:#818cf8;--red:#f87171;--green:#4ade80;--yellow:#facc15;--orange:#fb923c;--pink:#f472b6;--font:'Segoe UI',system-ui,-apple-system,sans-serif;--mono:'Cascadia Code','Fira Code','JetBrains Mono',Consolas,monospace;--radius:8px;--shadow:0 4px 24px rgba(0,0,0,.45);--glow:0 0 30px rgba(56,189,248,.12);--yellow-accent:#facc15}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--fg);line-height:1.75;min-height:100vh;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:-1;opacity:.3}
+
+.site-header{position:sticky;top:0;z-index:1000;background:rgba(10,14,23,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);font-weight:700;font-size:1.1rem}
+.logo-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:6px;font-weight:900;font-size:.9rem;color:#0a0e17}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:2px;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.nav-main{display:flex;align-items:center;gap:24px}
+.nav-main a{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-main a:hover,.nav-main a.active{color:var(--fg)}
+.nav-main a.active{border-bottom:2px solid var(--accent)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.social-link{color:var(--muted);font-size:1.1rem;transition:color .2s}
+.social-link:hover{color:var(--fg)}
+.mobile-toggle{display:none;background:none;border:none;color:var(--fg);font-size:1.4rem;cursor:pointer}
+
+.hero{text-align:center;padding:64px 24px 40px;border-bottom:1px solid var(--border);margin-bottom:40px}
+.hero .badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:4px 14px;border-radius:20px;margin-bottom:14px}
+.hero h1{font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px}
+.hero .sub{font-size:1.05rem;color:var(--muted);max-width:640px;margin:0 auto 24px}
+.hero .meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:560px;margin:0 auto}
+.hero .meta-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 8px;text-align:center}
+.meta-box .val{font-size:1.4rem;font-weight:700;color:var(--accent)}
+.meta-box .lbl{font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:2px}
+
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted);margin-bottom:28px;padding:0 32px}
+.breadcrumb a{color:var(--accent);text-decoration:none}
+.breadcrumb .sep{color:var(--border)}
+
+.content-wrap{max-width:1200px;margin:0 auto;padding:0 24px 80px}
+
+.section-title{font-size:1.3rem;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--accent);display:flex;align-items:center;gap:10px;color:var(--fg)}
+.section-title .icon{font-size:1.1rem;color:var(--accent)}
+
+.challenges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:40px}
+
+.challenge-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:all .25s;cursor:pointer;text-decoration:none;display:block;position:relative;overflow:hidden}
+.challenge-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--glow)}
+.challenge-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity .25s}
+.challenge-card:hover::before{opacity:1}
+
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card-title{font-size:1rem;font-weight:700;color:var(--fg)}
+.card-pts{font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:12px;text-transform:uppercase;letter-spacing:1px}
+.pts-100{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.25)}
+.pts-150{background:rgba(56,189,248,.12);color:var(--accent);border:1px solid rgba(56,189,248,.25)}
+.pts-200{background:rgba(129,140,248,.12);color:var(--accent2);border:1px solid rgba(129,140,248,.25)}
+.pts-250{background:rgba(244,114,182,.12);color:var(--pink);border:1px solid rgba(244,114,182,.25)}
+.pts-300{background:rgba(251,146,60,.12);color:var(--orange);border:1px solid rgba(251,146,60,.25)}
+.pts-350{background:rgba(250,204,21,.12);color:var(--yellow);border:1px solid rgba(250,204,21,.25)}
+.pts-400{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.25)}
+.pts-450{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.25)}
+.pts-500{background:rgba(168,85,247,.12);color:#a855f7;border:1px solid rgba(168,85,247,.25)}
+.pts-600{background:linear-gradient(135deg,rgba(248,113,113,.12),rgba(168,85,247,.12));color:var(--pink);border:1px solid rgba(244,114,182,.25)}
+
+.card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.tag{font-size:.6rem;padding:2px 6px;border-radius:4px;background:rgba(56,189,248,.08);color:var(--muted);font-family:var(--mono);border:1px solid var(--border)}
+.tag-vuln{background:rgba(248,113,113,.08);color:var(--red);border-color:rgba(248,113,113,.2)}
+.tag-cat{background:rgba(129,140,248,.08);color:var(--accent2);border-color:rgba(129,140,248,.2)}
+
+.card-desc{font-size:.8rem;color:var(--muted);line-height:1.5}
+.card-link{display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--accent);margin-top:10px;font-weight:600}
+.card-link i{font-size:.7rem;transition:transform .2s}
+.challenge-card:hover .card-link i{transform:translateX(3px)}
+
+.operator-sig{text-align:center;padding:28px 0;border-top:1px solid var(--border);margin-top:44px}
+.operator-sig .handle{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.operator-sig .tagline{font-size:.76rem;color:var(--muted);margin-top:4px}
+
+.mobile-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000}
+.mobile-nav-overlay.show{display:block}
+.mobile-nav-panel{display:none;position:fixed;top:0;right:0;width:280px;height:100vh;background:var(--bg2);z-index:2001;padding:24px;transform:translateX(100%);transition:transform .3s}
+.mobile-nav-panel.show{display:block;transform:translateX(0)}
+.mobile-nav-panel nav{display:flex;flex-direction:column;gap:16px;margin-top:32px}
+.mobile-nav-panel nav a{color:var(--fg);text-decoration:none;font-size:1rem}
+.mnp-close{background:none;border:none;color:var(--fg);font-size:1.2rem;cursor:pointer;float:right}
+
+@media(max-width:960px){
+.hero h1{font-size:1.6rem}
+.hero .meta-grid{grid-template-columns:repeat(2,1fr)}
+.challenges-grid{grid-template-columns:1fr}
+.nav-main a:not(.active){display:none}
+.mobile-toggle{display:block}
+.site-header{padding:0 16px}
+}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+
+<header class="site-header">
+  <a href="/" class="brand"><span class="logo-icon">Q</span>QA210<span class="cursor"></span></a>
+<nav class="nav-main">
+  <a href="/">Home</a>
+  <a href="/writeup/">writeup</a>
+  <a href="/htb/">Hack The Box</a>
+  <a href="/tryhackme/">TryHackMe</a>
+  <a href="/mal-dev/">Malware Dev</a>
+  <a href="/pwnable-tw/" class="active">Pwnable.tw</a>
+  <a href="/tjctf-2026/">TJCTF</a>
+  <a href="/research/">Research</a>
+</nav>
+  <div class="nav-right">
+    <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
+    
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu"><i class="bi bi-list"></i></button>
+  </div>
+</header>
+
+<div class="mobile-nav-overlay" id="mobileOverlay" onclick="toggleMobileNav()"></div>
+<div class="mobile-nav-panel" id="mobilePanel">
+  <button class="mnp-close" onclick="toggleMobileNav()"><i class="bi bi-x-lg"></i></button>
+<nav>
+  <a href="/">Home</a>
+  <a href="/writeup/">writeup</a>
+  <a href="/htb/">Hack The Box</a>
+  <a href="/tryhackme/">TryHackMe</a>
+  <a href="/mal-dev/">Malware Dev</a>
+  <a href="/pwnable-tw/">Pwnable.tw</a>
+  <a href="/tjctf-2026/">TJCTF</a>
+  <a href="/research/">Research</a>
+  <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
+</nav>
+</div>
+
+<div class="breadcrumb">
+  <a href="/">Home</a><span class="sep"><i class="bi bi-chevron-right"></i></span>
+  <span>Pwnable.tw</span>
+</div>
+
+<div class="content-wrap">
+
+<!-- HERO -->
+<section class="hero">
+  <span class="badge">Binary Exploitation Wargame</span>
+  <h1>Pwnable.tw<br>Challenge Writeups</h1>
+  <p class="sub">Complete walkthroughs for every challenge on pwnable.tw — from basic stack overflows to advanced heap exploitation and 1-day CVE development. Each writeup includes full exploit code with step-by-step analysis.</p>
+  <div class="meta-grid">
+    <div class="meta-box"><div class="val">46</div><div class="lbl">Challenges</div></div>
+    <div class="meta-box"><div class="val">6</div><div class="lbl">Chapters Each</div></div>
+    <div class="meta-box"><div class="val">100%</div><div class="lbl">Coverage</div></div>
+    <div class="meta-box"><div class="val">pwntools</div><div class="lbl">Framework</div></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ -->
+<!-- 100 PTS                                -->
+<!-- ══════════════════════════════════════ -->
+<h2 class="section-title"><i class="bi bi-star icon"></i> 100 Points — Getting Started</h2>
+<div class="challenges-grid">
+  <a href="start/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Start</span><span class="card-pts pts-100">100 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">stack</span><span class="tag tag-vuln">BOF</span><span class="tag">shellcode</span><span class="tag">i386</span></div>
+    <p class="card-desc">Simple stack buffer overflow. Leak the stack address via write syscall gadget, then jump to shellcode on the stack. The classic first step.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="orw/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">orw</span><span class="card-pts pts-100">100 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">shellcode</span><span class="tag tag-vuln">seccomp</span><span class="tag">ORW</span><span class="tag">i386</span></div>
+    <p class="card-desc">Shellcode injection with seccomp restricting syscalls to open/read/write only. Build an ORW chain to read /home/orw/flag.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="cve_2018_1160/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">CVE-2018-1160</span><span class="card-pts pts-100">100 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">1-day</span><span class="tag tag-vuln">OOB write</span><span class="tag">Netatalk</span><span class="tag">AFP</span></div>
+    <p class="card-desc">Develop a 1-day exploit for CVE-2018-1160 in Netatalk. Out-of-bounds write in AppleDouble entry parsing. Pre-auth RCE via DSI function pointer hijack.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- 150 PTS                                -->
+<!-- ══════════════════════════════════════ -->
+<h2 class="section-title"><i class="bi bi-star-half icon"></i> 150 Points</h2>
+<div class="challenges-grid">
+  <a href="calc/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">calc</span><span class="card-pts pts-150">150 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">stack</span><span class="tag tag-vuln">logic bug</span><span class="tag">ROP</span><span class="tag">static</span><span class="tag">i386</span></div>
+    <p class="card-desc">Calculator with a logic bug in expression parsing. The +N+M format allows arbitrary read/write on the stack. Build a ROP chain using gadgets from the statically-linked binary.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="3x17/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">3x17</span><span class="card-pts pts-150">150 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">WWW</span><span class="tag tag-vuln">arbitrary write</span><span class="tag">.fini_array</span><span class="tag">static</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Arbitrary 18-byte write primitive on a statically-linked binary. Hijack .fini_array for persistent looping, build ROP chain in writable memory, stack pivot for shell.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- 200 PTS                                -->
+<!-- ══════════════════════════════════════ -->
+<h2 class="section-title"><i class="bi bi-trophy icon"></i> 200 Points</h2>
+<div class="challenges-grid">
+  <a href="dubblesort/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">dubblesort</span><span class="card-pts pts-200">200 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">stack</span><span class="tag tag-vuln">printf leak</span><span class="tag">canary bypass</span><span class="tag">i386</span></div>
+    <p class="card-desc">Bubble sort with all protections. Leak libc via printf %s, bypass canary with scanf failure trick, overflow into ROP chain.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="hacknote/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">hacknote</span><span class="card-pts pts-200">200 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">UAF</span><span class="tag">fastbin</span><span class="tag">GOT leak</span><span class="tag">i386</span></div>
+    <p class="card-desc">Classic UAF challenge. Freed notes stay in the list. Overwrite freed note's function pointer via fastbin reuse to leak libc, then call system.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="silver_bullet/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Silver Bullet</span><span class="card-pts pts-200">200 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">stack</span><span class="tag tag-vuln">off-by-one</span><span class="tag">strncat</span><span class="tag">ROP</span><span class="tag">i386</span></div>
+    <p class="card-desc">strncat null-byte off-by-one overwrites bullet length field, enabling stack overflow. Leak libc via puts, then ROP to system.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="applestore/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">applestore</span><span class="card-pts pts-200">200 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">stack</span><span class="tag tag-vuln">stack overlap</span><span class="tag">doubly-linked</span><span class="tag">GOT overwrite</span><span class="tag">i386</span></div>
+    <p class="card-desc">iPhone store with stack-allocated cart item. Leverage stack frame overlap between handler functions to gain arbitrary read/write and overwrite atoi@GOT with system.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="re_alloc/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Re-alloc</span><span class="card-pts pts-200">200 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">realloc UAF</span><span class="tag">tcache</span><span class="tag">GOT overwrite</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">realloc misuse creates UAF. realloc(ptr,0) frees but pointer not nulled. Tcache poisoning to overwrite atoll@GOT with system.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="tcache_tear/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Tcache Tear</span><span class="card-pts pts-200">200 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">double free</span><span class="tag">tcache</span><span class="tag">unsorted bin</span><span class="tag">__free_hook</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Double free in tcache (glibc 2.27, no key protection). Forge fake chunks in BSS, unsorted bin attack for libc leak, tcache poisoning for __free_hook overwrite.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="bash/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Bash</span><span class="card-pts pts-200">200 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">misc</span><span class="tag tag-vuln">Shellshock</span><span class="tag">CVE-2014-6271</span><span class="tag">privilege escalation</span></div>
+    <p class="card-desc">SUID bash binary vulnerable to Shellshock (CVE-2014-6271). Inject commands via environment variable function definition to escalate to root.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="criticalheap/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">criticalheap</span><span class="card-pts pts-200">200 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">heap overflow</span><span class="tag">fastbin</span><span class="tag">__malloc_hook</span><span class="tag">i386</span></div>
+    <p class="card-desc">Heap overflow via unchecked edit size. Corrupt fastbin freelist, allocate fake chunk near __malloc_hook, overwrite with one_gadget.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- 250 PTS                                -->
+<!-- ══════════════════════════════════════ -->
+<h2 class="section-title"><i class="bi bi-lightning icon"></i> 250 Points</h2>
+<div class="challenges-grid">
+  <a href="seethefile/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">seethefile</span><span class="card-pts pts-250">250 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">FSOP</span><span class="tag tag-vuln">scanf overflow</span><span class="tag">vtable hijack</span><span class="tag">i386</span></div>
+    <p class="card-desc">File viewer with scanf BSS overflow into FILE* pointer. Hijack the vtable in a fake _IO_FILE_plus struct for code execution via fclose(). Classic FSOP.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="death_note/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Death Note</span><span class="card-pts pts-250">250 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">UAF</span><span class="tag">fastbin</span><span class="tag">func ptr</span><span class="tag">i386</span></div>
+    <p class="card-desc">Note manager with UAF. Dangling pointers after free allow overwriting the print function pointer. Leak libc via GOT, then overwrite with system.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="starbound/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Starbound</span><span class="card-pts pts-250">250 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">heap overflow</span><span class="tag">UAF</span><span class="tag">__free_hook</span><span class="tag">i386</span></div>
+    <p class="card-desc">Star/moon management with heap overflow and UAF. Corrupt fastbin + leak libc via unsorted bin, overwrite __free_hook with system.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="babystack/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">BabyStack</span><span class="card-pts pts-250">250 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">stack</span><span class="tag tag-vuln">canary leak</span><span class="tag">PIE leak</span><span class="tag">ROP</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">All protections enabled. Byte-by-byte canary leak, PIE leak via partial read, libc leak via GOT, then ROP to system("/bin/sh").</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="cve_2018_10387/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">CVE-2018-10387</span><span class="card-pts pts-250">250 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">1-day</span><span class="tag tag-vuln">heap overflow</span><span class="tag">OpenTFTP</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Exploit for CVE-2018-10387 in OpenTFTP SP 1.64. Heap overflow in TFTP packet parsing. Fastbin dup via overflow to __malloc_hook overwrite.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- 300 PTS                                -->
+<!-- ══════════════════════════════════════ -->
+<h2 class="section-title"><i class="bi bi-fire icon"></i> 300 Points</h2>
+<div class="challenges-grid">
+  <a href="spirited_away/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Spirited Away</span><span class="card-pts pts-300">300 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">heap overflow</span><span class="tag">UAF</span><span class="tag">GOT overwrite</span><span class="tag">i386</span></div>
+    <p class="card-desc">Survey program with heap overflow via modify and UAF via non-NULLed pointers. Leak libc through unsorted bin, overwrite free@GOT with system.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="bounty_program_alpha/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Bounty Program &alpha;</span><span class="card-pts pts-300">300 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">UAF</span><span class="tag">negative calloc</span><span class="tag">seccomp bypass</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">strtok UAF via negative calloc size, heap corruption and __free_hook overwrite. Seccomp bypass via execveat/SROP.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- 350 PTS                                -->
+<!-- ══════════════════════════════════════ -->
+<h2 class="section-title"><i class="bi bi-shield-exclamation icon"></i> 350 Points</h2>
+<div class="challenges-grid">
+  <a href="secretgarden/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Secret Garden</span><span class="card-pts pts-350">350 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">double free</span><span class="tag">fastbin</span><span class="tag">__malloc_hook</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Flower garden with double-free vulnerability. Fastbin corruption to allocate fake chunk near __malloc_hook, overwrite with one_gadget.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="alive_note/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Alive Note</span><span class="card-pts pts-350">350 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">UAF</span><span class="tag">fastbin</span><span class="tag">func ptr</span><span class="tag">i386</span></div>
+    <p class="card-desc">Note manager with UAF similar to hacknote but more note slots. Leak libc via GOT read or unsorted bin, overwrite function pointer with system.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="bookwriter/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">BookWriter</span><span class="card-pts pts-350">350 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">heap overflow</span><span class="tag">__free_hook</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Book editing allows larger writes than allocated (heap overflow). Leak libc via unsorted bin, overwrite __free_hook with system for shell.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="caov/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">CAOV</span><span class="card-pts pts-350">350 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">UAF</span><span class="tag">C++ stack-reuse</span><span class="tag">__malloc_hook</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">C++ stack-reuse UAF via destructor ordering. BSS fake chunk fastbin attack to __malloc_hook, overwrite with one_gadget.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="heap_paradise/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Heap Paradise</span><span class="card-pts pts-350">350 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">heap overflow</span><span class="tag">UAF</span><span class="tag">tcache</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Heap overflow + UAF + overlapping chunks. Tcache poisoning on glibc 2.27 to overwrite __free_hook.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="re_alloc_revenge/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Re-alloc Revenge</span><span class="card-pts pts-350">350 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">realloc UAF</span><span class="tag">tcache bypass</span><span class="tag">GOT overwrite</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Harder version of Re-alloc on glibc 2.29. realloc(ptr,0) UAF + size-shift tcache double-free bypass. atoll@GOT patch chain to system.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- 400 PTS                                -->
+<!-- ══════════════════════════════════════ -->
+<h2 class="section-title"><i class="bi bi-skull icon"></i> 400 Points</h2>
+<div class="challenges-grid">
+  <a href="mno2/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">MnO2</span><span class="card-pts pts-400">400 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">heap overflow</span><span class="tag">UAF</span><span class="tag">tcache</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Heap overflow + UAF exploitation. Unsorted bin libc leak, tcache poisoning, __free_hook overwrite with system.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="secret_of_my_heart/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Secret Of My Heart</span><span class="card-pts pts-400">400 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">format string</span><span class="tag">__free_hook</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Format string vulnerability combined with heap primitives. Leak libc addresses, craft arbitrary write primitive, overwrite __free_hook.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="kidding/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Kidding</span><span class="card-pts pts-400">400 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">pwn</span><span class="tag tag-vuln">logic</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Logic-based exploitation challenge. Requires creative thinking and careful analysis of program behavior.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="wannaheap/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">WannaHeap</span><span class="card-pts pts-400">400 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">advanced heap</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Advanced heap exploitation requiring deep understanding of malloc internals. Chain multiple primitives for shell.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="printable/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Printable</span><span class="card-pts pts-400">400 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">pwn</span><span class="tag tag-vuln">printable-only</span><span class="tag">format string</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Exploitation with printable character constraint. Craft payloads using only printable ASCII characters for format string or buffer overflow.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="hitcon_ftp/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">HITCON FTP</span><span class="card-pts pts-400">400 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">pwn</span><span class="tag tag-vuln">msgpack</span><span class="tag">seccomp</span><span class="tag">ORW</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Custom TFTP server with msgpack serialization and seccomp sandbox. Heap corruption via deserialization, libc leak, ORW ROP chain.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="stupid_robot/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Stupid Robot</span><span class="card-pts pts-400">400 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">pwn</span><span class="tag tag-vuln">type confusion</span><span class="tag">C++</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">C++ type confusion via language class hierarchy. Java→Javascript reinterpret_cast gives arbitrary write via double→char* field confusion.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- 450 PTS                                -->
+<!-- ══════════════════════════════════════ -->
+<h2 class="section-title"><i class="bi bi-exclamation-diamond icon"></i> 450 Points</h2>
+<div class="challenges-grid">
+  <a href="break_out/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Break Out</span><span class="card-pts pts-450">450 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">House of Orange</span><span class="tag">UAF</span><span class="tag">_IO_FILE</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">No free() available — House of Orange technique with top chunk corruption and _IO_FILE vtable hijack for code execution.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="ghost_party/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Ghost Party</span><span class="card-pts pts-450">450 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">UAF</span><span class="tag">C++ vtable</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Heap UAF with C++ virtual function table hijack. Overwrite vtable pointer in freed object to redirect virtual calls.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- 500 PTS — Boss Tier                    -->
+<!-- ══════════════════════════════════════ -->
+<h2 class="section-title"><i class="bi bi-emoji-dizzy icon"></i> 500 Points — Boss Tier</h2>
+<div class="challenges-grid">
+  <a href="de_aslr/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">De-ASLR</span><span class="card-pts pts-500">500 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">stack</span><span class="tag tag-vuln">BOF</span><span class="tag">GOT overwrite</span><span class="tag">offset trick</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">ASLR bypass challenge. GOT overwrite using gets/system offset trick to bypass full ASLR without info leak.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="unexploitable/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">unexploitable</span><span class="card-pts pts-500">500 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">stack</span><span class="tag tag-vuln">BOF</span><span class="tag">seccomp</span><span class="tag">canary brute</span><span class="tag">ORW</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Full protections + seccomp. Brute-force canary in forked process, leak PIE/libc, build ORW ROP chain to read flag.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="baby_allocator/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">BabyAllocator</span><span class="card-pts pts-500">500 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">custom allocator</span><span class="tag">metadata corruption</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Custom memory allocator with metadata corruption. Exploit allocator internals for overlapping chunks and arbitrary write.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="omegago/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">OmegaGo</span><span class="card-pts pts-500">500 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">pwn</span><span class="tag tag-vuln">race condition</span><span class="tag">Go binary</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Go binary with race condition. Exploit TOCTOU in concurrent access patterns for privilege escalation or code execution.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="food_store/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Food Store</span><span class="card-pts pts-500">500 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">UAF</span><span class="tag">tcache</span><span class="tag">__free_hook</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Food ordering system with UAF. Tcache poisoning via dangling pointers, unsorted bin libc leak, __free_hook overwrite with system.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="bounty_program_beta/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Bounty Program &beta;</span><span class="card-pts pts-500">500 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">pwn</span><span class="tag tag-vuln">format string</span><span class="tag">GOT overwrite</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Format string exploitation combined with GOT overwrite. Precise format string writes to hijack control flow.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="bash_revenge/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Bash Revenge</span><span class="card-pts pts-500">500 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">misc</span><span class="tag tag-vuln">sandbox escape</span><span class="tag">rbash</span><span class="tag">privilege escalation</span></div>
+    <p class="card-desc">Restricted bash (rbash) sandbox escape. Find creative ways to break out of the restricted shell environment for privilege escalation.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="seccomp_tools/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">SeccompTools</span><span class="card-pts pts-500">500 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">pwn</span><span class="tag tag-vuln">seccomp bypass</span><span class="tag">BPF</span><span class="tag">openat2</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Seccomp BPF sandbox bypass. Analyze BPF filter rules and exploit gaps in the syscall filtering using openat2 or similar techniques.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="stupid_boss/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Stupid Boss</span><span class="card-pts pts-500">500 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">pwn</span><span class="tag tag-vuln">type confusion</span><span class="tag">RNG prediction</span><span class="tag">C++</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">C++ type confusion with RNG prediction. Exploit predictable random number generation and class hierarchy for arbitrary write.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- 600 PTS — Final Boss                   -->
+<!-- ══════════════════════════════════════ -->
+<h2 class="section-title"><i class="bi bi-crown icon"></i> 600 Points — Final Boss</h2>
+<div class="challenges-grid">
+  <a href="criticalheap_plus/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">criticalheap++</span><span class="card-pts pts-600">600 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">heap</span><span class="tag tag-vuln">format string</span><span class="tag">heap corruption</span><span class="tag">__free_hook</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">Advanced heap exploitation with format string primitives. TZ environment variable format string combined with heap corruption for __free_hook overwrite.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+  <a href="digimon/index.html" class="challenge-card">
+    <div class="card-header"><span class="card-title">Digimon</span><span class="card-pts pts-600">600 pts</span></div>
+    <div class="card-tags"><span class="tag tag-cat">pwn</span><span class="tag tag-vuln">multi-vuln</span><span class="tag">libtcc</span><span class="tag">seccomp bypass</span><span class="tag">x86-64</span></div>
+    <p class="card-desc">HITCON final challenge. Multiple vulnerabilities chained together with libtcc JIT compilation and seccomp bypass. The ultimate test.</p>
+    <div class="card-link">Read writeup <i class="bi bi-arrow-right"></i></div>
+  </a>
+</div>
+
+<!-- FOOTER -->
+<div class="operator-sig">
+  <div class="handle">QA210</div>
+  <div class="tagline"><a href="https://github.com/Yuri08-QA210" style="color:var(--accent);text-decoration:none">GitHub</a></div>
+</div>
+
+</div>
+
+<script>
+function toggleMobileNav(){document.getElementById('mobileOverlay').classList.toggle('show');document.getElementById('mobilePanel').classList.toggle('show')}
+
+// Three.js particles
+!function(){const c=document.getElementById('bg-canvas'),x=c.getContext('2d');let w,h,p=[];function resize(){w=c.width=window.innerWidth;h=c.height=window.innerHeight}resize();window.addEventListener('resize',resize);
+for(let i=0;i<200;i++)p.push({x:Math.random()*2000-500,y:Math.random()*2000-500,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*1.5+.5});
+function draw(){x.clearRect(0,0,w,h);for(let i=0;i<p.length;i++){const a=p[i];a.x+=a.vx;a.y+=a.vy;if(a.x<0||a.x>w)a.vx*=-1;if(a.y<0||a.y>h)a.vy*=-1;
+x.beginPath();x.arc(a.x,a.y,a.r,0,Math.PI*2);x.fillStyle='rgba(56,189,248,.5)';x.fill();
+for(let j=i+1;j<p.length;j++){const b=p[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);
+if(d<120){x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.strokeStyle=`rgba(56,189,248,${.15*(1-d/120)})`;x.stroke()}}}requestAnimationFrame(draw)}draw()}();
+</script>
+</body>
+</html>
