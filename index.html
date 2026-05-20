@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
 <meta charset="UTF-8">
@@ -35,10 +35,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 a{color:var(--accent);text-decoration:none;transition:all .2s}a:hover{color:var(--accent-hover)}
 img{max-width:100%;display:block}
 ::selection{background:rgba(59,130,246,0.3);color:var(--text0)}
-
 #bg-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;opacity:.15}
-
-/* ═══ HEADER ═══ */
 .site-header{position:sticky;top:0;z-index:100;background:rgba(6,8,12,0.82);backdrop-filter:blur(20px) saturate(1.2);border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;padding:0 2.5rem;gap:2rem}
 .site-header .brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk','JetBrains Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--text0);white-space:nowrap;letter-spacing:-.03em}
 .site-header .brand .logo-icon{width:28px;height:28px;border-radius:7px;background:var(--gradient-accent);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:#fff}
@@ -56,11 +53,7 @@ img{max-width:100%;display:block}
 .social-link{color:var(--text4);font-size:1.05rem;transition:all .2s;padding:4px}
 .social-link:hover{color:var(--accent);transform:translateY(-1px)}
 .mobile-toggle{display:none;background:none;border:none;color:var(--text1);font-size:1.3rem;cursor:pointer}
-
-/* ═══ LAYOUT ═══ */
 .page-body{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:0 2.5rem}
-
-/* ═══ HERO ═══ */
 .hero-section{padding:3.5rem 0 3rem;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 340px;gap:3.5rem;align-items:center}
 .hero-text .greeting{font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);font-weight:600;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
 .hero-text .greeting::before{content:'';display:inline-block;width:24px;height:1px;background:var(--accent)}
@@ -76,6 +69,7 @@ img{max-width:100%;display:block}
 .hero-badge.ad{background:var(--cyan-dim);border-color:rgba(6,182,212,0.25);color:var(--cyan)}
 .hero-badge.aptlab{background:var(--rose-dim);border-color:rgba(244,63,94,0.25);color:var(--rose)}
 .hero-badge.maldev{background:var(--emerald-dim);border-color:rgba(16,185,129,0.25);color:var(--emerald)}
+.hero-badge.pwnabletw{background:var(--purple-dim);border-color:rgba(168,85,247,0.25);color:var(--purple)}
 .hero-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.75rem;position:relative;overflow:hidden}
 .hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gradient-accent)}
 .hero-card .card-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);font-weight:700;margin-bottom:1.1rem}
@@ -83,14 +77,11 @@ img{max-width:100%;display:block}
 .stat-item .stat-val{font-family:'Space Grotesk','JetBrains Mono',monospace;font-size:1.6rem;font-weight:700;color:var(--text0)}
 .stat-item .stat-lbl{font-size:.68rem;color:var(--text4);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-top:3px}
 .stat-item.highlight .stat-val{background:var(--gradient-accent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-
-/* ═══ INFO STRIP ═══ */
 .info-strip{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:1.25rem;padding:2rem 0 2.25rem;border-bottom:1px solid var(--border)}
 .info-card{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.4rem;transition:border-color .2s}
 .info-card:hover{border-color:var(--border-light)}
 .info-card .ic-title{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text4);font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:7px}
 .info-card .ic-title i{font-size:.78rem;color:var(--accent)}
-
 .about-inline{display:flex;align-items:center;gap:1rem}
 .about-inline .avatar{width:52px;height:52px;border-radius:50%;border:2px solid var(--border);object-fit:cover;flex-shrink:0;transition:border-color .3s}
 .about-inline .avatar:hover{border-color:var(--accent)}
@@ -102,27 +93,21 @@ img{max-width:100%;display:block}
 .about-inline .about-meta .author-links a:hover{color:var(--accent)}
 .about-bio{font-size:.76rem;color:var(--text2);line-height:1.7;margin-top:.75rem}
 .about-quote{font-size:.7rem;color:var(--text3);font-style:italic;line-height:1.6;padding:.5rem .85rem;border-left:2px solid var(--accent);margin-top:.6rem;background:var(--accent-dim);border-radius:0 6px 6px 0}
-
 .tag-cloud{display:flex;flex-wrap:wrap;gap:.35rem}
 .tag-cloud .tc-tag{font-size:.66rem;padding:3px 10px;border-radius:6px;background:var(--bg2);color:var(--text2);border:1px solid var(--border);cursor:pointer;transition:all .2s;font-weight:500}
 .tag-cloud .tc-tag:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
 .tc-tag.hot{background:var(--red-dim);border-color:rgba(239,68,68,0.2);color:var(--red)}
-
 .technique-list{display:flex;flex-direction:column;gap:.45rem}
 .technique-item{display:flex;align-items:center;gap:.6rem;padding:.35rem 0;font-size:.76rem;color:var(--text2);transition:color .2s}
 .technique-item i{color:var(--accent);font-size:.6rem;width:14px;text-align:center}
 .technique-item:hover{color:var(--text0)}
 .technique-item .tc{margin-left:auto;font-size:.6rem;color:var(--text4);font-family:'JetBrains Mono',monospace}
-
-/* ═══ FILTER BAR ═══ */
 .filter-bar{padding:1.75rem 0 1.25rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
 .filter-bar .filter-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text4);font-weight:700;margin-right:.25rem}
 .filter-btn{padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg1);color:var(--text2);font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
 .filter-btn:hover{border-color:var(--border-light);color:var(--text1);background:var(--bg2)}
 .filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;box-shadow:0 2px 12px rgba(59,130,246,0.3)}
 .filter-btn .count{margin-left:5px;opacity:.5;font-size:.68rem}
-
-/* ═══ POST CARDS ═══ */
 .posts-section .section-heading{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text4);font-weight:700;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem}
 .posts-section .section-heading::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
 .post-card{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:1.35rem 1.6rem;margin-bottom:1rem;transition:all .25s;position:relative;display:block;color:inherit}
@@ -138,6 +123,8 @@ img{max-width:100%;display:block}
 .platform-badge.aptlab{background:var(--rose-dim);color:var(--rose)}
 .platform-badge.research{background:var(--purple-dim);color:var(--purple)}
 .platform-badge.maldev{background:var(--emerald-dim);color:var(--emerald)}
+.platform-badge.pwnabletw{background:var(--purple-dim);color:var(--purple)}
+.platform-badge.ctf{background:var(--yellow-dim);border-color:rgba(234,179,8,0.25);color:var(--yellow)}
 .post-card .diff-badge{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:5px;background:var(--red-dim);color:var(--red)}
 .diff-badge.easy{background:var(--green-dim);color:var(--green)}
 .diff-badge.medium{background:var(--yellow-dim);color:var(--yellow)}
@@ -151,11 +138,8 @@ img{max-width:100%;display:block}
 .post-card .post-tags{display:flex;flex-wrap:wrap;gap:.35rem}
 .post-card .tag{font-size:.62rem;padding:2px 9px;border-radius:5px;background:var(--bg3);color:var(--text3);border:1px solid var(--border);font-weight:500;transition:all .2s;letter-spacing:.02em}
 .post-card:hover .tag{border-color:var(--border-light);color:var(--text2)}
-
 .post-card.pinned{border-color:rgba(249,115,22,0.25);background:linear-gradient(135deg,rgba(249,115,22,0.04),var(--bg1))}
 .post-card.pinned::after{content:'Pinned';position:absolute;top:0;right:1.6rem;background:var(--gradient-warm);color:#fff;font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 12px 5px;border-radius:0 0 6px 6px}
-
-/* ═══ FOOTER ═══ */
 .site-footer{border-top:1px solid var(--border);padding:2.5rem 2.5rem;position:relative;z-index:1}
 .footer-inner{max-width:1320px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
 .footer-left{font-size:.76rem;color:var(--text4)}
@@ -163,8 +147,6 @@ img{max-width:100%;display:block}
 .footer-links{display:flex;gap:1.5rem}
 .footer-links a{color:var(--text4);font-size:.76rem;transition:color .2s}
 .footer-links a:hover{color:var(--text1)}
-
-/* ═══ RESPONSIVE ═══ */
 @media(max-width:1024px){
   .hero-section{grid-template-columns:1fr;gap:2rem}
   .info-strip{grid-template-columns:1fr}
@@ -186,8 +168,6 @@ img{max-width:100%;display:block}
   .post-card{padding:1rem 1.25rem}
   .about-inline{flex-direction:column;text-align:center}
 }
-
-/* ═══ MOBILE NAV ═══ */
 .mobile-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;backdrop-filter:blur(4px)}
 .mobile-nav-overlay.show{display:block}
 .mobile-nav-panel{display:none;position:fixed;right:0;top:0;bottom:0;width:300px;background:var(--bg1);border-left:1px solid var(--border);z-index:201;padding:1.5rem;overflow-y:auto}
@@ -198,10 +178,7 @@ img{max-width:100%;display:block}
 </style>
 </head>
 <body>
-
 <canvas id="bg-canvas"></canvas>
-
-<!-- ═══════════ HEADER ═══════════ -->
 <header class="site-header">
   <a href="/" class="brand">
     <span class="logo-icon">Q</span>
@@ -210,33 +187,38 @@ img{max-width:100%;display:block}
   <nav class="nav-main">
     <a href="/" class="active">Home</a>
     <a href="/writeup/">Write Up</a>
-    <a href="/research/">Research</a>
+    <a href="/htb/">Hack The Box</a>
+    <a href="/tryhackme/">TryHackMe</a>
     <a href="/mal-dev/">Malware Dev</a>
+    <a href="/pwnable.tw/">Pwnable.tw</a>
+    <a href="/tjctf-2026/">TJCTF</a>
+    <a href="/research/">Research</a>
   </nav>
   <div class="nav-right">
     <div class="search-box">
       <i class="bi bi-search"></i>
       <input type="text" placeholder="Search writeups..." id="searchInput" oninput="filterPosts()">
     </div>
-    <a href="https://github.com/Yuri08loveelaina" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/Yuri08-QA210" target="_blank" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
     <button class="mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu"><i class="bi bi-list"></i></button>
   </div>
 </header>
-
-<!-- Mobile Nav -->
 <div class="mobile-nav-overlay" id="mobileOverlay" onclick="toggleMobileNav()"></div>
 <div class="mobile-nav-panel" id="mobilePanel">
   <button class="mnp-close" onclick="toggleMobileNav()"><i class="bi bi-x-lg"></i></button>
   <nav>
     <a href="/">Home</a>
     <a href="/writeup/">Write Up</a>
-    <a href="/research/">Research</a>
+    <a href="/htb/">Hack The Box</a>
+    <a href="/tryhackme/">TryHackMe</a>
     <a href="/mal-dev/">Malware Dev</a>
+    <a href="/pwnable.tw/">Pwnable.tw</a>
+    <a href="/tjctf-2026/">TJCTF</a>
+    <a href="/research/">Research</a>
     <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
   </nav>
 </div>
 
-<!-- ═══════════ MAIN ═══════════ -->
 <div class="page-body">
 
 <!-- ═══ HERO ═══ -->
@@ -244,10 +226,11 @@ img{max-width:100%;display:block}
   <div class="hero-text">
     <div class="greeting">Security Research & CTF Writeups</div>
     <h1>Offensive Security<br><span>Notes & Walkthroughs</span></h1>
-    <p class="tagline">Detailed writeups for Hack The Box machines, Pro Labs, APT Labs, Endgames, and CTF challenges. Focused on Active Directory, binary exploitation, malware development, and red team operations.</p>
+    <p class="tagline">Detailed writeups for Hack The Box machines, Pro Labs, APT Labs, Endgames, pwnable.tw challenges, and CTF competitions. Focused on Active Directory, binary exploitation, malware development, and red team operations.</p>
     <div class="hero-badges">
       <span class="hero-badge hackthebox"><i class="bi bi-skull"></i> Hack The Box</span>
-      <span class="hero-badge pwn"><i class="bi bi-bug-fill"></i> Pwn / RE</span>
+      <span class="hero-badge pwnabletw"><i class="bi bi-bug-fill"></i> Pwnable.tw</span>
+      <span class="hero-badge pwn"><i class="bi bi-code-slash"></i> Pwn / RE</span>
       <span class="hero-badge ad"><i class="bi bi-diagram-3-fill"></i> Active Directory</span>
       <span class="hero-badge aptlab"><i class="bi bi-shield-lock-fill"></i> APT Labs</span>
       <span class="hero-badge maldev"><i class="bi bi-cpu"></i> Malware Dev</span>
@@ -257,7 +240,7 @@ img{max-width:100%;display:block}
     <div class="card-label">Quick Stats</div>
     <div class="stat-grid">
       <div class="stat-item highlight">
-        <div class="stat-val">31</div>
+        <div class="stat-val">77</div>
         <div class="stat-lbl">Writeups</div>
       </div>
       <div class="stat-item">
@@ -265,8 +248,8 @@ img{max-width:100%;display:block}
         <div class="stat-lbl">Insane Boxes</div>
       </div>
       <div class="stat-item highlight">
-        <div class="stat-val">7</div>
-        <div class="stat-lbl">Pro Labs</div>
+        <div class="stat-val">46</div>
+        <div class="stat-lbl">Pwnable.tw</div>
       </div>
       <div class="stat-item">
         <div class="stat-val">13</div>
@@ -278,8 +261,6 @@ img{max-width:100%;display:block}
 
 <!-- ═══ INFO STRIP ═══ -->
 <section class="info-strip">
-
-  <!-- About -->
   <div class="info-card">
     <div class="ic-title"><i class="bi bi-person-circle"></i> About</div>
     <div class="about-inline">
@@ -295,58 +276,54 @@ img{max-width:100%;display:block}
     <p class="about-bio">High school student from Vietnam passionate about offensive security, binary exploitation, and Active Directory attacks.</p>
     <div class="about-quote">&ldquo;Nothing is secure, everything has bugs, and humans are the biggest vulnerability.&rdquo;</div>
   </div>
-
-  <!-- Popular Tags -->
   <div class="info-card">
     <div class="ic-title"><i class="bi bi-tags"></i> Popular Tags</div>
     <div class="tag-cloud">
       <span class="tc-tag hot">Active Directory</span>
       <span class="tc-tag hot">Kerberoast</span>
-      <span class="tc-tag hot">Pwn</span>
-      <span class="tc-tag">NTLM Relay</span>
+      <span class="tc-tag hot">Heap Exploitation</span>
+      <span class="tc-tag">UAF</span>
       <span class="tc-tag">Format String</span>
       <span class="tc-tag">Docker</span>
-      <span class="tc-tag">Forensics</span>
-      <span class="tc-tag">XXE</span>
-      <span class="tc-tag">RSA</span>
+      <span class="tc-tag">SROP</span>
+      <span class="tc-tag">Seccomp Bypass</span>
+      <span class="tc-tag">NTLM Relay</span>
       <span class="tc-tag">Pivoting</span>
-      <span class="tc-tag">SeBackupPriv</span>
       <span class="tc-tag">Shellcode</span>
       <span class="tc-tag">Windows API</span>
-      <span class="tc-tag">Stego</span>
+      <span class="tc-tag">ROP Chain</span>
+      <span class="tc-tag">Shellshock</span>
       <span class="tc-tag">Reverse</span>
       <span class="tc-tag">Kernel</span>
-      <span class="tc-tag">Prompt Injection</span>
+      <span class="tc-tag">Supply Chain</span>
       <span class="tc-tag">Zip Slip</span>
       <span class="tc-tag">ELF</span>
-      <span class="tc-tag">Mach-O</span>
+      <span class="tc-tag">Go Binary</span>
     </div>
   </div>
-
-  <!-- Key Techniques -->
   <div class="info-card">
     <div class="ic-title"><i class="bi bi-lightning-charge"></i> Key Techniques</div>
     <div class="technique-list">
       <div class="technique-item"><i class="bi bi-arrow-right"></i> AD Chain Attacks <span class="tc">5 posts</span></div>
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> Kerberos Exploitation <span class="tc">3 posts</span></div>
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> Binary Exploitation <span class="tc">3 posts</span></div>
+      <div class="technique-item"><i class="bi bi-arrow-right"></i> Heap Exploitation <span class="tc">20 posts</span></div>
+      <div class="technique-item"><i class="bi bi-arrow-right"></i> Seccomp Bypass <span class="tc">4 posts</span></div>
+      <div class="technique-item"><i class="bi bi-arrow-right"></i> SROP <span class="tc">2 posts</span></div>
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Container Escapes <span class="tc">2 posts</span></div>
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Cryptographic Attacks <span class="tc">2 posts</span></div>
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> Network Pivoting <span class="tc">4 posts</span></div>
-      <div class="technique-item"><i class="bi bi-arrow-right"></i> Forensics & RE <span class="tc">6 posts</span></div>
+      <div class="technique-item"><i class="bi bi-arrow-right"></i> Format String <span class="tc">3 posts</span></div>
       <div class="technique-item"><i class="bi bi-arrow-right"></i> Malware Development <span class="tc">1 post</span></div>
     </div>
   </div>
-
 </section>
 
 <!-- ═══ FILTER BAR ═══ -->
 <div class="filter-bar" id="writeups">
   <span class="filter-label">Filter:</span>
-  <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All<span class="count">30</span></button>
-  <button class="filter-btn" data-filter="htb" onclick="setFilter(this)">Hack The Box<span class="count">10</span></button>
+  <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All<span class="count">77</span></button>
+  <button class="filter-btn" data-filter="htb" onclick="setFilter(this)">Hack The Box<span class="count">11</span></button>
   <button class="filter-btn" data-filter="prolab" onclick="setFilter(this)">Pro Labs<span class="count">7</span></button>
   <button class="filter-btn" data-filter="aptlab" onclick="setFilter(this)">APT Labs<span class="count">1</span></button>
+  <button class="filter-btn" data-filter="pwnabletw" onclick="setFilter(this)">Pwnable.tw<span class="count">46</span></button>
   <button class="filter-btn" data-filter="tjctf" onclick="setFilter(this)">TJCTF<span class="count">13</span></button>
   <button class="filter-btn" data-filter="thm" onclick="setFilter(this)">TryHackMe<span class="count">2</span></button>
   <button class="filter-btn" data-filter="maldev" onclick="setFilter(this)">Malware Dev<span class="count">1</span></button>
@@ -358,10 +335,57 @@ img{max-width:100%;display:block}
 <!-- ═══ POSTS ═══ -->
 <div class="posts-section">
 
-  <!-- HTB SECTION -->
+  <!-- ═══ RESEARCH ═══ -->
+  <div class="section-heading" id="research-section">Research</div>
+
+  <a href="/research/Blog/2026/top-3-supply-chain-incidents-h1-2026/" class="post-card pinned" data-platform="research" data-tags="threat-intel,supply-chain,lotc,vishing,mdm-weaponization,itdr,blue-team,detection,zero-trust">
+    <div class="post-top"><span class="platform-badge research"><i class="bi bi-shield-fill-exclamation"></i> Threat Intel</span><span class="diff-badge insane">Critical</span><span class="post-date">May 2026</span></div>
+    <h3>H1 2026 Supply Chain Threat Report — Top 3 Incidents</h3>
+    <p class="post-excerpt">Deep technical analysis of Stryker/Handala Wiper (Intune weaponization, 200K+ devices), Match Group/ShinyHunters (Okta SSO vishing, 10M+ records), and Citizens & Frost Bank/Everest (shared vendor compromise, 3.65M+ records). Attack chain reconstruction, TTP analysis, IoCs, and strategic forecast.</p>
+    <div class="post-tags"><span class="tag">Supply Chain</span><span class="tag">LotC</span><span class="tag">Vishing</span><span class="tag">MDM Abuse</span><span class="tag">ITDR</span><span class="tag">Zero Trust</span></div>
+  </a>
+
+  <a href="/research/kernel/dirtydecrypt/" class="post-card" data-platform="research" data-tags="kernel,lpe,page-cache,cow-bypass,rxgk,dirtydecrypt,cve-2026-31635,red-team,detection,hardening">
+    <div class="post-top"><span class="platform-badge research"><i class="bi bi-journal-code"></i> Research</span><span class="diff-badge insane">Critical</span><span class="post-date">May 2026</span></div>
+    <h3>DirtyDecrypt / DirtyCBC — CVE-2026-31635</h3>
+    <p class="post-excerpt">Local privilege escalation to root via rxgk_decrypt_skb — a missing COW guard vulnerability in the Linux kernel rxgk module that allows bypassing Copy-On-Write protection and writing directly into the page cache. Deterministic exploit, no race condition, public PoC available.</p>
+    <div class="post-tags"><span class="tag">CVE-2026-31635</span><span class="tag">LPE</span><span class="tag">Kernel</span><span class="tag">Page Cache</span><span class="tag">COW Bypass</span><span class="tag">Red Team</span><span class="tag">Fedora</span></div>
+  </a>
+
+  <a href="/research/gpo/shadowpolicy/" class="post-card" data-platform="research" data-tags="gpo,scheduled-tasks,sysvol,sacl,dsc,blue-team,lolbin,ad,detection,hardening">
+    <div class="post-top"><span class="platform-badge research"><i class="bi bi-journal-code"></i> Research</span><span class="diff-badge insane">Critical</span><span class="post-date">2026</span></div>
+    <h3>ShadowPolicy — GPO Preference State-Injection</h3>
+    <p class="post-excerpt">Advanced detection and auditing framework for the ShadowPolicy threat model: GPO Preference Scheduled Task XML injection via SYSVOL state modification in Windows Server 2022 / Active Directory. Full defensive architecture with DSC hardening, SACL auditing, and SIEM detection rules.</p>
+    <div class="post-tags"><span class="tag">GPO Abuse</span><span class="tag">SYSVOL</span><span class="tag">Blue Team</span><span class="tag">DSC</span><span class="tag">SACL</span><span class="tag">SIEM</span><span class="tag">AD</span></div>
+  </a>
+
+  <!-- ═══ MALWARE DEV ═══ -->
+  <div class="section-heading" id="maldev-section" style="margin-top:.5rem">Malware Development</div>
+
+  <a href="/mal-dev/basic/" class="post-card" data-platform="maldev" data-tags="windows-api,shellcode,virtualalloc,createthread,msfvenom,injection,basic">
+    <div class="post-top"><span class="platform-badge maldev"><i class="bi bi-cpu"></i> Malware Dev</span><span class="diff-badge beginner">Beginner</span><span class="post-date">2026</span></div>
+    <h3>Basic Shellcode Injection — Windows API Fundamentals</h3>
+    <p class="post-excerpt">Introduction to malware development on Windows. Understanding the VirtualAlloc → WriteProcessMemory → CreateThread execution flow, generating position-independent shellcode, and injecting it into a remote process.</p>
+    <div class="post-tags"><span class="tag">Windows API</span><span class="tag">VirtualAlloc</span><span class="tag">CreateThread</span><span class="tag">msfvenom</span><span class="tag">Shellcode</span><span class="tag">Injection</span></div>
+  </a>
+
+  <!-- ═══ HTB SECTION ═══ -->
   <div class="section-heading" id="htb-section">Hack The Box</div>
 
-  <!-- PRO LABS & ENDGAMES -->
+  <a href="/htb/business-2025/drivers-shadow/" class="post-card pinned" data-platform="ctf" data-tags="forensics,rootkit,memory-forensics,volatility,ftrace,kernel-module,ghidra">
+    <div class="post-top">
+      <span class="platform-badge ctf"><i class="bi bi-trophy-fill"></i> Business CTF</span>
+      <span class="platform-badge htb"><i class="bi bi-shield-fill-exclamation"></i> Forensics</span>
+      <span class="diff-badge hard">Hard</span>
+      <span class="post-date">2025</span>
+    </div>
+    <h3>Driver's Shadow — Unmasking the Kernel Intruder</h3>
+    <p class="post-excerpt">Linux memory forensics deep dive with Volatility3. Hunting a kernel rootkit that uses ftrace hooks for syscall interception, XOR-obfuscated payloads, udev persistence, and covert IPC via the kill syscall. Full chain from ISF generation to kernel module extraction and reverse engineering.</p>
+    <div class="post-tags">
+      <span class="tag">Memory Forensics</span><span class="tag">Volatility3</span><span class="tag">Rootkit</span><span class="tag">ftrace</span><span class="tag">Kernel Module</span><span class="tag">Ghidra</span>
+    </div>
+  </a>
+
   <a href="/htb/prolabs/xen/" class="post-card pinned" data-platform="prolab" data-tags="endgame,citrix,kerberoast,ad,password-spray,sebackupprivilege">
     <div class="post-top">
       <span class="platform-badge endgame">Endgame</span>
@@ -370,354 +394,664 @@ img{max-width:100%;display:block}
     </div>
     <h3>HTB Endgame: XEN</h3>
     <p class="post-excerpt">Complete domain compromise through Citrix VDI breakout, Kerberoasting, NetScaler PCAP analysis, password spraying, and SeBackupPrivilege abuse to extract ntds.dit from the Domain Controller. Six flags across the entire kill chain.</p>
-    <div class="post-tags">
-      <span class="tag">Citrix Breakout</span><span class="tag">Kerberoast</span><span class="tag">PCAP</span><span class="tag">Password Spray</span><span class="tag">SeBackupPrivilege</span><span class="tag">AD</span>
-    </div>
+    <div class="post-tags"><span class="tag">Citrix Breakout</span><span class="tag">Kerberoast</span><span class="tag">PCAP</span><span class="tag">Password Spray</span><span class="tag">SeBackupPrivilege</span><span class="tag">AD</span></div>
   </a>
 
   <a href="/htb/prolabs/dante/" class="post-card" data-platform="prolab" data-tags="red-team,pivoting,ad,wordpress,buffer-overflow,keepass">
-    <div class="post-top">
-      <span class="platform-badge prolab">Pro Lab</span>
-      <span class="diff-badge hard">Hard</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge prolab">Pro Lab</span><span class="diff-badge hard">Hard</span><span class="post-date">2026</span></div>
     <h3>HTB Pro Lab: Dante</h3>
     <p class="post-excerpt">Red Team Operator Level I lab walkthrough. Pivoting through 14 machines across three subnets using Ligolo-ng, WordPress exploitation, LLMNR poisoning, buffer overflows, and KeePass credential extraction to achieve domain dominance.</p>
-    <div class="post-tags">
-      <span class="tag">Pivoting</span><span class="tag">WordPress</span><span class="tag">AD</span><span class="tag">Buffer Overflow</span><span class="tag">KeePass</span><span class="tag">27 Flags</span>
-    </div>
+    <div class="post-tags"><span class="tag">Pivoting</span><span class="tag">WordPress</span><span class="tag">AD</span><span class="tag">Buffer Overflow</span><span class="tag">KeePass</span><span class="tag">27 Flags</span></div>
   </a>
 
   <a href="/htb/prolabs/zephyr/" class="post-card" data-platform="prolab" data-tags="red-team,ad,assumed-breach,kerberoast,delegation,dcsync,lateral-movement">
-    <div class="post-top">
-      <span class="platform-badge prolab">Pro Lab</span>
-      <span class="diff-badge hard">Hard</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge prolab">Pro Lab</span><span class="diff-badge hard">Hard</span><span class="post-date">2026</span></div>
     <h3>HTB Pro Lab: Zephyr</h3>
-    <p class="post-excerpt">Red Team Operator Level I. Assumed breach Active Directory environment starting with a standard domain user. Escalate through Kerberoasting, delegation abuse, constrained delegation, ACL attacks, and DCSync to achieve full Domain Admin compromise across a hardened enterprise network.</p>
-    <div class="post-tags">
-      <span class="tag">Assumed Breach</span><span class="tag">Kerberoast</span><span class="tag">Delegation</span><span class="tag">DCSync</span><span class="tag">Lateral Movement</span><span class="tag">AD</span>
-    </div>
+    <p class="post-excerpt">Red Team Operator Level I. Assumed breach Active Directory environment starting with a standard domain user. Escalate through Kerberoasting, delegation abuse, constrained delegation, ACL attacks, and DCSync to achieve full Domain Admin compromise.</p>
+    <div class="post-tags"><span class="tag">Assumed Breach</span><span class="tag">Kerberoast</span><span class="tag">Delegation</span><span class="tag">DCSync</span><span class="tag">Lateral Movement</span><span class="tag">AD</span></div>
   </a>
 
   <a href="/htb/prolabs/offshore/" class="post-card" data-platform="prolab" data-tags="red-team,pivoting,ad,web-exploitation,grafana,privilege-escalation,tunneling">
-    <div class="post-top">
-      <span class="platform-badge prolab">Pro Lab</span>
-      <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge prolab">Pro Lab</span><span class="diff-badge insane">Insane</span><span class="post-date">2026</span></div>
     <h3>HTB Pro Lab: Offshore</h3>
-    <p class="post-excerpt">Red Team Operator Level II. Advanced corporate network penetration testing requiring deep pivoting across multiple subnets, exploiting web vulnerabilities, Grafana exploitation, complex privilege escalation paths, and tunneling deep into the internal AD environment to compromise the domain.</p>
-    <div class="post-tags">
-      <span class="tag">Pivoting</span><span class="tag">Web Exploit</span><span class="tag">Grafana</span><span class="tag">AD</span><span class="tag">Tunneling</span><span class="tag">Privesc</span>
-    </div>
+    <p class="post-excerpt">Red Team Operator Level II. Advanced corporate network penetration testing requiring deep pivoting across multiple subnets, exploiting web vulnerabilities, Grafana exploitation, complex privilege escalation paths, and tunneling deep into the internal AD environment.</p>
+    <div class="post-tags"><span class="tag">Pivoting</span><span class="tag">Web Exploit</span><span class="tag">Grafana</span><span class="tag">AD</span><span class="tag">Tunneling</span><span class="tag">Privesc</span></div>
   </a>
 
   <a href="/htb/prolabs/cybernetics/" class="post-card" data-platform="prolab" data-tags="red-team,ad,5-domains,kerberos,gpo">
-    <div class="post-top">
-      <span class="platform-badge prolab">Pro Lab</span>
-      <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge prolab">Pro Lab</span><span class="diff-badge insane">Insane</span><span class="post-date">2026</span></div>
     <h3>HTB Pro Lab: Cybernetics</h3>
     <p class="post-excerpt">Red Team Operator Level II. Advanced Active Directory attacks across five domains including Kerberos delegation abuse, GPO exploitation, forest trust pivoting, and cross-domain compromise with 25 flags.</p>
-    <div class="post-tags">
-      <span class="tag">5 Domains</span><span class="tag">Kerberos</span><span class="tag">GPO Abuse</span><span class="tag">Forest Trust</span><span class="tag">25 Flags</span>
-    </div>
+    <div class="post-tags"><span class="tag">5 Domains</span><span class="tag">Kerberos</span><span class="tag">GPO Abuse</span><span class="tag">Forest Trust</span><span class="tag">25 Flags</span></div>
   </a>
 
   <a href="/htb/prolabs/rastalabs/" class="post-card" data-platform="prolab" data-tags="red-team,opsec,c2,ad,lateral-movement,credential-harvesting">
-    <div class="post-top">
-      <span class="platform-badge prolab">Pro Lab</span>
-      <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge prolab">Pro Lab</span><span class="diff-badge insane">Insane</span><span class="post-date">2026</span></div>
     <h3>HTB Pro Lab: RastaLabs</h3>
     <p class="post-excerpt">Red Team Operator Level III. The most advanced HTB Pro Lab featuring realistic APT-style operations — Cobalt Strike C2 infrastructure, Citrix VDI exploitation, network pivoting through multiple trust boundaries, and full enterprise domain takeover with 30+ flags.</p>
-    <div class="post-tags">
-      <span class="tag">OPSEC</span><span class="tag">C2</span><span class="tag">Cobalt Strike</span><span class="tag">Citrix</span><span class="tag">Credential Harvest</span><span class="tag">AD</span>
-    </div>
+    <div class="post-tags"><span class="tag">OPSEC</span><span class="tag">C2</span><span class="tag">Cobalt Strike</span><span class="tag">Citrix</span><span class="tag">Credential Harvest</span><span class="tag">AD</span></div>
   </a>
 
-  <!-- APT LABS -->
   <a href="/htb/prolabs/aptlabs/" class="post-card" data-platform="aptlab" data-tags="apt-labs,red-team,ad,pivoting,credential-harvesting,forest-trust,phishing">
-    <div class="post-top">
-      <span class="platform-badge aptlab">APT Lab</span>
-      <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge aptlab">APT Lab</span><span class="diff-badge insane">Insane</span><span class="post-date">2026</span></div>
     <h3>HTB Pro Lab: APTLabs</h3>
     <p class="post-excerpt">Advanced Persistent Threat simulation environment. 18 machines across 3 AD forests — phishing initial access, Kerberoasting, RBCD, DCSync, Golden Tickets, cross-forest trust exploitation, and full domain compromise. 20 flags, 24h daily reset.</p>
-    <div class="post-tags">
-      <span class="tag">APT</span><span class="tag">Red Team</span><span class="tag">3 Forests</span><span class="tag">Phishing</span><span class="tag">RBCD</span><span class="tag">Forest Trust</span>
-    </div>
+    <div class="post-tags"><span class="tag">APT</span><span class="tag">Red Team</span><span class="tag">3 Forests</span><span class="tag">Phishing</span><span class="tag">RBCD</span><span class="tag">Forest Trust</span></div>
   </a>
 
-  <!-- INSANE BOXES -->
   <div class="section-heading" id="insane-section" style="margin-top:.5rem">Hack The Box — Insane Machines</div>
 
   <a href="/htb/insane/darkcorp/" class="post-card" data-platform="htb" data-tags="ad,ntlm-relay,gpo-abuse,windows,kerberos">
-    <div class="post-top">
-      <span class="platform-badge htb">HTB</span>
-      <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge htb">HTB</span><span class="diff-badge insane">Insane</span><span class="post-date">2026</span></div>
     <h3>DarkCorp</h3>
     <p class="post-excerpt">Full Active Directory chain attack including NTLM relay, GPO abuse, Silver Ticket forgery, and Shadow Credential exploitation on a hardened Windows domain environment.</p>
-    <div class="post-tags">
-      <span class="tag">AD</span><span class="tag">NTLM Relay</span><span class="tag">GPO Abuse</span><span class="tag">Silver Ticket</span><span class="tag">Windows</span>
-    </div>
+    <div class="post-tags"><span class="tag">AD</span><span class="tag">NTLM Relay</span><span class="tag">GPO Abuse</span><span class="tag">Silver Ticket</span><span class="tag">Windows</span></div>
   </a>
 
   <a href="/htb/insane/sorcery/" class="post-card" data-platform="htb" data-tags="docker,kafka,rce,ssrf,freeipa">
-    <div class="post-top">
-      <span class="platform-badge htb">HTB</span>
-      <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge htb">HTB</span><span class="diff-badge insane">Insane</span><span class="post-date">2026</span></div>
     <h3>Sorcery</h3>
     <p class="post-excerpt">Docker escape through Kafka RCE combined with SSRF chain exploitation, leading to FreeIPA domain compromise through container breakout and privilege escalation.</p>
-    <div class="post-tags">
-      <span class="tag">Docker</span><span class="tag">Kafka RCE</span><span class="tag">SSRF</span><span class="tag">FreeIPA</span>
-    </div>
+    <div class="post-tags"><span class="tag">Docker</span><span class="tag">Kafka RCE</span><span class="tag">SSRF</span><span class="tag">FreeIPA</span></div>
   </a>
 
   <a href="/htb/insane/brainfuck/" class="post-card" data-platform="htb" data-tags="wordpress,rsa,cryptography,linux">
-    <div class="post-top">
-      <span class="platform-badge htb">HTB</span>
-      <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge htb">HTB</span><span class="diff-badge insane">Insane</span><span class="post-date">2026</span></div>
     <h3>Brainfuck</h3>
     <p class="post-excerpt">WordPress exploitation combined with RSA cryptographic attacks. From web application foothold through custom cipher decryption to root access on a hardened Linux system.</p>
-    <div class="post-tags">
-      <span class="tag">WordPress</span><span class="tag">RSA</span><span class="tag">Cryptography</span><span class="tag">Linux</span>
-    </div>
+    <div class="post-tags"><span class="tag">WordPress</span><span class="tag">RSA</span><span class="tag">Cryptography</span><span class="tag">Linux</span></div>
   </a>
 
   <a href="/htb/insane/apt/" class="post-card" data-platform="htb" data-tags="ad,dc,ntlmv1,windows,privilege-escalation">
-    <div class="post-top">
-      <span class="platform-badge htb">HTB</span>
-      <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge htb">HTB</span><span class="diff-badge insane">Insane</span><span class="post-date">2026</span></div>
     <h3>APT</h3>
     <p class="post-excerpt">Advanced persistent threat simulation on a Windows Domain Controller. NTLMv1 downgrade attacks, DC exploitation, and multi-stage privilege escalation in a hardened AD environment.</p>
-    <div class="post-tags">
-      <span class="tag">DC</span><span class="tag">NTLMv1</span><span class="tag">AD</span><span class="tag">Windows</span>
-    </div>
+    <div class="post-tags"><span class="tag">DC</span><span class="tag">NTLMv1</span><span class="tag">AD</span><span class="tag">Windows</span></div>
   </a>
 
   <a href="/htb/insane/rope/" class="post-card" data-platform="htb" data-tags="pwn,format-string,rop,linux,binary-exploitation">
-    <div class="post-top">
-      <span class="platform-badge htb">HTB</span>
-      <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge htb">HTB</span><span class="diff-badge insane">Insane</span><span class="post-date">2026</span></div>
     <h3>Rope</h3>
-    <p class="post-excerpt">Binary exploitation through format string vulnerability to ROP chain construction. Stack-based buffer overflow with custom exploit development on a 64-bit Linux binary with protections.</p>
-    <div class="post-tags">
-      <span class="tag">Format String</span><span class="tag">ROP</span><span class="tag">Pwn</span><span class="tag">Linux</span>
-    </div>
+    <p class="post-excerpt">Binary exploitation through format string vulnerability to ROP chain construction. Stack-based buffer overflow with custom exploit development on a 64-bit Linux binary.</p>
+    <div class="post-tags"><span class="tag">Format String</span><span class="tag">ROP</span><span class="tag">Pwn</span><span class="tag">Linux</span></div>
   </a>
 
   <a href="/htb/insane/ropetwo/" class="post-card" data-platform="htb" data-tags="pwn,v8-oob,kernel-pwn,browser-exploitation">
-    <div class="post-top">
-      <span class="platform-badge htb">HTB</span>
-      <span class="diff-badge insane">Insane</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge htb">HTB</span><span class="diff-badge insane">Insane</span><span class="post-date">2026</span></div>
     <h3>RopeTwo</h3>
     <p class="post-excerpt">V8 engine out-of-bounds exploitation leading to browser sandbox escape and kernel-level privilege escalation. Advanced pwn chain from JavaScript engine to root on Linux.</p>
-    <div class="post-tags">
-      <span class="tag">v8 OOB</span><span class="tag">Kernel PWN</span><span class="tag">Browser</span><span class="tag">Pwn</span>
-    </div>
+    <div class="post-tags"><span class="tag">v8 OOB</span><span class="tag">Kernel PWN</span><span class="tag">Browser</span><span class="tag">Pwn</span></div>
   </a>
 
-  <!-- SHERLOCKS -->
   <a href="/htb/sherlock/aptnightmare2/" class="post-card" data-platform="htb" data-tags="forensics,rootkit,memory-forensics,malware,sherlock">
-    <div class="post-top">
-      <span class="platform-badge sherlock">Sherlock</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge sherlock">Sherlock</span><span class="post-date">2026</span></div>
     <h3>APTNightmare2</h3>
     <p class="post-excerpt">Memory forensics investigation of an APT intrusion. Rootkit analysis, process reconstruction, and indicator extraction from a compromised Windows memory dump.</p>
-    <div class="post-tags">
-      <span class="tag">Rootkit</span><span class="tag">Memory Forensics</span><span class="tag">Malware Analysis</span>
-    </div>
+    <div class="post-tags"><span class="tag">Rootkit</span><span class="tag">Memory Forensics</span><span class="tag">Malware Analysis</span></div>
   </a>
 
   <a href="/htb/sherlock/salinebreeze-1/" class="post-card" data-platform="htb" data-tags="threat-intel,apt,salt-typhoon,ghostemperor,mitre-attck,sherlock">
-    <div class="post-top">
-      <span class="platform-badge sherlock">Sherlock</span>
-      <span class="diff-badge medium">Medium</span>
-      <span class="post-date">2025</span>
-    </div>
+    <div class="post-top"><span class="platform-badge sherlock">Sherlock</span><span class="diff-badge medium">Medium</span><span class="post-date">2025</span></div>
     <h3>SalineBreeze-1</h3>
     <p class="post-excerpt">Threat intelligence deep dive into Salt Typhoon's network-device espionage toolkit and GhostEmperor's kernel-mode Demodex rootkit. MITRE ATT&CK mapping, CVE analysis, and APT profiling.</p>
-    <div class="post-tags">
-      <span class="tag">Threat Intel</span><span class="tag">APT</span><span class="tag">MITRE ATT&CK</span><span class="tag">Salt Typhoon</span><span class="tag">GhostEmperor</span>
-    </div>
+    <div class="post-tags"><span class="tag">Threat Intel</span><span class="tag">APT</span><span class="tag">MITRE ATT&CK</span><span class="tag">Salt Typhoon</span><span class="tag">GhostEmperor</span></div>
   </a>
 
-  <!-- ═══ MALWARE DEV ═══ -->
-  <div class="section-heading" id="maldev-section" style="margin-top:.5rem">Malware Development</div>
+  <!-- ═══ PWNABLE.TW ═══ -->
+  <div class="section-heading" id="pwnabletw-section" style="margin-top:.5rem">Pwnable.tw — 600 pts</div>
 
-  <a href="/mal-dev/basic/" class="post-card" data-platform="maldev" data-tags="windows-api,shellcode,virtualalloc,createthread,msfvenom,injection,basic">
+  <a href="/pwnable.tw/digimon/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,seccomp,libtcc,oob,null-byte,hitcon,multi-vuln">
     <div class="post-top">
-      <span class="platform-badge maldev"><i class="bi bi-cpu"></i> Malware Dev</span>
-      <span class="diff-badge beginner">Beginner</span>
-      <span class="post-date">2026</span>
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge insane">600 pts</span>
+      <span class="post-date">HITCON 2016</span>
     </div>
-    <h3>Basic Shellcode Injection — Windows API Fundamentals</h3>
-    <p class="post-excerpt">Introduction to malware development on Windows. Understanding the VirtualAlloc → WriteProcessMemory → CreateThread execution flow, generating position-independent shellcode, and injecting it into a remote process.</p>
-    <div class="post-tags">
-      <span class="tag">Windows API</span><span class="tag">VirtualAlloc</span><span class="tag">CreateThread</span><span class="tag">msfvenom</span><span class="tag">Shellcode</span><span class="tag">Injection</span>
+    <h3>Digimon</h3>
+    <p class="post-excerpt">Multi-vulnerability exploitation: seccomp bypass via openat, libtcc code compilation, negative index OOB, null byte off-by-one, and game automation.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">Seccomp</span><span class="tag">libtcc</span><span class="tag">OOB</span><span class="tag">Multi-Vuln</span></div>
+  </a>
+
+  <a href="/pwnable.tw/criticalheap_plus/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,format-string,tz,system-heap,clock-heap">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge insane">600 pts</span>
+      <span class="post-date">2024</span>
     </div>
+    <h3>CriticalHeap++</h3>
+    <p class="post-excerpt">Advanced heap exploitation with system/clock/normal heap types — format string via TZ environment variable and heap metadata corruption.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">Format String</span><span class="tag">TZ Trick</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <!-- PWNABLE.TW — 500 pts -->
+  <div class="section-heading">Pwnable.tw — 500 pts</div>
+
+  <a href="/pwnable.tw/unexploitable/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,srop,seccomp,canary-brute-force,pie,orw">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge insane">500 pts</span>
+    </div>
+    <h3>Unexploitable</h3>
+    <p class="post-excerpt">Full protections + seccomp — Fork-based canary brute-force, PIE/libc leak via write-back, SROP ORW chain.</p>
+    <div class="post-tags"><span class="tag">SROP</span><span class="tag">Seccomp</span><span class="tag">Canary BF</span><span class="tag">ORW</span></div>
+  </a>
+
+  <a href="/pwnable.tw/stupid_boss/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,c++,type-confusion,heap,free-hook,rng">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge insane">500 pts</span>
+    </div>
+    <h3>Stupid Boss</h3>
+    <p class="post-excerpt">C++ type confusion in a game simulation — exploiting irrational type conversions between L_Java and L_Javascript to leak addresses and overwrite __free_hook.</p>
+    <div class="post-tags"><span class="tag">C++</span><span class="tag">Type Confusion</span><span class="tag">Heap</span><span class="tag">__free_hook</span></div>
+  </a>
+
+  <a href="/pwnable.tw/seccomp_tools/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,seccomp,bpf,openat2,format-string,canary">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge insane">500 pts</span>
+    </div>
+    <h3>Seccomp Tools</h3>
+    <p class="post-excerpt">Understanding and bypassing seccomp-BPF filters — when open and openat are blocked, openat2 saves the day.</p>
+    <div class="post-tags"><span class="tag">Seccomp</span><span class="tag">BPF</span><span class="tag">openat2</span><span class="tag">Canary BF</span></div>
+  </a>
+
+  <a href="/pwnable.tw/omegago/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,go,race-condition,heap,goroutine,interface-hijack">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge insane">500 pts</span>
+    </div>
+    <h3>OmegaGo</h3>
+    <p class="post-excerpt">Go binary exploitation — race condition and heap corruption in a concurrent Go game server with interface itab hijack.</p>
+    <div class="post-tags"><span class="tag">Go Binary</span><span class="tag">Race Condition</span><span class="tag">Goroutine</span><span class="tag">Interface Hijack</span></div>
+  </a>
+
+  <a href="/pwnable.tw/food_store/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,seccomp,tcache,orw,realloc,setcontext">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge insane">500 pts</span>
+      <span class="post-date">HITCON 2020</span>
+    </div>
+    <h3>Food Store</h3>
+    <p class="post-excerpt">HITCON 2020 — Heap UAF + seccomp sandbox escape via tcache poisoning and ORW ROP chain with setcontext stack pivot.</p>
+    <div class="post-tags"><span class="tag">UAF</span><span class="tag">Seccomp</span><span class="tag">Tcache</span><span class="tag">ORW</span><span class="tag">setcontext</span></div>
+  </a>
+
+  <a href="/pwnable.tw/de_aslr/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,aslr-bypass,got-overwrite,gets,system,rop">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge insane">500 pts</span>
+    </div>
+    <h3>De-ASLR</h3>
+    <p class="post-excerpt">Defeating ASLR with a single GOT overwrite — exploiting the gets/system offset trick on a minimal x86-64 binary.</p>
+    <div class="post-tags"><span class="tag">ASLR Bypass</span><span class="tag">GOT Overwrite</span><span class="tag">ROP</span></div>
+  </a>
+
+  <a href="/pwnable.tw/bounty_beta/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,format-string,libc-leak,got-overwrite,hn">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge insane">500 pts</span>
+    </div>
+    <h3>Bounty Beta</h3>
+    <p class="post-excerpt">Format string vulnerability in a bounty management system — leaking libc via stack offsets and GOT overwrite with %hn split-writes.</p>
+    <div class="post-tags"><span class="tag">Format String</span><span class="tag">Libc Leak</span><span class="tag">GOT Overwrite</span><span class="tag">%hn</span></div>
+  </a>
+
+  <a href="/pwnable.tw/bash_revenge/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,shellshock,cve-2014-6278,suid,privilege-escalation">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge insane">500 pts</span>
+    </div>
+    <h3>Bash Revenge</h3>
+    <p class="post-excerpt">Shellshock strikes back — bypassing the initial CVE-2014-6271 patch with CVE-2014-6278 using the BASH_FUNC_ internal format.</p>
+    <div class="post-tags"><span class="tag">Shellshock</span><span class="tag">CVE-2014-6278</span><span class="tag">SUID</span><span class="tag">PrivEsc</span></div>
+  </a>
+
+  <a href="/pwnable.tw/baby_allocator/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,custom-allocator,double-free,free-hook">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge insane">500 pts</span>
+    </div>
+    <h3>Baby Allocator</h3>
+    <p class="post-excerpt">Custom heap allocator exploitation — corrupting allocator metadata to hijack free list and achieve arbitrary write via __free_hook.</p>
+    <div class="post-tags"><span class="tag">Custom Allocator</span><span class="tag">Double Free</span><span class="tag">__free_hook</span></div>
+  </a>
+
+  <!-- PWNABLE.TW — 400–450 pts -->
+  <div class="section-heading">Pwnable.tw — 400–450 pts</div>
+
+  <a href="/pwnable.tw/ghost_party/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,c++,vtable-hijack,uaf,glibc-2.23">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">450 pts</span>
+    </div>
+    <h3>Ghost Party</h3>
+    <p class="post-excerpt">C++ Vtable Hijack via Use-After-Free — Ghost object lifecycle exploitation on glibc 2.23.</p>
+    <div class="post-tags"><span class="tag">C++</span><span class="tag">Vtable Hijack</span><span class="tag">UAF</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <a href="/pwnable.tw/break_out/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,house-of-orange,no-free">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">450 pts</span>
+    </div>
+    <h3>Break Out</h3>
+    <p class="post-excerpt">Prison management system — UAF + House of Orange for code execution without free().</p>
+    <div class="post-tags"><span class="tag">UAF</span><span class="tag">House of Orange</span><span class="tag">No free()</span></div>
+  </a>
+
+  <a href="/pwnable.tw/wannaheap/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,null-byte,_io_stdin,mmap,setcontext,orw">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">400 pts</span>
+    </div>
+    <h3>WannaHeap</h3>
+    <p class="post-excerpt">Advanced heap exploitation — Null byte arbitrary write in libc via _IO_2_1_stdin_ manipulation and setcontext ORW.</p>
+    <div class="post-tags"><span class="tag">Null Byte</span><span class="tag">_IO_stdin</span><span class="tag">mmap</span><span class="tag">ORW</span></div>
+  </a>
+
+  <a href="/pwnable.tw/tcache_tear/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,tcache,double-free,glibc-2.27">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">400 pts</span>
+    </div>
+    <h3>Tcache Tear</h3>
+    <p class="post-excerpt">Tcache double-free exploitation on glibc 2.27 — poisoning tcache linked list for arbitrary allocation.</p>
+    <div class="post-tags"><span class="tag">Tcache</span><span class="tag">Double Free</span><span class="tag">glibc 2.27</span></div>
+  </a>
+
+  <a href="/pwnable.tw/stupid_robot/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,c++,type-confusion,reinterpret-cast,arbitrary-write">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">400 pts</span>
+    </div>
+    <h3>Stupid Robot</h3>
+    <p class="post-excerpt">C++ type confusion — Boss A's substring check enables reinterpret_cast abuse for arbitrary write.</p>
+    <div class="post-tags"><span class="tag">C++</span><span class="tag">Type Confusion</span><span class="tag">Arb Write</span></div>
+  </a>
+
+  <a href="/pwnable.tw/secret_of_my_heart/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,format-string,mmap,free-hook,glibc-2.23">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">400 pts</span>
+    </div>
+    <h3>Secret of My Heart</h3>
+    <p class="post-excerpt">Heap + Format String — glibc 2.23 mmap-based heap exploitation with __free_hook overwrite.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">Format String</span><span class="tag">mmap</span><span class="tag">__free_hook</span></div>
+  </a>
+
+  <a href="/pwnable.tw/printable/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,format-string,printable-only,ascii,got-overwrite">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">400 pts</span>
+    </div>
+    <h3>Printable</h3>
+    <p class="post-excerpt">Format string exploitation with a printable-only input constraint — when you can only type ASCII 0x20–0x7E.</p>
+    <div class="post-tags"><span class="tag">Format String</span><span class="tag">Printable Only</span><span class="tag">ASCII</span></div>
+  </a>
+
+  <a href="/pwnable.tw/mno2/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,tcache,glibc-2.27,constrained">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">400 pts</span>
+    </div>
+    <h3>MnO2</h3>
+    <p class="post-excerpt">Manganese Dioxide — Advanced heap exploitation with constrained operations on glibc 2.27.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">Tcache</span><span class="tag">glibc 2.27</span></div>
+  </a>
+
+  <a href="/pwnable.tw/kidding/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,cve-2018-1160,netatalk,afpd,aslr-oracle,rtld-global">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">400 pts</span>
+    </div>
+    <h3>Kidding</h3>
+    <p class="post-excerpt">CVE-2018-1160 — Netatalk AFP server heap overflow with ASLR brute-force oracle and _rtld_global overwrite.</p>
+    <div class="post-tags"><span class="tag">CVE-2018-1160</span><span class="tag">Netatalk</span><span class="tag">ASLR Oracle</span><span class="tag">_rtld_global</span></div>
+  </a>
+
+  <a href="/pwnable.tw/hitcon_ftp/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,msgpack,seccomp,tftp,deserialization">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">400 pts</span>
+    </div>
+    <h3>HITCON FTP</h3>
+    <p class="post-excerpt">Custom TFTP server with msgpack serialization — seccomp sandbox bypass via msgpack deserialization bug.</p>
+    <div class="post-tags"><span class="tag">msgpack</span><span class="tag">Seccomp</span><span class="tag">TFTP</span><span class="tag">Deserialization</span></div>
+  </a>
+
+  <a href="/pwnable.tw/bookwriter/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,glibc-2.23">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">400 pts</span>
+    </div>
+    <h3>Bookwriter</h3>
+    <p class="post-excerpt">Heap exploitation with Use-After-Free in a book management application on glibc 2.23.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">UAF</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <a href="/pwnable.tw/re_alloc_revenge/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,realloc,uaf,tcache-bypass,glibc-2.29">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">350 pts</span>
+    </div>
+    <h3>Re-alloc Revenge</h3>
+    <p class="post-excerpt">Realloc UAF + Tcache Double-Free Bypass — Size-shift trick to poison tcache on glibc 2.29.</p>
+    <div class="post-tags"><span class="tag">Realloc</span><span class="tag">UAF</span><span class="tag">Tcache Bypass</span><span class="tag">glibc 2.29</span></div>
+  </a>
+
+  <a href="/pwnable.tw/heap_paradise/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,overlapping-chunks,glibc-2.27">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">350 pts</span>
+    </div>
+    <h3>Heap Paradise</h3>
+    <p class="post-excerpt">Advanced Heap Exploitation — Multiple heap primitives with overlapping chunks on glibc 2.27.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">Overlapping</span><span class="tag">glibc 2.27</span></div>
+  </a>
+
+  <a href="/pwnable.tw/caov/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,stack-reuse,fastbin,glibc-2.23">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge hard">350 pts</span>
+    </div>
+    <h3>Caov</h3>
+    <p class="post-excerpt">Heap UAF via Stack-Reuse — C++ Data class exploitation with fastbin attack on glibc 2.23.</p>
+    <div class="post-tags"><span class="tag">UAF</span><span class="tag">Stack Reuse</span><span class="tag">Fastbin</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <!-- PWNABLE.TW — 200–300 pts -->
+  <div class="section-heading">Pwnable.tw — 200–300 pts</div>
+
+  <a href="/pwnable.tw/starbound/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,glibc-2.23">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge medium">300 pts</span>
+    </div>
+    <h3>Starbound</h3>
+    <p class="post-excerpt">Heap exploitation with Use-After-Free on glibc 2.23 — corrupting fastbin freelist for arbitrary allocation.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">UAF</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <a href="/pwnable.tw/spirited_away/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,glibc-2.23">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge medium">300 pts</span>
+    </div>
+    <h3>Spirited Away</h3>
+    <p class="post-excerpt">Heap Use-After-Free exploitation in a survey application — leveraging dangling pointers for information leak and code execution.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">UAF</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <a href="/pwnable.tw/secretgarden/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,fastbin,glibc-2.23">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge medium">300 pts</span>
+    </div>
+    <h3>Secret Garden</h3>
+    <p class="post-excerpt">Heap UAF exploitation in a garden management program — fastbin attack with double-free on glibc 2.23.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">UAF</span><span class="tag">Fastbin</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <a href="/pwnable.tw/bounty_alpha/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,glibc-2.23">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge medium">300 pts</span>
+    </div>
+    <h3>Bounty Alpha</h3>
+    <p class="post-excerpt">Heap Use-After-Free exploitation on glibc 2.23 — dangling pointer abuse for libc leak and shell.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">UAF</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <a href="/pwnable.tw/babystack/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,stack-bof,canary-leak,rop">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge medium">300 pts</span>
+    </div>
+    <h3>BabyStack</h3>
+    <p class="post-excerpt">Stack buffer overflow with canary leak — bypassing stack protection through information disclosure and ROP chain.</p>
+    <div class="post-tags"><span class="tag">Stack BOF</span><span class="tag">Canary Leak</span><span class="tag">ROP</span></div>
+  </a>
+
+  <a href="/pwnable.tw/alive_note/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,glibc-2.23,function-pointer">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge medium">300 pts</span>
+    </div>
+    <h3>Alive Note</h3>
+    <p class="post-excerpt">Heap UAF with function pointer hijack in a note-taking application on glibc 2.23.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">UAF</span><span class="tag">Function Pointer</span></div>
+  </a>
+
+  <a href="/pwnable.tw/seethefile/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,file-operation,libc-leak,got-overwrite">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge medium">250 pts</span>
+    </div>
+    <h3>See the File</h3>
+    <p class="post-excerpt">File operation exploitation — leveraging FILE structure and libc leak for GOT overwrite.</p>
+    <div class="post-tags"><span class="tag">FILE Struct</span><span class="tag">Libc Leak</span><span class="tag">GOT Overwrite</span></div>
+  </a>
+
+  <a href="/pwnable.tw/death_note/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,glibc-2.23">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge medium">250 pts</span>
+    </div>
+    <h3>Death Note</h3>
+    <p class="post-excerpt">Heap exploitation with Use-After-Free in a death note application on glibc 2.23.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">UAF</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <a href="/pwnable.tw/cve_2018_10387/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,1-day,opentftp,heap-overflow,rce,cve-2018-10387">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge medium">250 pts</span>
+    </div>
+    <h3>CVE-2018-10387</h3>
+    <p class="post-excerpt">1-Day Exploitation — OpenTFTP SP 1.64 heap overflow leading to RCE.</p>
+    <div class="post-tags"><span class="tag">1-Day</span><span class="tag">OpenTFTP</span><span class="tag">Heap Overflow</span><span class="tag">RCE</span></div>
+  </a>
+
+  <a href="/pwnable.tw/silver_bullet/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,strncat,null-byte,off-by-one,rop">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge easy">200 pts</span>
+    </div>
+    <h3>Silver Bullet</h3>
+    <p class="post-excerpt">strncat null-byte off-by-one leading to stack BOF and ROP chain execution.</p>
+    <div class="post-tags"><span class="tag">Null Byte</span><span class="tag">Off-by-One</span><span class="tag">ROP</span></div>
+  </a>
+
+  <a href="/pwnable.tw/re_alloc/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,realloc,uaf,tcache,got-overwrite">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge easy">200 pts</span>
+    </div>
+    <h3>Re-alloc</h3>
+    <p class="post-excerpt">Heap UAF via realloc misuse — tcache poisoning and GOT overwrite on x86-64.</p>
+    <div class="post-tags"><span class="tag">Realloc</span><span class="tag">UAF</span><span class="tag">Tcache</span><span class="tag">GOT Overwrite</span></div>
+  </a>
+
+  <a href="/pwnable.tw/hacknote/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,function-pointer,glibc-2.23,system">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge easy">200 pts</span>
+    </div>
+    <h3>Hacknote</h3>
+    <p class="post-excerpt">Use-After-Free in a note manager — exploiting dangling function pointer with system() via GOT leak.</p>
+    <div class="post-tags"><span class="tag">UAF</span><span class="tag">Function Pointer</span><span class="tag">system()</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <a href="/pwnable.tw/dubblesort/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,stack-bof,libc-leak,rop,format-string">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge easy">200 pts</span>
+    </div>
+    <h3>Dubblesort</h3>
+    <p class="post-excerpt">Stack buffer overflow in a sorting program — libc leak via format string and ROP chain for shell.</p>
+    <div class="post-tags"><span class="tag">Stack BOF</span><span class="tag">Libc Leak</span><span class="tag">ROP</span></div>
+  </a>
+
+  <a href="/pwnable.tw/criticalheap/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,glibc-2.23">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge easy">200 pts</span>
+    </div>
+    <h3>CriticalHeap</h3>
+    <p class="post-excerpt">Heap exploitation with Use-After-Free on glibc 2.23 — introductory heap challenge.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">UAF</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <a href="/pwnable.tw/bash/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,shellshock,cve-2014-6271,suid,privilege-escalation">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge easy">200 pts</span>
+    </div>
+    <h3>Bash</h3>
+    <p class="post-excerpt">You have the shell, and then? — Privilege escalation via Shellshock on a vulnerable SUID bash binary.</p>
+    <div class="post-tags"><span class="tag">Shellshock</span><span class="tag">CVE-2014-6271</span><span class="tag">SUID</span><span class="tag">PrivEsc</span></div>
+  </a>
+
+  <a href="/pwnable.tw/applestore/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,heap,uaf,glibc-2.23">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge easy">200 pts</span>
+    </div>
+    <h3>Apple Store</h3>
+    <p class="post-excerpt">Heap exploitation in a shopping cart application — Use-After-Free on glibc 2.23.</p>
+    <div class="post-tags"><span class="tag">Heap</span><span class="tag">UAF</span><span class="tag">glibc 2.23</span></div>
+  </a>
+
+  <!-- PWNABLE.TW — 100–150 pts -->
+  <div class="section-heading">Pwnable.tw — 100–150 pts</div>
+
+  <a href="/pwnable.tw/calc/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,logic-bug,stack-rw,canary-bypass,rop">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge easy">150 pts</span>
+    </div>
+    <h3>Calc</h3>
+    <p class="post-excerpt">Calculator logic bug — Expression parser allows arbitrary stack read/write via +N+M format, ROP for shell.</p>
+    <div class="post-tags"><span class="tag">Logic Bug</span><span class="tag">Arb R/W</span><span class="tag">Canary Bypass</span><span class="tag">ROP</span></div>
+  </a>
+
+  <a href="/pwnable.tw/3x17/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,write-what-where,fini-array,rop,static-binary">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge easy">150 pts</span>
+    </div>
+    <h3>3x17</h3>
+    <p class="post-excerpt">Write-what-where — Arbitrary 18-byte write primitive, .fini_array hijack for infinite loop, ROP chain in writable memory.</p>
+    <div class="post-tags"><span class="tag">Arb Write</span><span class="tag">.fini_array</span><span class="tag">ROP</span><span class="tag">Static</span></div>
+  </a>
+
+  <a href="/pwnable.tw/start/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,stack-bof,shellcode,stack-leak,i386,no-prot">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge beginner">100 pts</span>
+    </div>
+    <h3>Start</h3>
+    <p class="post-excerpt">Just a start — Stack BOF with shellcode execution on a minimal i386 binary. No protections, stack leak via write() gadget.</p>
+    <div class="post-tags"><span class="tag">Stack BOF</span><span class="tag">Shellcode</span><span class="tag">No Protections</span><span class="tag">i386</span></div>
+  </a>
+
+  <a href="/pwnable.tw/orw/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,shellcode,seccomp,orw,i386">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge beginner">100 pts</span>
+    </div>
+    <h3>ORW</h3>
+    <p class="post-excerpt">Open-Read-Write — Shellcode with seccomp sandbox, only open/read/write syscalls allowed.</p>
+    <div class="post-tags"><span class="tag">Shellcode</span><span class="tag">Seccomp</span><span class="tag">ORW</span><span class="tag">i386</span></div>
+  </a>
+
+  <a href="/pwnable.tw/cve_2018_1160/index.html" class="post-card" data-platform="pwnabletw" data-tags="pwn,1-day,netatalk,appledouble,oob,dsi,function-pointer,cve-2018-1160">
+    <div class="post-top">
+      <span class="platform-badge pwnabletw">Pwnable.tw</span>
+      <span class="diff-badge beginner">100 pts</span>
+    </div>
+    <h3>CVE-2018-1160</h3>
+    <p class="post-excerpt">1-Day — Netatalk AppleDouble OOB write, DSI function pointer hijack, pre-auth RCE.</p>
+    <div class="post-tags"><span class="tag">1-Day</span><span class="tag">Netatalk</span><span class="tag">OOB</span><span class="tag">Pre-auth RCE</span></div>
   </a>
 
   <!-- ═══ TJCTF ═══ -->
   <div class="section-heading" id="tjctf-section" style="margin-top:.5rem">TJCTF 2026</div>
 
   <a href="/tjctf-2026/web/opening-night/index.html" class="post-card" data-platform="tjctf" data-tags="web,svg,xxe">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge medium">Medium</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge medium">Medium</span><span class="post-date">2026</span></div>
     <h3>Opening Night</h3>
     <p class="post-excerpt">XXE injection through SVG file upload. Exploiting XML external entity processing in a web application's image upload functionality to read arbitrary server files.</p>
     <div class="post-tags"><span class="tag">Web</span><span class="tag">SVG</span><span class="tag">XXE</span></div>
   </a>
-
   <a href="/tjctf-2026/web/free-cloud-storage/index.html" class="post-card" data-platform="tjctf" data-tags="web,zip-slip,file-upload">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge medium">Medium</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge medium">Medium</span><span class="post-date">2026</span></div>
     <h3>Free Cloud Storage</h3>
     <p class="post-excerpt">Zip Slip directory traversal attack through a file upload service. Crafting a malicious ZIP archive with path traversal symlinks to write files outside the intended directory.</p>
     <div class="post-tags"><span class="tag">Web</span><span class="tag">Zip Slip</span><span class="tag">File Upload</span></div>
   </a>
-
   <a href="/tjctf-2026/crypto/trust-issues/index.html" class="post-card" data-platform="tjctf" data-tags="crypto,dnssec,sqli">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge hard">Hard</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge hard">Hard</span><span class="post-date">2026</span></div>
     <h3>Trust Issues</h3>
     <p class="post-excerpt">DNSSEC validation bypass combined with SQL injection. Chaining cryptographic protocol weaknesses with database exploitation to bypass authentication mechanisms.</p>
     <div class="post-tags"><span class="tag">Crypto</span><span class="tag">DNSSEC</span><span class="tag">SQLi</span></div>
   </a>
-
   <a href="/tjctf-2026/crypto/bit-leak/index.html" class="post-card" data-platform="tjctf" data-tags="crypto,rsa,oracle">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge hard">Hard</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge hard">Hard</span><span class="post-date">2026</span></div>
     <h3>Bit Leak</h3>
     <p class="post-excerpt">RSA partial key exposure attack using LSB oracle. Recovering full plaintext from an RSA encryption oracle that leaks individual bits through a padding oracle side-channel.</p>
     <div class="post-tags"><span class="tag">Crypto</span><span class="tag">RSA</span><span class="tag">Oracle</span></div>
   </a>
-
   <a href="/tjctf-2026/forensics/3-write-up/index.html" class="post-card" data-platform="tjctf" data-tags="forensics,voip,png">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge medium">Medium</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge medium">Medium</span><span class="post-date">2026</span></div>
     <h3>3-Write-Up</h3>
     <p class="post-excerpt">VoIP packet analysis and PNG reconstruction from network capture data. Extracting hidden voice communications and embedded image files from PCAP traffic.</p>
     <div class="post-tags"><span class="tag">Forensics</span><span class="tag">VoIP</span><span class="tag">PNG</span></div>
   </a>
-
   <a href="/tjctf-2026/forensics/invisible-ink/index.html" class="post-card" data-platform="tjctf" data-tags="forensics,polyglot,pdf">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge medium">Medium</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge medium">Medium</span><span class="post-date">2026</span></div>
     <h3>Invisible Ink</h3>
     <p class="post-excerpt">Polyglot file analysis combining PDF and alternate format parsing. Extracting hidden data layers from a document that serves as both a valid PDF and another file format.</p>
     <div class="post-tags"><span class="tag">Forensics</span><span class="tag">Polyglot</span><span class="tag">PDF</span></div>
   </a>
-
   <a href="/tjctf-2026/forensics/loud-packets/index.html" class="post-card" data-platform="tjctf" data-tags="forensics,bitmap,stego">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge medium">Medium</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge medium">Medium</span><span class="post-date">2026</span></div>
     <h3>Loud Packets</h3>
     <p class="post-excerpt">Bitmap image reconstruction and steganographic analysis. Decoding hidden information embedded in packet payload data mapped to bitmap pixel values.</p>
     <div class="post-tags"><span class="tag">Forensics</span><span class="tag">Bitmap</span><span class="tag">Stego</span></div>
   </a>
-
   <a href="/tjctf-2026/forensics/thomas-schools-of-china/index.html" class="post-card" data-platform="tjctf" data-tags="forensics,custom-format,parsing">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge hard">Hard</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge hard">Hard</span><span class="post-date">2026</span></div>
     <h3>Thomas Schools of China</h3>
     <p class="post-excerpt">Reverse engineering a custom binary file format. Parsing proprietary headers, custom compression schemes, and non-standard encoding to extract the hidden flag data.</p>
     <div class="post-tags"><span class="tag">Forensics</span><span class="tag">Custom Format</span><span class="tag">Parsing</span></div>
   </a>
-
   <a href="/tjctf-2026/rev/polaroid/index.html" class="post-card" data-platform="tjctf" data-tags="rev,mach-o,xor,macos">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge medium">Medium</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge medium">Medium</span><span class="post-date">2026</span></div>
     <h3>Polaroid</h3>
     <p class="post-excerpt">Mach-O binary reverse engineering on macOS. XOR-based string obfuscation analysis, Objective-C method tracing, and flag extraction from a native Apple binary.</p>
     <div class="post-tags"><span class="tag">Rev</span><span class="tag">Mach-O</span><span class="tag">XOR</span></div>
   </a>
-
   <a href="/tjctf-2026/rev/remoose/index.html" class="post-card" data-platform="tjctf" data-tags="rev,elf,forensics,anti-debug">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge hard">Hard</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge hard">Hard</span><span class="post-date">2026</span></div>
     <h3>Remoose</h3>
     <p class="post-excerpt">ELF binary analysis with anti-debugging techniques. Bypassing ptrace-based protections, reconstructing obfuscated control flow, and extracting the flag from a hardened Linux executable.</p>
     <div class="post-tags"><span class="tag">Rev</span><span class="tag">ELF</span><span class="tag">Anti-Debug</span></div>
   </a>
-
   <a href="/tjctf-2026/pwn/hunting-field/index.html" class="post-card" data-platform="tjctf" data-tags="pwn,buffer-underflow,linux">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge hard">Hard</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge hard">Hard</span><span class="post-date">2026</span></div>
     <h3>Hunting Field</h3>
     <p class="post-excerpt">Buffer underflow exploitation on a Linux binary. Unconventional memory corruption through negative indexing, hijacking execution flow via stack manipulation and GOT overwrite.</p>
     <div class="post-tags"><span class="tag">Pwn</span><span class="tag">Buffer Underflow</span><span class="tag">Linux</span></div>
   </a>
-
   <a href="/tjctf-2026/misc/glich/index.html" class="post-card" data-platform="tjctf" data-tags="misc,stego,image">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge medium">Medium</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge medium">Medium</span><span class="post-date">2026</span></div>
     <h3>Glitch</h3>
     <p class="post-excerpt">Image steganography challenge. Extracting hidden data from visual artifacts in a glitched image file through pixel-level analysis and channel manipulation.</p>
     <div class="post-tags"><span class="tag">Misc</span><span class="tag">Stego</span><span class="tag">Image</span></div>
   </a>
-
   <a href="/tjctf-2026/misc/calculative-barracuda/index.html" class="post-card" data-platform="tjctf" data-tags="misc,ai,prompt-injection">
-    <div class="post-top">
-      <span class="platform-badge tjctf">TJCTF</span>
-      <span class="diff-badge medium">Medium</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge tjctf">TJCTF</span><span class="diff-badge medium">Medium</span><span class="post-date">2026</span></div>
     <h3>Calculative Barracuda</h3>
     <p class="post-excerpt">AI prompt injection and jailbreaking challenge. Manipulating LLM behavior through carefully crafted inputs to bypass safety filters and extract restricted information.</p>
     <div class="post-tags"><span class="tag">Misc</span><span class="tag">AI</span><span class="tag">Prompt Injection</span></div>
@@ -727,91 +1061,45 @@ img{max-width:100%;display:block}
   <div class="section-heading" id="thm-section" style="margin-top:.5rem">TryHackMe</div>
 
   <a href="/tryhackme/insane/crocc-crew/" class="post-card" data-platform="thm" data-tags="ad,kerberoasting,constrained-delegation,secrets-dump,smb,ldap">
-    <div class="post-top">
-      <span class="platform-badge thm">TryHackMe</span>
-      <span class="diff-badge hard">Hard</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge thm">TryHackMe</span><span class="diff-badge hard">Hard</span><span class="post-date">2026</span></div>
     <h3>Crocc Crew</h3>
     <p class="post-excerpt">Full Active Directory attack chain from web enumeration through SMB and LDAP enumeration, Kerberoasting, Constrained Delegation abuse, and Secrets Dump to achieve Domain Admin on a TryHackMe AD lab.</p>
     <div class="post-tags"><span class="tag">AD</span><span class="tag">Kerberoasting</span><span class="tag">Constrained Delegation</span><span class="tag">Secrets Dump</span><span class="tag">SMB</span></div>
   </a>
 
   <a href="/tryhackme/cct2019/" class="post-card" data-platform="thm" data-tags="forensics,rev,crypto,pcap">
-    <div class="post-top">
-      <span class="platform-badge thm">TryHackMe</span>
-      <span class="diff-badge medium">Medium</span>
-      <span class="post-date">2026</span>
-    </div>
+    <div class="post-top"><span class="platform-badge thm">TryHackMe</span><span class="diff-badge medium">Medium</span><span class="post-date">2026</span></div>
     <h3>CCT 2019</h3>
     <p class="post-excerpt">Cyber Competition Team 2019 challenges including Forensics, Reverse Engineering, PCAP analysis, and Cryptography. Multi-category CTF walkthrough with detailed analysis of each challenge.</p>
     <div class="post-tags"><span class="tag">Forensics</span><span class="tag">Rev</span><span class="tag">Crypto</span><span class="tag">PCAP</span></div>
   </a>
 
-  <!-- ═══ RESEARCH ═══ -->
-  <div class="section-heading" id="research-section" style="margin-top:.5rem">Research</div>
-
-
-  <a href="/research/Blog/2026/top-3-supply-chain-incidents-h1-2026/" class="post-card pinned" data-platform="research" data-tags="threat-intel,supply-chain,lotc,vishing,mdm-weaponization,itdr,blue-team,detection,zero-trust">
-    <div class="post-top">
-      <span class="platform-badge research"><i class="bi bi-shield-fill-exclamation"></i> Threat Intel</span>
-      <span class="diff-badge insane">Critical</span>
-      <span class="post-date">May 2026</span>
-    </div>
-    <h3>H1 2026 Supply Chain Threat Report — Top 3 Incidents</h3>
-    <p class="post-excerpt">Deep technical analysis of Stryker/Handala Wiper (Intune weaponization, 200K+ devices), Match Group/ShinyHunters (Okta SSO vishing, 10M+ records), and Citizens & Frost Bank/Everest (shared vendor compromise, 3.65M+ records). Attack chain reconstruction, TTP analysis, IoCs, and strategic forecast.</p>
-    <div class="post-tags"><span class="tag">Supply Chain</span><span class="tag">LotC</span><span class="tag">Vishing</span><span class="tag">MDM Abuse</span><span class="tag">ITDR</span><span class="tag">Zero Trust</span></div>
-  </a>
-
-  
-  <a href="/research/kernel/dirtydecrypt/" class="post-card" data-platform="research" data-tags="kernel,lpe,page-cache,cow-bypass,rxgk,dirtydecrypt,cve-2026-31635,red-team,detection,hardening">
-    <div class="post-top">
-      <span class="platform-badge research"><i class="bi bi-journal-code"></i> Research</span>
-      <span class="diff-badge insane">Critical</span>
-      <span class="post-date">May 2026</span>
-    </div>
-    <h3>DirtyDecrypt / DirtyCBC — CVE-2026-31635</h3>
-    <p class="post-excerpt">Local privilege escalation to root via rxgk_decrypt_skb — a missing COW guard vulnerability in the Linux kernel rxgk module that allows bypassing Copy-On-Write protection and writing directly into the page cache. Deterministic exploit, no race condition, public PoC available.</p>
-    <div class="post-tags"><span class="tag">CVE-2026-31635</span><span class="tag">LPE</span><span class="tag">Kernel</span><span class="tag">Page Cache</span><span class="tag">COW Bypass</span><span class="tag">Red Team</span><span class="tag">Fedora</span></div>
-  </a>
-
-  <a href="/research/gpo/shadowpolicy/" class="post-card" data-platform="research" data-tags="gpo,scheduled-tasks,sysvol,sacl,dsc,blue-team,lolbin,ad,detection,hardening">
-    <div class="post-top">
-      <span class="platform-badge research"><i class="bi bi-journal-code"></i> Research</span>
-      <span class="diff-badge insane">Critical</span>
-      <span class="post-date">2026</span>
-    </div>
-    <h3>ShadowPolicy — GPO Preference State-Injection</h3>
-    <p class="post-excerpt">Advanced detection and auditing framework for the ShadowPolicy threat model: GPO Preference Scheduled Task XML injection via SYSVOL state modification in Windows Server 2022 / Active Directory. Full defensive architecture with DSC hardening, SACL auditing, and SIEM detection rules.</p>
-    <div class="post-tags"><span class="tag">GPO Abuse</span><span class="tag">SYSVOL</span><span class="tag">Blue Team</span><span class="tag">DSC</span><span class="tag">SACL</span><span class="tag">SIEM</span><span class="tag">AD</span></div>
-  </a>
-
 </div>
-
 </div><!-- /page-body -->
 
-<!-- ═══════════ FOOTER ═══════════ -->
 <footer class="site-footer">
   <div class="footer-inner">
     <div class="footer-left">&copy; 2026 <span>QA210</span> &mdash; Security Research & CTF Writeups</div>
     <div class="footer-links">
       <a href="/">Home</a>
       <a href="/writeup/">Write Up</a>
-      <a href="/research/">Research</a>
+      <a href="/htb/">Hack The Box</a>
+      <a href="/tryhackme/">TryHackMe</a>
       <a href="/mal-dev/">Malware Dev</a>
+      <a href="/pwnable.tw/">Pwnable.tw</a>
+      <a href="/tjctf-2026/">TJCTF</a>
+      <a href="/research/">Research</a>
       <a href="https://github.com/Yuri08-QA210" target="_blank">GitHub</a>
     </div>
   </div>
 </footer>
 
 <script>
-// ═══ Mobile Nav ═══
 function toggleMobileNav(){
   document.getElementById('mobileOverlay').classList.toggle('show');
   document.getElementById('mobilePanel').classList.toggle('show');
 }
 
-// ═══ Filter ═══
 function setFilter(btn){
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -834,7 +1122,6 @@ function setFilter(btn){
   });
 }
 
-// ═══ Search ═══
 function filterPosts(){
   const q=document.getElementById('searchInput').value.toLowerCase().trim();
   if(!q){document.querySelectorAll('.post-card').forEach(c=>c.style.display='');document.querySelectorAll('.section-heading').forEach(h=>h.style.display='');return}
@@ -848,7 +1135,6 @@ function filterPosts(){
   document.querySelectorAll('.section-heading').forEach(h=>h.style.display='');
 }
 
-// ═══ Three.js Background ═══
 (function(){
   const canvas=document.getElementById('bg-canvas');
   const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:false});
@@ -857,7 +1143,6 @@ function filterPosts(){
   const scene=new THREE.Scene();
   const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
   camera.position.z=5;
-
   const pCount=1500;
   const geo=new THREE.BufferGeometry();
   const pos=new Float32Array(pCount*3);
@@ -872,24 +1157,20 @@ function filterPosts(){
   const mat=new THREE.PointsMaterial({color:0x3b82f6,size:0.03,transparent:true,opacity:0.4});
   const pts=new THREE.Points(geo,mat);
   scene.add(pts);
-
   const sGeo=new THREE.IcosahedronGeometry(2.8,1);
   const sMat=new THREE.MeshBasicMaterial({color:0x3b82f6,wireframe:true,transparent:true,opacity:0.03});
   const sphere=new THREE.Mesh(sGeo,sMat);
   scene.add(sphere);
-
   const rGeo=new THREE.TorusGeometry(3.5,0.02,8,64);
   const rMat=new THREE.MeshBasicMaterial({color:0x8b5cf6,wireframe:true,transparent:true,opacity:0.025});
   const ring=new THREE.Mesh(rGeo,rMat);
   ring.rotation.x=Math.PI/2.5;
   scene.add(ring);
-
   let mx=0,my=0;
   document.addEventListener('mousemove',e=>{
     mx=(e.clientX/window.innerWidth-0.5)*2;
     my=(e.clientY/window.innerHeight-0.5)*2;
   });
-
   function animate(){
     requestAnimationFrame(animate);
     sphere.rotation.x+=0.0008;
@@ -906,7 +1187,6 @@ function filterPosts(){
     renderer.render(scene,camera);
   }
   animate();
-
   window.addEventListener('resize',()=>{
     camera.aspect=window.innerWidth/window.innerHeight;
     camera.updateProjectionMatrix();
